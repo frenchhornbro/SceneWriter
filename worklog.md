@@ -1,5 +1,7 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
+| 11/15/2025 | 1.5 hours | Figured out tech stack and pitched project |
+| 11/15/2025 | 2.5 hours | Created timeline and initial design |
 | 11/6/2025 | 1 hour | Data modeling |
 | 11/6/2025 | 30 minutes | Repo setup |
 | 11/5/2025 | 30 minutes | Installed Llama 3.2 and added it to prompt |
