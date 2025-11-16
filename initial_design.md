@@ -15,7 +15,7 @@ This is a human-first AI assistant. The responsibility and effort of creativity 
 - Allow users to run the code locally, connected to a locally-installed LLM
 
 ## Initial ERD
-![ERD](erd.png)
+![ERD](ERD.png)
 
 [DrawSQL link](https://drawsql.app/teams/student-2625/diagrams/scenewriter)
 
