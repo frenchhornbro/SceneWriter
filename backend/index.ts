@@ -1,6 +1,8 @@
 import app from "./service";
 import { getEnvVar } from "./utils/envAccess";
 
-app.listen(getEnvVar("SERVER_PORT"), () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+const port = parseInt(getEnvVar("SERVER_PORT")) || 3000;
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

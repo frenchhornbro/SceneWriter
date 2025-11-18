@@ -1,8 +1,17 @@
 import express, { json, Request, Response, NextFunction, Router } from "express";
 import cors from "cors";
 import sceneRouter from "./route/sceneRouter";
+import { getEnvVar } from "./utils/envAccess";
 
 const app = express();
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (getEnvVar("VERBOSE") === "true") {
+    console.log(`${req.method} ${req.path}`);
+  }
+  next();
+});
+
 app.use(json({limit: "10mb"}));
 app.use(cors());
 
@@ -11,7 +20,7 @@ app.use("/api", apiRouter);
 
 apiRouter.use("/scene", sceneRouter);
 
-app.use("*", (req: Request, res: Response) => {
+app.use((req: Request, res: Response) => {
   res.status(404).send("Route not found.");
 });
 

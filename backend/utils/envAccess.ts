@@ -6,5 +6,5 @@ export function getEnvVar(key: string): string {
 }
 
 dotenv.config({
-  path: process.env.NODE_ENV === "prod" ? ".env.prod" : ".env.dev"
+  path: process.env.NODE_ENV === "production" ? ".env.prod" : ".env.dev"
 });

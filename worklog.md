@@ -1,5 +1,6 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
+| 11/17/2025 | 2.5 hours | TS configuration, AI model scene generation, Scene generation made available through API |
 | 11/17/2025 | 1.5 hours | Created layout for backend |
 | 11/15/2025 | 1.5 hours | Figured out tech stack and pitched project |
 | 11/15/2025 | 2.5 hours | Created timeline and initial design |
