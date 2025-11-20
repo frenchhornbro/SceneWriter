@@ -1,0 +1,39 @@
+SceneWriter
+
+Generate a frontend for SceneWriter with the following specifications:
+- Uses NextJS, React, CSS, Tailwind, and TS, and _nothing_ else
+- All requests to backend should be replaced with a TODO comment
+- Has a placeholder logo
+
+Color scheme:
+- Primary: #7CFF8C
+- Secondary: #1F9E61
+- Accent: #FFD166
+- Background: #0A0F0B
+- Surface / Cards: #121A14
+- Text Primary: #F4FFF7
+- Text Secondary: #A7BFAA
+
+Follow this description to create a separate page for each Page with corresponding features. For Views, relevant data should be pulled from the backend.
+- Page: Home
+- Page: Registration / Log In
+- Page: All stories
+  - View: Lists all created stories
+  - Action: Create a new story
+- Page: Writing style samples
+  - View: Shows all saved writing samples
+  - Action Edit / delete current writing sample
+  - Action: Write and save a new writing sample
+- Page: Story
+  - View: List the title, overview, plot points, characters
+  - Action: Export the story as a pdf/txt file
+  - Action: Create new plot points
+  - Have sidebar access to the following from here:
+    - Page: Character creation (fill in name, age, height, description)
+    - Page: Scene Generation
+      - Action: Attach relevant plot points, characters, writing style samples
+      - Action: Generate scene
+      - Action: Accept / edit / reject generated scene
+    - Page: Story editing
+      - View: All scenes combined into a story
+      - Action: Edit any of the text
