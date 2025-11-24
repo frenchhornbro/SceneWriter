@@ -1,5 +1,6 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
+| 11/20/2024 | 1 hour | Learning NextJS, fixing frontend code |
 | 11/20/2025 | 1 hour | Finished frontend generation prompt, generated frontend with V0 |
 | 11/19/2025 | 1.5 hours | Created templates, writing up prompt for frontend generation |
 | 11/17/2025 | 2.5 hours | TS configuration, AI model scene generation, Scene generation made available through API |
