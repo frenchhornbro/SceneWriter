@@ -30,9 +30,6 @@ export default function HomePage() {
             <Button asChild size="lg" className="bg-primary hover:bg-primary-hover text-white font-semibold">
               <Link href="/stories">Get Started</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-border hover:bg-surface-light bg-transparent">
-              <Link href="/stories">View Demo</Link>
-            </Button>
           </div>
         </section>
 
@@ -86,7 +83,15 @@ export default function HomePage() {
 
       <footer className="border-t border-border py-8 mt-20">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          SceneWriter &copy; 2025. Built for storytellers.
+          Created by Hyrum Durfee. Find on{' '}
+          <Link
+            href="https://github.com/frenchhornbro/SceneWriter"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-primary"
+          >
+            GitHub
+          </Link>
         </div>
       </footer>
     </div>
