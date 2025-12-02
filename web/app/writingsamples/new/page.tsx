@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { serverRequest } from "@/lib/requests"
 
 export default function NewWritingSamplePage() {
   const router = useRouter()
@@ -44,19 +45,18 @@ export default function NewWritingSamplePage() {
     if (!title.trim()) return
 
     setIsSubmitting(true)
-    try {
-      // TODO: Replace with actual API endpoint
-      await fetch("https://example.com/api/writingsamples", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, prompt, response }),
-      })
-
-      router.push("/writingsamples")
-    } catch (error) {
-      console.error("Failed to create writing sample:", error)
-      setIsSubmitting(false)
-    }
+    serverRequest("api/writingstyle", { title: title.trim(), prompt, response }, "POST",
+      async (response) => {
+        router.push("/writingsamples")
+      },
+      async (error) => {
+        console.error("Failed to create writing sample:", error)
+        setIsSubmitting(false)
+      },
+      async () => {
+        // No-op
+      }
+    )
   }
 
   if (isLoading) {

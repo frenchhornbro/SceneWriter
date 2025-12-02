@@ -18,13 +18,11 @@ export default function NewStoryPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-
     if (!title.trim()) {
       return
     }
 
     setIsSubmitting(true)
-
     serverRequest("api/story", { title: title.trim(), overview: overview.trim() }, "POST",
       async (response) => {
         router.push("/stories")

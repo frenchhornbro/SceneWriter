@@ -1,8 +1,9 @@
 import express, { json, Request, Response, NextFunction, Router } from "express";
 import cors from "cors";
-import sceneRouter from "./route/sceneRouter";
 import { getEnvVar } from "./utils/envAccess";
+import sceneRouter from "./route/sceneRouter";
 import storyRouter from "./route/storyRouter";
+import writingStyleRouter from "./route/writingStyleRouter";
 
 const app = express();
 
@@ -20,6 +21,7 @@ const apiRouter = Router();
 app.use("/api", apiRouter);
 
 apiRouter.use("/story", storyRouter);
+apiRouter.use("/writingstyle", writingStyleRouter);
 apiRouter.use("/scene", sceneRouter);
 
 app.use((req: Request, res: Response) => {
