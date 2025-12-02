@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { serverRequest } from "@/lib/requests"
 import { useRouter } from "next/navigation"
 import { useState, type FormEvent } from "react"
 
@@ -24,28 +25,17 @@ export default function NewStoryPage() {
 
     setIsSubmitting(true)
 
-    try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch("https://example.com/api/stories", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          overview: overview.trim(),
-        }),
-      })
-
-      if (response.ok) {
-        // Navigate back to stories list on success
+    serverRequest("api/story", { title: title.trim(), overview: overview.trim() }, "POST",
+      async (response) => {
         router.push("/stories")
+      },
+      async (error) => {
+        console.error("Failed to create story:", error)
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Failed to create story:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const handleCancel = () => {

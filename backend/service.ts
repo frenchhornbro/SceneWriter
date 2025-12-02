@@ -2,6 +2,7 @@ import express, { json, Request, Response, NextFunction, Router } from "express"
 import cors from "cors";
 import sceneRouter from "./route/sceneRouter";
 import { getEnvVar } from "./utils/envAccess";
+import storyRouter from "./route/storyRouter";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(cors());
 const apiRouter = Router();
 app.use("/api", apiRouter);
 
+apiRouter.use("/story", storyRouter);
 apiRouter.use("/scene", sceneRouter);
 
 app.use((req: Request, res: Response) => {
