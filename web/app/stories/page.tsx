@@ -1,8 +1,10 @@
-import { Nav } from "@/components/nav"
+"use client"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Plus, BookOpen } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 // TODO: Replace with actual data from database/API
 const SAMPLE_STORIES = [
@@ -32,10 +34,23 @@ const SAMPLE_STORIES = [
 ]
 
 export default function StoriesPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "n" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target as HTMLElement
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
+        router.push("/stories/new")
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [router])
+
   return (
     <div className="min-h-screen">
-      <Nav />
-
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -43,10 +58,12 @@ export default function StoriesPage() {
             <p className="text-muted-foreground">Manage and organize your creative projects</p>
           </div>
 
-          <Button className="bg-primary hover:bg-primary-hover text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            New Story
-          </Button>
+          <Link href="/stories/new">
+            <Button className="bg-primary hover:bg-primary-hover text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              New Story
+            </Button>
+          </Link>
         </div>
 
         {SAMPLE_STORIES.length === 0 ? (
@@ -54,10 +71,12 @@ export default function StoriesPage() {
             <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">No stories yet</h3>
             <p className="text-muted-foreground mb-6">Create your first story to get started</p>
-            <Button className="bg-primary hover:bg-primary-hover text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Story
-            </Button>
+            <Link href="/stories/new">
+              <Button className="bg-primary hover:bg-primary-hover text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Story
+              </Button>
+            </Link>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

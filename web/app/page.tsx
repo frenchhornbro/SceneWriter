@@ -1,13 +1,10 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Nav } from "@/components/nav"
 import { BookOpen, Users, FileText, Sparkles } from "lucide-react"
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      <Nav />
-
       <main className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <section className="max-w-4xl mx-auto text-center py-20">
@@ -83,15 +80,7 @@ export default function HomePage() {
 
       <footer className="border-t border-border py-8 mt-20">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          Created by Hyrum Durfee. Find on{' '}
-          <Link
-            href="https://github.com/frenchhornbro/SceneWriter"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-primary"
-          >
-            GitHub
-          </Link>
+          SceneWriter &copy; 2025. Built for storytellers.
         </div>
       </footer>
     </div>

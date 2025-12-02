@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { BookOpen, PenTool } from "lucide-react"
+import { PenTool } from "lucide-react"
 
 export function Nav() {
   return (
@@ -9,16 +9,6 @@ export function Nav() {
           <PenTool className="w-6 h-6 text-primary" />
           <span className="text-balance">SceneWriter</span>
         </Link>
-
-        <div className="flex items-center gap-6">
-          <Link
-            href="/stories"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            My Stories
-          </Link>
-        </div>
       </div>
     </nav>
   )

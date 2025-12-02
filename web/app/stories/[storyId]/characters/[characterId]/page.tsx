@@ -1,10 +1,13 @@
-import { Nav } from "@/components/nav"
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 
-// TODO: Replace with actual data fetching based on params
 const SAMPLE_CHARACTER = {
   id: 1,
   storyId: 1,
@@ -37,23 +40,38 @@ const SAMPLE_STORY = {
   title: "The Chronicles of Echoing Stars",
 }
 
-export default async function CharacterDetailPage({
+export default function CharacterDetailPage({
   params,
 }: {
-  params: Promise<{ storyId: string; characterId: string }>
+  params: { storyId: string; characterId: string }
 }) {
-  const { storyId, characterId } = await params
+  const router = useRouter()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  // TODO: Fetch actual character data based on characterId
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      // TODO: Replace with actual API endpoint
+      await fetch("https://example.com/api/characters", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ characterId: params.characterId }),
+      })
+
+      router.push(`/stories/${params.storyId}`)
+    } catch (error) {
+      console.error("Failed to delete character:", error)
+      setIsDeleting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen">
-      <Nav />
-
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <Link
-            href={`/stories/${storyId}`}
+            href={`/stories/${params.storyId}?tab=characters`}
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -72,12 +90,16 @@ export default async function CharacterDetailPage({
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="border-border hover:bg-surface-light bg-transparent">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
+              <Link href={`/stories/${params.storyId}/characters/${params.characterId}/edit`}>
+                <Button variant="outline" className="border-border hover:bg-surface-light bg-transparent">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+              </Link>
               <Button
                 variant="outline"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeleting}
                 className="border-border hover:bg-red-950 hover:text-red-400 hover:border-red-800 bg-transparent"
               >
                 <Trash2 className="w-4 h-4" />
@@ -123,6 +145,14 @@ export default async function CharacterDetailPage({
           </Card>
         </div>
       </main>
+
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDelete}
+        itemType="character"
+        itemName={SAMPLE_CHARACTER.name}
+      />
     </div>
   )
 }

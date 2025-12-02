@@ -1,6 +1,13 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
-| 11/20/2024 | 1 hour | Learning NextJS, fixing frontend code |
+| 12/1/2025 | 3.5 hours | Finished frontend |
+| 11/29/2025 | 1.5 hours | Created pages for editing stories, scenes, plot points, characters, and writing style samples, regenerating scenes, and a story export button |
+| 11/29/2025 | 1 hour | Creates buttons and warnings for deleting stories, scenes, plot points, characters, and writing style samples |
+| 11/27/2025 | 1 hour | Created plot point page and scene generation page |
+| 11/26/2025 | 30 minutes | Created new character and new writing style sample pages |
+| 11/24/2025 | 1.5 hours | Added new story page |
+| 11/24/2025 | 1.5 hours | Fixed frontend display error, created frontend plan |
+| 11/20/2025 | 1 hour | Learning NextJS, fixing frontend code |
 | 11/20/2025 | 1 hour | Finished frontend generation prompt, generated frontend with V0 |
 | 11/19/2025 | 1.5 hours | Created templates, writing up prompt for frontend generation |
 | 11/17/2025 | 2.5 hours | TS configuration, AI model scene generation, Scene generation made available through API |
