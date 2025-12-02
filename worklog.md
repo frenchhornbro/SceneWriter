@@ -1,6 +1,7 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
-| 12/1/2025 | 3.5 hours | Finished frontend |
+| 12/2/2025 | 2 hours | Refactored |
+| 12/1/2025 | 3.5 hours | Finished frontend AI-generation |
 | 11/29/2025 | 1.5 hours | Created pages for editing stories, scenes, plot points, characters, and writing style samples, regenerating scenes, and a story export button |
 | 11/29/2025 | 1 hour | Creates buttons and warnings for deleting stories, scenes, plot points, characters, and writing style samples |
 | 11/27/2025 | 1 hour | Created plot point page and scene generation page |
