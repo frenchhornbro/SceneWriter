@@ -12,14 +12,14 @@ sceneRouter.post("/", async (req, res) => {
   // TODO: Expect auth token in headers
   // QQQ: Do I want to send the user the text, or save it in the DB and have them pull from there?
   if (!req.body) {
-    return res.status(400).send("Missing request body.");
+    return res.status(400).json({error: "Missing request body."});
   }
   const { writingStyleExamples, sceneDescription, characters, plotPoints } = req.body;
   if (!sceneDescription) {
-    return res.status(400).send("Missing scene description.");
+    return res.status(400).json({error: "Missing scene description."});
   }
   if (!plotPoints) {
-    return res.status(400).send("Missing plot points.");
+    return res.status(400).json({error: "Missing plot points."});
   }
   const { sceneText } = await generateScene(writingStyleExamples, sceneDescription, characters, plotPoints);
   res.status(200).json({ scene: sceneText });

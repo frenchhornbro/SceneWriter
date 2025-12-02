@@ -10,6 +10,7 @@ import { ArrowLeft, User } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, type FormEvent } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Fetch actual characters from the story
 const SAMPLE_CHARACTERS = [
@@ -40,15 +41,7 @@ export default function NewCharacterPage() {
     }
 
     setIsSubmitting(true)
-
-    try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch("https://example.com/api/characters", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+    serverRequest("api/character", {
           storyId,
           name,
           age: age || null,
@@ -56,20 +49,18 @@ export default function NewCharacterPage() {
           description: description || null,
           backstory: backstory || null,
           relationships,
-        }),
-      })
-
-      if (response.ok) {
-        router.push(`/stories/${storyId}?tab=characters`)
-      } else {
-        alert("Failed to create character")
+        }, "POST",
+      async (response) => {
+        router.push(`/stories/${storyId}?tab=characters`,)
+      },
+      async (error) => {
+        console.error("Failed to create character:", error)
+        alert("An error occurred while creating the character")
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Error creating character:", error)
-      alert("An error occurred while creating the character")
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const handleCancel = () => {

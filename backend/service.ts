@@ -3,6 +3,7 @@ import cors from "cors";
 import { getEnvVar } from "./utils/envAccess";
 import sceneRouter from "./route/sceneRouter";
 import storyRouter from "./route/storyRouter";
+import characterRouter from "./route/characterRouter";
 import writingStyleRouter from "./route/writingStyleRouter";
 
 const app = express();
@@ -23,14 +24,15 @@ app.use("/api", apiRouter);
 apiRouter.use("/story", storyRouter);
 apiRouter.use("/writingstyle", writingStyleRouter);
 apiRouter.use("/scene", sceneRouter);
+apiRouter.use("/character", characterRouter);
 
 app.use((req: Request, res: Response) => {
-  res.status(404).send("Route not found.");
+  res.status(404).json({error: "Route not found."});
 });
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
-  res.status(500).send("A server error occurred.");
+  res.status(500).json({error: "A server error occurred."});
 });
 
 export default app;

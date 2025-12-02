@@ -28,6 +28,10 @@ export async function serverRequest(
     if (response.ok) {
       await onOkay(response)
     }
+    else {
+      const errorText = (await response.json().catch(() => null))?.["error"] || "No error message"
+      throw new Error(`Server responded with status ${response.status}: ${JSON.stringify(errorText)}`)
+    }
   } catch (error) {
     await onError(error)
   } finally {
