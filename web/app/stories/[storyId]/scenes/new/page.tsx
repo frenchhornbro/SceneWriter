@@ -12,6 +12,7 @@ import { ArrowLeft, Loader2, X } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // Sample data - TODO: Replace with actual data fetching
 const SAMPLE_PLOTPOINTS = [
@@ -131,30 +132,32 @@ export default function NewScenePage() {
     }
 
     setIsSubmitting(true)
-
-    try {
-      await fetch("https://example.com/api/scenes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    serverRequest("api/scene", {
           storyId,
           plotPoints: selectedPlotPoints,
           characters: selectedCharacters,
-          writings: selectedWritings,
+          writingStyleSamples: selectedWritings,
           description,
           pointOfView,
           location,
-        }),
-      })
-
-      await new Promise((resolve) => setTimeout(resolve, 10000))
-
-      const newSceneId = Math.floor(Math.random() * 1000)
-      router.push(`/stories/${storyId}/scenes/${newSceneId}`)
-    } catch (err) {
-      setError("Failed to create scene. Please try again.")
-      setIsSubmitting(false)
-    }
+        }, "POST",
+      async (response) => {
+        const data = await response.json()
+        const newSceneId = data.id
+        if (!newSceneId) {
+          throw new Error("Invalid scene ID")
+        }
+        router.push(`/stories/${storyId}/scenes/${newSceneId}`)
+      },
+      async (error) => {
+        console.error("Failed to create scene:", error)
+        setError("Failed to create scene. Please try again.")
+        setIsSubmitting(false)
+      },
+      async () => {
+        // No-op
+      }
+    )
   }
 
   useEffect(() => {

@@ -13,7 +13,6 @@ export async function serverRequest(
   try {
     const fullURL = `${serverURL}:${serverPort}/${path}`
     const urlRegex = /^(https?:\/\/)?[a-zA-Z0-9.-]+(:\d+)?\/.*$/
-    console.log("Full URL:", fullURL)
     if (!urlRegex.test(fullURL)) {
       throw new Error(`SERVER_URL is not a valid URL: ${fullURL}`)
     }
@@ -33,6 +32,7 @@ export async function serverRequest(
       throw new Error(`Server responded with status ${response.status}: ${JSON.stringify(errorText)}`)
     }
   } catch (error) {
+    console.log("AN ERROR WUT:", error);
     await onError(error)
   } finally {
     await onFinally()
