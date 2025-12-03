@@ -7,6 +7,11 @@ characterRouter.post("/", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
+characterRouter.put("/:characterId", async (req: Request, res: Response) => {
+  const { storyId, characterId } = req.params;
+  res.status(501).json({error: "Not implemented."});
+});
+
 characterRouter.delete("/:characterId", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });

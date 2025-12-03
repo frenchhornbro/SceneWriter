@@ -10,6 +10,7 @@ import { ArrowLeft, User } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, type FormEvent, useEffect } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Fetch actual characters from the story
 const SAMPLE_CHARACTERS = [
@@ -98,37 +99,25 @@ export default function EditCharacterPage() {
     }
 
     setIsSubmitting(true)
-
-    try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch("https://example.com/api/characters", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          characterId,
-          storyId,
-          name,
-          age: age || null,
-          height: height || null,
-          description: description || null,
-          backstory: backstory || null,
-          relationships,
-        }),
-      })
-
-      if (response.ok) {
+    serverRequest(`api/story/${storyId}/character/${characterId}`, {
+        name,
+        age: age || null,
+        height: height || null,
+        description: description || null,
+        backstory: backstory || null,
+        relationships
+      }, "PUT",
+      async (response) => {
         router.push(`/stories/${storyId}/characters/${characterId}`)
-      } else {
-        alert("Failed to update character")
+      },
+      async (error) => {
+        console.error("Error updating character:", error)
+        alert("An error occurred while updating the character")
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Error updating character:", error)
-      alert("An error occurred while updating the character")
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const handleCancel = () => {
