@@ -1,5 +1,6 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
+| 12/3/2025 | 2 hours | Created all placeholder endpoints |
 | 12/2/2025 | 3 hours | Setup additional router, connecting frontend to placeholder endpoints in backend |
 | 12/2/2025 | 2 hours | Refactored generated code to run locally without errors |
 | 12/1/2025 | 3.5 hours | Finished frontend AI-generation |
