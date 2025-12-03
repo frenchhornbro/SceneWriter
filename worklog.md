@@ -1,6 +1,7 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
-| 12/2/2025 | 2 hours | Refactored |
+| 12/2/2025 | 3 hours | Setup additional router, connecting frontend to placeholder endpoints in backend |
+| 12/2/2025 | 2 hours | Refactored generated code to run locally without errors |
 | 12/1/2025 | 3.5 hours | Finished frontend AI-generation |
 | 11/29/2025 | 1.5 hours | Created pages for editing stories, scenes, plot points, characters, and writing style samples, regenerating scenes, and a story export button |
 | 11/29/2025 | 1 hour | Creates buttons and warnings for deleting stories, scenes, plot points, characters, and writing style samples |

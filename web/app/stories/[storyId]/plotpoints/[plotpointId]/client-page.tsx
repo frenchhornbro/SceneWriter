@@ -36,7 +36,7 @@ export default function PlotPointDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    serverRequest(`api/plotpoint/${params.plotpointId}`, {}, "DELETE",
+    serverRequest(`api/story/${params.storyId}/plotpoint/${params.plotpointId}`, {}, "DELETE",
       async () => {
         router.push(`/stories/${params.storyId}`)
       },

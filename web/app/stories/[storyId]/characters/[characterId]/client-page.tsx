@@ -52,7 +52,7 @@ export default function CharacterDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    serverRequest(`api/character/${params.characterId}`, {}, "DELETE",
+    serverRequest(`api/story/${params.storyId}/character/${params.characterId}`, {}, "DELETE",
       async (response) => {
         router.push(`/stories/${params.storyId}`)
       },

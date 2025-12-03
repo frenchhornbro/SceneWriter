@@ -54,7 +54,7 @@ export default function SceneDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    serverRequest(`api/scene/${params.sceneId}`, {}, "DELETE",
+    serverRequest(`api/story/scene/${params.sceneId}`, {}, "DELETE",
       async (response) => {
         router.push(`/stories/${params.storyId}`)
       },

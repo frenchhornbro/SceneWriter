@@ -1,12 +1,12 @@
-import { Router } from "express";
+import { Request, Response, Router } from "express";
 
-const plotPointRouter = Router();
+const plotPointRouter = Router({ mergeParams: true });
 
-plotPointRouter.post("/", async (req, res) => {
+plotPointRouter.post("/", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
-plotPointRouter.delete("/:plotPointId", async (req, res) => {
+plotPointRouter.delete("/:plotPointId", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 

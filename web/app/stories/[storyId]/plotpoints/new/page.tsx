@@ -65,7 +65,7 @@ export default function NewPlotPointPage() {
     if (!title.trim()) return
 
     setIsSubmitting(true)
-    serverRequest("api/plotpoint", {
+    serverRequest(`api/story/${storyId}/plotpoint`, {
           storyId,
           title,
           description,

@@ -24,9 +24,9 @@ app.use("/api", apiRouter);
 
 apiRouter.use("/story", storyRouter);
 apiRouter.use("/writingstyle", writingStyleRouter);
-apiRouter.use("/scene", sceneRouter);
-apiRouter.use("/character", characterRouter);
-apiRouter.use("/plotpoint", plotPointRouter);
+storyRouter.use("/:storyId/scene", sceneRouter);
+storyRouter.use("/:storyId/character", characterRouter);
+storyRouter.use("/:storyId/plotpoint", plotPointRouter);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({error: "Route not found."});

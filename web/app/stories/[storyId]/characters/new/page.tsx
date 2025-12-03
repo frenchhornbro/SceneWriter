@@ -41,7 +41,7 @@ export default function NewCharacterPage() {
     }
 
     setIsSubmitting(true)
-    serverRequest("api/character", {
+    serverRequest(`api/story/${storyId}/character`, {
           storyId,
           name,
           age: age || null,

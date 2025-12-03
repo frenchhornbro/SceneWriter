@@ -132,7 +132,7 @@ export default function NewScenePage() {
     }
 
     setIsSubmitting(true)
-    serverRequest("api/scene", {
+    serverRequest(`api/story/${storyId}/scene`, {
           storyId,
           plotPoints: selectedPlotPoints,
           characters: selectedCharacters,
