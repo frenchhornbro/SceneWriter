@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Replace with actual data fetching
 const SAMPLE_CHARACTERS = [
@@ -92,30 +93,22 @@ export default function EditPlotPointPage() {
     if (!title.trim()) return
 
     setIsSubmitting(true)
-
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch("https://example.com/api/plotpoints", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plotpointId,
-          storyId,
-          title,
-          description,
-          characterIds: selectedCharacters,
-          sceneIds: selectedScenes,
-        }),
-      })
-
-      if (response.ok) {
-        router.push(`/stories/${storyId}/plotpoints/${plotpointId}`)
+    serverRequest(`api/story/${storyId}/plotpoint/${plotpointId}`, {
+        title,
+        description,
+        characterIds: selectedCharacters,
+        sceneIds: selectedScenes,
+      }, "PUT",
+      async (response) => {
+       router.push(`/stories/${storyId}/plotpoints/${plotpointId}`)
+      },
+      async (error) => {
+        console.error("Failed to update plot point:", error)
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Error updating plot point:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const toggleCharacter = (characterId: string) => {

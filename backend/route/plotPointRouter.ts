@@ -6,6 +6,10 @@ plotPointRouter.post("/", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
+plotPointRouter.put("/:plotPointId", async (req: Request, res: Response) => {
+  res.status(501).json({error: "Not implemented."});
+});
+
 plotPointRouter.delete("/:plotPointId", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });

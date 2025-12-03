@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useEffect } from "react"
-import { Nav } from "@/components/nav"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -105,8 +104,6 @@ export default function EditSceneClientPage({
 
   return (
     <div className="min-h-screen">
-      <Nav />
-
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Link
           href={`/stories/${params.storyId}/scenes/${params.sceneId}`}
