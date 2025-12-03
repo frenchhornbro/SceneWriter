@@ -2,7 +2,11 @@ import { Router } from "express";
 
 const storyRouter = Router();
 
-storyRouter.post("/", async (req, res) => {
+storyRouter.post("/:storyId", async (req, res) => {
+  res.status(501).json({error: "Not implemented."});
+});
+
+storyRouter.put("/:storyId", async (req, res) => {
   res.status(501).json({error: "Not implemented."});
 });
 

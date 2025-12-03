@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { serverRequest } from "@/lib/requests"
 import { useParams, useRouter } from "next/navigation"
 import { useState, type FormEvent, useEffect } from "react"
 
@@ -69,29 +70,21 @@ export default function EditStoryPage() {
     }
 
     setIsSubmitting(true)
-
-    try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch("https://example.com/api/stories", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          storyId,
-          title: title.trim(),
-          overview: overview.trim(),
-        }),
-      })
-
-      if (response.ok) {
+    serverRequest(`api/story/${storyId}`, {
+        storyId,
+        title: title.trim(),
+        overview: overview.trim()
+      }, "PUT",
+      async (response) => {
         router.push(`/stories/${storyId}`)
+      },
+      async (error) => {
+        console.error("Failed to update story:", error)
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Failed to update story:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const handleCancel = () => {
