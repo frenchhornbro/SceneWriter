@@ -6,9 +6,9 @@ export async function serverRequest(
   path: string,
   body: Record<PropertyKey, unknown>,
   method: Method,
-  onOkay: (response: Response) => Promise<any>,
-  onError: (error: unknown) => Promise<any>,
-  onFinally: () => Promise<any>
+  onOkay: (response: Response) => Promise<any> = async (_response: Response) => {},
+  onError: (error: unknown) => Promise<any> = async (_error: unknown) => {},
+  onFinally: () => Promise<any> = async () => {}
 ) {
   try {
     const fullURL = `${serverURL}:${serverPort}/${path}`
@@ -32,7 +32,7 @@ export async function serverRequest(
       throw new Error(`Server responded with status ${response.status}: ${JSON.stringify(errorText)}`)
     }
   } catch (error) {
-    console.log("AN ERROR WUT:", error);
+    console.log("An error occurred:", error);
     await onError(error)
   } finally {
     await onFinally()

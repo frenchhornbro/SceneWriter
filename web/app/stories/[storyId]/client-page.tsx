@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState, useEffect } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Replace with actual data fetching based on params.storyId
 const SAMPLE_STORY = {
@@ -86,19 +87,15 @@ export default function StoryDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    try {
-      // TODO: Replace with actual API endpoint
-      await fetch("https://example.com/api/stories", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storyId: params.storyId }),
-      })
-
-      router.push("/stories")
-    } catch (error) {
-      console.error("Failed to delete story:", error)
-      setIsDeleting(false)
-    }
+    serverRequest(`api/story/${params.storyId}`, {}, "DELETE",
+      async (response) => {
+        router.push("/stories")
+      },
+      async (error) => {
+        console.log("Failed to delete story: ", error)
+        setIsDeleting(false)
+      }
+    );
   }
 
   const handleExport = async () => {

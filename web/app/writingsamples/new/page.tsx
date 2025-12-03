@@ -52,9 +52,6 @@ export default function NewWritingSamplePage() {
       async (error) => {
         console.error("Failed to create writing sample:", error)
         setIsSubmitting(false)
-      },
-      async () => {
-        // No-op
       }
     )
   }

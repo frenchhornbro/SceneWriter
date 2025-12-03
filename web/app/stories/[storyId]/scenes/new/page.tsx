@@ -153,9 +153,6 @@ export default function NewScenePage() {
         console.error("Failed to create scene:", error)
         setError("Failed to create scene. Please try again.")
         setIsSubmitting(false)
-      },
-      async () => {
-        // No-op
       }
     )
   }
