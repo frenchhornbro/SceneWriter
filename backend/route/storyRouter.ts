@@ -2,6 +2,10 @@ import { Request, Response, Router } from "express";
 
 const storyRouter = Router();
 
+storyRouter.get("/:storyId/export", async (req: Request, res: Response) => {
+  res.status(501).json({error: "Not implemented."});
+});
+
 storyRouter.post("/", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });

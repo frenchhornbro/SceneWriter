@@ -21,7 +21,7 @@ export async function serverRequest(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: method === "GET" ? undefined : JSON.stringify(body),
     })
 
     if (response.ok) {

@@ -100,19 +100,18 @@ export default function StoryDetailClientPage({
 
   const handleExport = async () => {
     setIsExporting(true)
-    try {
-      // TODO: Replace with actual API endpoint
-      await fetch("https://example.com/api/stories/export", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storyId: params.storyId }),
-      })
-      console.log("Story exported successfully")
-    } catch (error) {
-      console.error("Failed to export story:", error)
-    } finally {
-      setIsExporting(false)
-    }
+    serverRequest(`api/story/${params.storyId}/export`, {}, "GET",
+      async (response) => {
+        // TODO: Download a file from the compiled data
+        console.log("Story exported successfully")
+      },
+      async (error) => {
+        console.error("Failed to export story: ", error)
+      },
+      async () => {
+        setIsExporting(false)
+      }
+    )
   }
 
   const handleTabChange = (value: string) => {
