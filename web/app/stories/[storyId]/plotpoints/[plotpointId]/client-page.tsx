@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { serverRequest } from "@/lib/requests"
 
 const SAMPLE_PLOTPOINT = {
   id: 1,
@@ -35,18 +36,15 @@ export default function PlotPointDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    try {
-      await fetch("https://example.com/api/plotpoints", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plotpointId: params.plotpointId }),
-      })
-
-      router.push(`/stories/${params.storyId}`)
-    } catch (error) {
-      console.error("Failed to delete plot point:", error)
-      setIsDeleting(false)
-    }
+    serverRequest(`api/plotpoint/${params.plotpointId}`, {}, "DELETE",
+      async () => {
+        router.push(`/stories/${params.storyId}`)
+      },
+      async (error) => {
+        console.error("Failed to delete plot point:", error)
+        setIsDeleting(false)
+      }
+    )
   }
 
   return (
