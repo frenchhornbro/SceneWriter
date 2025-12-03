@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { serverRequest } from "@/lib/requests"
 
 const SAMPLE_CHARACTER = {
   id: 1,
@@ -51,19 +52,15 @@ export default function CharacterDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    try {
-      // TODO: Replace with actual API endpoint
-      await fetch("https://example.com/api/characters", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ characterId: params.characterId }),
-      })
-
-      router.push(`/stories/${params.storyId}`)
-    } catch (error) {
-      console.error("Failed to delete character:", error)
-      setIsDeleting(false)
-    }
+    serverRequest(`api/character/${params.characterId}`, {}, "DELETE",
+      async (response) => {
+        router.push(`/stories/${params.storyId}`)
+      },
+      async (error) => {
+        console.error("Failed to delete character:", error)
+        setIsDeleting(false)
+      }
+    )
   }
 
   return (
