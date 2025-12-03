@@ -3,6 +3,16 @@ import { generateScene } from "../model/model";
 
 const sceneRouter = Router({ mergeParams: true });
 
+sceneRouter.get("/", async (req: Request, res: Response) => {
+  const { storyId } = req.params;
+  res.status(501).json({error: "Not implemented."});
+});
+
+sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
+  const { storyId, sceneId } = req.params;
+  res.status(501).json({error: "Not implemented."});
+});
+
 /*
 curl -X POST http://localhost:3000/api/story/123/scene \
 -H "Content-Type: application/json" \
