@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Replace with actual data fetching based on params
 const SAMPLE_WRITING = {
@@ -35,19 +36,15 @@ export default function WritingSampleDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    try {
-      // TODO: Replace with actual API endpoint
-      await fetch("https://example.com/api/writingsamples", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ writingsampleId: params.writingsampleId }),
-      })
-
-      router.push("/writingsamples")
-    } catch (error) {
-      console.error("Failed to delete writing sample:", error)
-      setIsDeleting(false)
-    }
+    serverRequest(`api/writingstyle/${params.writingsampleId}`, {}, "DELETE",
+      async (response) => {
+        router.push("/writingsamples")
+      },
+      async (error) => {
+        console.error("Failed to delete writing sample:", error)
+        setIsDeleting(false)
+      }
+    )
   }
 
   return (
