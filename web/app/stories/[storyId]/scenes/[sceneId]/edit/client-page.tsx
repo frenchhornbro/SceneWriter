@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { serverRequest } from "@/lib/requests"
 
 const SAMPLE_SCENE = {
   id: 1,
@@ -88,24 +89,18 @@ export default function EditSceneClientPage({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
-
-    try {
-      // TODO: Replace with actual API call
-      await fetch("https://example.com/api/scenes", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sceneId: params.sceneId,
-          ...formData,
-          chapter: Number.parseInt(formData.chapter),
-        }),
-      })
-
-      router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)
-    } catch (error) {
-      console.error("Failed to update scene:", error)
-      setIsSaving(false)
-    }
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {
+        ...formData,
+        chapter: Number.parseInt(formData.chapter),
+      }, "PUT",
+      async (request) => {
+        router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)
+      },
+      async (error) => {
+        console.error("Failed to update scene:", error)
+        setIsSaving(false)
+      }
+    )
   }
 
   return (

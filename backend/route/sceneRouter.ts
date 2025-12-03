@@ -34,7 +34,12 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   res.status(200).json({ scene: sceneText });
 });
 
-sceneRouter.delete("/:sceneId", async (req, res) => {
+sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
+  const { storyId, sceneId } = req.params;
+  res.status(501).json({error: "Not implemented."});
+});
+
+sceneRouter.delete("/:sceneId", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 

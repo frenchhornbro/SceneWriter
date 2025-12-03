@@ -1,16 +1,16 @@
-import { Router } from "express";
+import { Request, Response, Router } from "express";
 
 const writingStyleRouter = Router();
 
-writingStyleRouter.post("/", async (req, res) => {
+writingStyleRouter.post("/", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
-writingStyleRouter.put("/:writingStyleId", async (req, res) => {
+writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
-writingStyleRouter.delete("/:writingStyleId", async (req, res) => {
+writingStyleRouter.delete("/:writingStyleId", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
