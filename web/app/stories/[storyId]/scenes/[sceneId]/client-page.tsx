@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { serverRequest } from "@/lib/requests"
 
 const SAMPLE_SCENE = {
   id: 1,
@@ -53,18 +54,15 @@ export default function SceneDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    try {
-      await fetch("https://example.com/api/scenes", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sceneId: params.sceneId }),
-      })
-
-      router.push(`/stories/${params.storyId}`)
-    } catch (error) {
-      console.error("Failed to delete scene:", error)
-      setIsDeleting(false)
-    }
+    serverRequest(`api/scene/${params.sceneId}`, {}, "DELETE",
+      async (response) => {
+        router.push(`/stories/${params.storyId}`)
+      },
+      async (error) => {
+        console.error("Failed to delete scene:", error)
+        setIsDeleting(false)
+      }
+    )
   }
 
   return (

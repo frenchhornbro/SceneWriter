@@ -30,7 +30,12 @@ sceneRouter.post("/", async (req, res) => {
   }
   // TODO: Pass in POV and location to influence generation
   const { sceneText } = await generateScene(writingStyleSamples, description, characters, plotPoints);
+  // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
   res.status(200).json({ scene: sceneText });
+});
+
+sceneRouter.delete("/:sceneId", async (req, res) => {
+  res.status(501).json({error: "Not implemented."});
 });
 
 export default sceneRouter;
