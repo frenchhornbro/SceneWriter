@@ -34,6 +34,10 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   res.status(200).json({ scene: sceneText });
 });
 
+sceneRouter.post("/regenerate", async (req: Request, res: Response) => {
+  res.status(501).json({error: "Not implemented."});
+});
+
 sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
   const { storyId, sceneId } = req.params;
   res.status(501).json({error: "Not implemented."});

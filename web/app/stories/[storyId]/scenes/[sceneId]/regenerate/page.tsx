@@ -20,6 +20,7 @@ import { ArrowLeft, Loader2, X } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // Sample data - TODO: Replace with actual data fetching
 const SAMPLE_PLOTPOINTS = [
@@ -108,31 +109,21 @@ export default function RegenerateScenePage() {
   const handleConfirmRegenerate = async () => {
     setShowWarningDialog(false)
     setIsSubmitting(true)
-
-    try {
-      // Placeholder API call
-      await fetch("https://example.com/api/scenes", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sceneId,
-          storyId,
-          plotPoints: selectedPlotPoints,
-          characters: selectedCharacters,
-          writings: selectedWritings,
-          description,
-        }),
-      })
-
-      // Wait 10 seconds to simulate AI generation
-      await new Promise((resolve) => setTimeout(resolve, 10000))
-
-      // Redirect back to the scene detail page
-      router.push(`/stories/${storyId}/scenes/${sceneId}`)
-    } catch (err) {
-      setError("Failed to regenerate scene. Please try again.")
-      setIsSubmitting(false)
-    }
+    serverRequest(`api/story/${storyId}/scene/${sceneId}/regenerate`, {
+        plotPoints: selectedPlotPoints,
+        characters: selectedCharacters,
+        writings: selectedWritings,
+        description,
+      }, "POST",
+      async (request) => {
+        // Redirect back to the scene detail page after regeneration
+        router.push(`/stories/${storyId}/scenes/${sceneId}`)
+      },
+      async (error) => {
+        setError("Failed to regenerate scene. Please try again.")
+        setIsSubmitting(false)
+      }
+    )
   }
 
   return (
