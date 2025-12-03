@@ -10,6 +10,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Replace with actual data
 const SAMPLE_WRITING = {
@@ -37,28 +38,18 @@ export default function EditWritingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-
-    try {
-      // TODO: Replace with actual API endpoint
-      const res = await fetch("https://example.com/api/writings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          writingId,
-          storyId,
-          prompt,
-          response,
-        }),
-      })
-
-      if (res.ok) {
+    // TODO: Nest the endpoint and come back to this
+    serverRequest(`api/writingstyle/${writingId}`, { prompt, response }, "PUT",
+      async (response) => {
         router.push(`/stories/${storyId}/writings/${writingId}`)
+      },
+      async (error) => {
+        console.error("Failed to update writing:", error)
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Failed to update writing:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   return (
