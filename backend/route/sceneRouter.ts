@@ -34,7 +34,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   res.status(200).json({ scene: sceneText });
 });
 
-sceneRouter.post("/regenerate", async (req: Request, res: Response) => {
+sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => {
   res.status(501).json({error: "Not implemented."});
 });
 
