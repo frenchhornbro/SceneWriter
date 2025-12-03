@@ -12,6 +12,7 @@ import { ArrowLeft, X } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { serverRequest } from "@/lib/requests"
 
 // TODO: Replace with actual data fetching
 const SAMPLE_CHARACTERS = [
@@ -64,29 +65,24 @@ export default function NewPlotPointPage() {
     if (!title.trim()) return
 
     setIsSubmitting(true)
-
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch("https://example.com/api/plotpoints", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    serverRequest("api/plotpoint", {
           storyId,
           title,
           description,
           characterIds: selectedCharacters,
           sceneIds: selectedScenes,
-        }),
-      })
-
-      if (response.ok) {
+        }, "POST",
+      async (response) => {
         router.push(`/stories/${storyId}?tab=plotpoints`)
+      },
+      async (error) => {
+        console.error("Failed to create plot point:", error)
+        alert("An error occurred while creating the plot point")
+      },
+      async () => {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Error creating plot point:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   useEffect(() => {
