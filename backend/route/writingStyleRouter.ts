@@ -3,8 +3,27 @@ import { Request, Response, Router } from "express";
 const writingStyleRouter = Router();
 
 writingStyleRouter.get("/", async (req: Request, res: Response) => {
-  // TODO: Return just the titles, ids, first 50 chars / words of content, editedAt
-  res.status(501).json({error: "Not implemented."});
+  // TODO: Return actual data from the DB (Stop at the first newline after content, or 500 characters, whichever comes first)
+  res.status(200).json({
+    writingStyles: [
+      {
+        id: 123,
+        title: "Sample Writing Style 1",
+        prompt: "This is a sample prompt for writing style 1.",
+        contentPage: "This is the sample content of writing style 1.\nThis is the second paragraph.",
+        wordCount: 321,
+        editedAt: new Date().toISOString(),
+      },
+      {
+        id: 456,
+        title: "Sample Writing Style 2",
+        prompt: "This is a sample prompt for writing style 2.",
+        contentPage: "This is the sample content of writing style 2.\nThis is the second paragraph.",
+        wordCount: 654,
+        editedAt: new Date().toISOString(),
+      }
+    ],
+  });
 });
 
 writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) => {

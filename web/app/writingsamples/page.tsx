@@ -2,37 +2,16 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { serverRequest } from "@/lib/requests"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-
-// TODO: Replace with actual data fetching
-const SAMPLE_WRITING_SAMPLES = [
-  {
-    id: 1,
-    title: "Elena's First Command",
-    prompt: "Write a scene where your protagonist takes on a leadership role for the first time.",
-    wordCount: 890,
-    createdAt: "2025-03-10",
-  },
-  {
-    id: 2,
-    title: "The Artifact Awakens",
-    prompt: "Describe the moment when a mysterious object reveals its true nature.",
-    wordCount: 1245,
-    createdAt: "2025-03-12",
-  },
-  {
-    id: 3,
-    title: "Marcus's Dilemma",
-    prompt: "Write a scene where a character must choose between loyalty and truth.",
-    wordCount: 1580,
-    createdAt: "2025-03-14",
-  },
-]
+import { useEffect, useState } from "react"
 
 export default function WritingSamplesPage() {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [writingStyleData, setWritingStyleData] = useState<any>(null)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -47,29 +26,58 @@ export default function WritingSamplesPage() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [router])
 
+  useEffect(() => {
+    setIsLoading(true)
+    serverRequest("api/writingstyle", {}, "GET",
+      async (request) => {
+        const data = await request.json()
+        setWritingStyleData(data.writingStyles)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load writing samples: ${error}`)
+      },
+      async () => {
+        setIsLoading(false)
+      }
+    )
+  }, [])
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  }
+
+  if (errorMessage) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500">{errorMessage}</div>
+  }
+
   return (
     <div className="min-h-screen">
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Writing Samples</h1>
-            <p className="text-muted-foreground">Practice your craft with standalone writing exercises</p>
+            <h1 className="text-3xl font-bold mb-2">Writing Style Samples</h1>
+            <p className="text-muted-foreground">Help AI mirror your writing style.</p>
           </div>
           <Link href="/writingsamples/new">
-            <Button className="bg-primary hover:bg-primary-hover text-white">New Writing Sample</Button>
+            <Button className="bg-primary hover:bg-primary-hover text-white">New Writing Style Sample</Button>
           </Link>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SAMPLE_WRITING_SAMPLES.map((sample) => (
-            <Link key={sample.id} href={`/writingsamples/${sample.id}`}>
+          {writingStyleData.map((writingStyle: any) => (
+            <Link key={writingStyle.id} href={`/writingsamples/${writingStyle.id}`}>
               <Card className="p-6 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer h-full">
-                <h3 className="font-semibold text-lg mb-2">{sample.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{sample.prompt}</p>
+                {writingStyle.title && (
+                  <h3 className="font-semibold text-lg mb-2">{writingStyle.title}</h3>
+                )}
+                <div>
+                  <p className="text-sm text-muted-foreground italic mb-4 line-clamp-2">{writingStyle.prompt}</p>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{writingStyle.contentPage}</p>
+                </div>
                 <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span>{sample.wordCount.toLocaleString()} words</span>
+                  <span>{writingStyle.wordCount.toLocaleString()} words</span>
                   <span>•</span>
-                  <span>{new Date(sample.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date(writingStyle.editedAt).toLocaleDateString()}</span>
                 </div>
               </Card>
             </Link>
