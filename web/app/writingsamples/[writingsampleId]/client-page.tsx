@@ -29,7 +29,7 @@ export default function WritingSampleDetailClientPage({
         setWritingStyleData(data)
       },
       async (error) => {
-        setErrorMessage(`Failed to load writing sample: ${error}`)
+        setErrorMessage(`Failed to load writing sample\n${error}`)
       },
       async () => {
         setIsLoading(false)
