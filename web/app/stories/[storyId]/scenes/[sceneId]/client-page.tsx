@@ -151,40 +151,6 @@ export default function SceneDetailClientPage({
             </Card>
           )}
 
-          {sceneData.characters && sceneData.characters.length ? (
-            <Card className="p-6 bg-surface border-border">
-              <h2 className="text-xl font-semibold mb-4">Characters Involved</h2>
-              <div className="flex flex-wrap gap-2">
-                {sceneData.characters.map((character: any, index: number) => (
-                  <Link
-                    key={character.id}
-                    href={`/stories/${params.storyId}/characters/${character.id}`}
-                    className="px-3 py-1.5 text-sm rounded-md bg-secondary-muted text-secondary border border-secondary/20 hover:border-secondary/50 transition-colors"
-                  >
-                    {character.name}
-                  </Link>
-                ))}
-              </div>
-            </Card>
-          ) : null}
-
-          {sceneData.plotPoints && sceneData.plotPoints.length ? (
-            <Card className="p-6 bg-surface border-border">
-              <h2 className="text-xl font-semibold mb-4">Connected Plot Points</h2>
-              <div className="flex flex-wrap gap-2">
-                {sceneData.plotPoints.map((plotPoint: any, index: number) => (
-                  <Link
-                    key={plotPoint.id}
-                    href={`/stories/${params.storyId}/plotpoints/${plotPoint.id}`}
-                    className="px-3 py-1.5 text-sm rounded-md bg-secondary-muted text-secondary border border-secondary/20 hover:border-secondary/50 transition-colors"
-                  >
-                    {plotPoint.startingText}
-                  </Link>
-                ))}
-              </div>
-            </Card>
-          ) : null}
-
           {sceneData.tone && (
             <Card className="p-6 bg-surface border-border">
               <h2 className="text-xl font-semibold mb-3">Tone</h2>
@@ -197,6 +163,50 @@ export default function SceneDetailClientPage({
               <h2 className="text-xl font-semibold mb-3">Additional Notes</h2>
               <p className="text-muted-foreground leading-relaxed">{sceneData.additionalNotes}</p>
             </Card>
+          )}
+
+          {sceneData.characters && sceneData.characters.length ? (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-4">Connected Characters</h2>
+              <div className="flex flex-wrap gap-2">
+                {sceneData.characters.map((character: any, index: number) => (
+                  <Link
+                    key={character.id}
+                    href={`/stories/${params.storyId}/characters/${character.id}`}
+                  >
+                    <Card className="p-4 bg-background border-border hover:border-primary/50 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold">{character.name}</h3>
+                        <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary">{character.role}</span>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <p className="text-sm text-muted-foreground">No connected characters</p>
+          )}
+
+          {sceneData.plotPoints && sceneData.plotPoints.length ? (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-4">Connected Plot Points</h2>
+              <div className="flex flex-wrap gap-2">
+                {sceneData.plotPoints.map((plotPoint: any, index: number) => (
+                  <Link
+                    key={plotPoint.id}
+                    href={`/stories/${params.storyId}/plotpoints/${plotPoint.id}`}
+                  >
+                    <Card className="p-4 bg-background border-border hover:border-primary/50 transition-colors cursor-pointer">
+                      <h3 className="font-semibold mb-1">{plotPoint.title}</h3>
+                      <p className="text-sm text-muted-foreground truncate">{plotPoint.startingText}</p>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <p className="text-sm text-muted-foreground">No connected plot points</p>
           )}
         </div>
       </main>

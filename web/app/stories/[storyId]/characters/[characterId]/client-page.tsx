@@ -195,7 +195,8 @@ export default function CharacterDetailClientPage({
                     <p className="text-sm text-muted-foreground truncate">{scene.description}</p>
                   </Link>
                 ))}
-              </div>) : (
+              </div>
+            ) : (
               <p className="text-sm text-muted-foreground">No connected scenes</p>
             )}
           </Card>

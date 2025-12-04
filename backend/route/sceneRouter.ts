@@ -37,11 +37,13 @@ sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
     plotPoints: [
       {
         id: 1,
-        startingText: "A mysterious figure arrives",
+        title: "Sample Plot Point Title 1",
+        startingText: "Sample Plot Point Starting Text 1"
       },
       {
         id: 2,
-        startingText: "The villagers react to the newcomer"
+        title: "Sample Plot Point Title 2",
+        startingText: "Sample Plot Point Starting Text 2"
       }
     ],
     tone: "Suspenseful",
