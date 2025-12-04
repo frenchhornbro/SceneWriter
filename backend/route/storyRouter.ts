@@ -7,7 +7,14 @@ storyRouter.get("/", async (req: Request, res: Response) => {
 });
 
 storyRouter.get("/:storyId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId } = req.params;
+  res.status(200).json({
+    id: storyId,
+    title: "Sample Story Title",
+    subtitle: "Sample Story Subtitle",
+    overview: "This is a sample overview of the story.",
+    editedAt: new Date().toISOString(),
+  })
 });
 
 storyRouter.get("/:storyId/export", async (req: Request, res: Response) => {

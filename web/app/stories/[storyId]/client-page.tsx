@@ -9,16 +9,6 @@ import { useState, useEffect } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
 
-// TODO: Fetch individual story data from backend
-const SAMPLE_STORY = {
-  id: 1,
-  title: "The Chronicles of Echoing Stars",
-  description:
-    "An epic space opera following a crew of misfits as they uncover ancient secrets that could reshape the galaxy.",
-  genre: "Science Fiction",
-  createdAt: "2025-01-15",
-}
-
 export default function StoryDetailClientPage({
   params,
 }: {
@@ -29,6 +19,7 @@ export default function StoryDetailClientPage({
   const activeTab = searchParams.get("tab") || "characters"
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
+  const [storyData, setStoryData] = useState<any>(null)
   const [charactersData, setCharactersData] = useState<any>(null)
   const [scenesData, setScenesData] = useState<any>(null)
   const [plotPointsData, setPlotPointsData] = useState<any>(null)
@@ -38,6 +29,16 @@ export default function StoryDetailClientPage({
 
   useEffect(() => {
     setIsLoading(true)
+    serverRequest(`api/story/${params.storyId}`, {}, "GET",
+      async (request) => {
+        const data = await request.json()
+        setStoryData(data)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load story data: ${error}`)
+        setIsLoading(false)
+      }
+    )
     serverRequest(`api/story/${params.storyId}/character`, {}, "GET",
       async (request) => {
         const data = await request.json()
@@ -45,6 +46,7 @@ export default function StoryDetailClientPage({
       },
       async (error) => {
         setErrorMessage(`Failed to load character data: ${error}`)
+        setIsLoading(false)
       }
     )
     serverRequest(`api/story/${params.storyId}/scene`, {}, "GET",
@@ -54,6 +56,7 @@ export default function StoryDetailClientPage({
       },
       async (error) => {
         setErrorMessage(`Failed to load scene data: ${error}`)
+        setIsLoading(false)
       }
     )
     serverRequest(`api/story/${params.storyId}/plotpoint`, {}, "GET",
@@ -63,15 +66,16 @@ export default function StoryDetailClientPage({
       },
       async (error) => {
         setErrorMessage(`Failed to load plot point data: ${error}`)
+        setIsLoading(false)
       }
     )
   }, [])
 
   useEffect(() => {
-    if (charactersData && scenesData && plotPointsData && !errorMessage) {
+    if (storyData && charactersData && scenesData && plotPointsData) {
       setIsLoading(false)
     }
-  }, [charactersData, scenesData, plotPointsData, errorMessage])
+  }, [storyData, charactersData, scenesData, plotPointsData])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -154,12 +158,12 @@ export default function StoryDetailClientPage({
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">{SAMPLE_STORY.title}</h1>
+                <h1 className="text-3xl font-bold">{storyData.title}</h1>
                 <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
-                  {SAMPLE_STORY.genre}
+                  {storyData.subtitle}
                 </span>
               </div>
-              <p className="text-muted-foreground max-w-3xl leading-relaxed">{SAMPLE_STORY.description}</p>
+              <p className="text-muted-foreground max-w-3xl leading-relaxed">{storyData.overview}</p>
             </div>
 
             <div className="flex gap-2">
@@ -319,7 +323,7 @@ export default function StoryDetailClientPage({
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleDelete}
         itemType="story"
-        itemName={SAMPLE_STORY.title}
+        itemName={storyData.title}
       />
     </div>
   )
