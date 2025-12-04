@@ -3,8 +3,23 @@ import { Request, Response, Router } from "express";
 const plotPointRouter = Router({ mergeParams: true });
 
 plotPointRouter.get("/", async (req: Request, res: Response) => {
-  const { storyId } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  // TODO: Return actual data from the DB
+  res.status(200).json({
+    plotPoints: [
+      {
+        id: 1,
+        title: "Sample Plot Point 1",
+        descriptionPage: "This is a sample description of plot point 1.",
+        editedAt: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        title: "Sample Plot Point 2",
+        descriptionPage: "This is a sample description of plot point 2.",
+        editedAt: new Date().toISOString(),
+      },
+    ],
+  });
 });
 
 plotPointRouter.get("/:plotPointId", async (req: Request, res: Response) => {

@@ -4,6 +4,7 @@ import { generateScene } from "../model/model";
 const sceneRouter = Router({ mergeParams: true });
 
 sceneRouter.get("/", async (req: Request, res: Response) => {
+  // TODO: Return actual data from the DB
   res.status(200).json({
     scenes: [
       {

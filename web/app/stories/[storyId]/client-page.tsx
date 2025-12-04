@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
 
-// TODO: Replace with actual data fetching based on params.storyId
+// TODO: Fetch individual story data from backend
 const SAMPLE_STORY = {
   id: 1,
   title: "The Chronicles of Echoing Stars",
@@ -18,23 +18,6 @@ const SAMPLE_STORY = {
   genre: "Science Fiction",
   createdAt: "2025-01-15",
 }
-
-const SAMPLE_PLOTPOINTS = [
-  {
-    id: 1,
-    title: "Discovery of Ancient Artifact",
-    description: "The crew finds a mysterious artifact that holds the key to the ancient civilization.",
-    associatedCharacters: ["Captain Elena Voss", "Dr. Marcus Chen"],
-    associatedScenes: ["The Discovery"],
-  },
-  {
-    id: 2,
-    title: "Betrayal Revealed",
-    description: "A trusted crew member's secret allegiance is exposed, creating tension among the team.",
-    associatedCharacters: ["Zara the Wanderer"],
-    associatedScenes: ["Confrontation at the Station"],
-  },
-]
 
 export default function StoryDetailClientPage({
   params,
@@ -48,6 +31,7 @@ export default function StoryDetailClientPage({
   const [errorMessage, setErrorMessage] = useState("")
   const [charactersData, setCharactersData] = useState<any>(null)
   const [scenesData, setScenesData] = useState<any>(null)
+  const [plotPointsData, setPlotPointsData] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
@@ -72,13 +56,22 @@ export default function StoryDetailClientPage({
         setErrorMessage(`Failed to load scene data: ${error}`)
       }
     )
+    serverRequest(`api/story/${params.storyId}/plotpoint`, {}, "GET",
+      async (request) => {
+        const data = await request.json()
+        setPlotPointsData(data.plotPoints)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load plot point data: ${error}`)
+      }
+    )
   }, [])
 
   useEffect(() => {
-    if (charactersData && scenesData && !errorMessage) {
+    if (charactersData && scenesData && plotPointsData && !errorMessage) {
       setIsLoading(false)
     }
-  }, [charactersData, scenesData, errorMessage])
+  }, [charactersData, scenesData, plotPointsData, errorMessage])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -308,11 +301,11 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="space-y-3">
-              {SAMPLE_PLOTPOINTS.map((plotpoint) => (
+              {plotPointsData.map((plotpoint: any) => (
                 <Link key={plotpoint.id} href={`/stories/${params.storyId}/plotpoints/${plotpoint.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
-                    <h3 className="font-semibold mb-2">{plotpoint.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{plotpoint.description}</p>
+                    <h3 className="font-semibold">{plotpoint.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{plotpoint.descriptionPage}</p>
                   </Card>
                 </Link>
               ))}
