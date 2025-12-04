@@ -4,8 +4,24 @@ import { generateScene } from "../model/model";
 const sceneRouter = Router({ mergeParams: true });
 
 sceneRouter.get("/", async (req: Request, res: Response) => {
-  const { storyId } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  res.status(200).json({
+    scenes: [
+      {
+        id: 1,
+        title: "Sample Scene 1",
+        sceneTextPage: "This is sample scene text of scene 1.",
+        chapterNumber: 1,
+        editedAt: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        title: "Sample Scene 2",
+        sceneTextPage: "This is sample scene text of scene 2.",
+        chapterNumber: 1,
+        editedAt: new Date().toISOString(),
+      },
+    ],
+  });
 });
 
 sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {

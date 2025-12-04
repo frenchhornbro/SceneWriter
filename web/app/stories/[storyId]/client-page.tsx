@@ -19,12 +19,6 @@ const SAMPLE_STORY = {
   createdAt: "2025-01-15",
 }
 
-const SAMPLE_SCENES = [
-  { id: 1, title: "The Discovery", chapter: 1, pov: "Captain Elena Voss" },
-  { id: 2, title: "Ancient Warnings", chapter: 1, pov: "Dr. Marcus Chen" },
-  { id: 3, title: "Confrontation at the Station", chapter: 2, pov: "Captain Elena Voss" },
-]
-
 const SAMPLE_PLOTPOINTS = [
   {
     id: 1,
@@ -53,6 +47,7 @@ export default function StoryDetailClientPage({
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [charactersData, setCharactersData] = useState<any>(null)
+  const [scenesData, setScenesData] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
@@ -65,13 +60,25 @@ export default function StoryDetailClientPage({
         setCharactersData(data.characters)
       },
       async (error) => {
-        setErrorMessage(`Failed to load story data: ${error}`)
+        setErrorMessage(`Failed to load character data: ${error}`)
+      }
+    )
+    serverRequest(`api/story/${params.storyId}/scene`, {}, "GET",
+      async (request) => {
+        const data = await request.json()
+        setScenesData(data.scenes)
       },
-      async () => {
-        setIsLoading(false)
+      async (error) => {
+        setErrorMessage(`Failed to load scene data: ${error}`)
       }
     )
   }, [])
+
+  useEffect(() => {
+    if (charactersData && scenesData && !errorMessage) {
+      setIsLoading(false)
+    }
+  }, [charactersData, scenesData, errorMessage])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -261,18 +268,27 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="space-y-3">
-              {SAMPLE_SCENES.map((scene) => (
+              {scenesData.map((scene: any) => (
                 <Link key={scene.id} href={`/stories/${params.storyId}/scenes/${scene.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
-                            Ch. {scene.chapter}
-                          </span>
+                          {scene.chapterNumber !== undefined ? (
+                            <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
+                              Ch. {scene.chapterNumber}
+                            </span>
+                          ) : (
+                            <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
+                              •
+                            </span>
+                          )}
                           <h3 className="font-semibold">{scene.title}</h3>
                         </div>
-                        <p className="text-sm text-muted-foreground">POV: {scene.pov}</p>
+                        <p className="text-sm text-muted-foreground">{scene.sceneTextPage}</p>
+                      </div>
+                      <div className="flex gap-4 text-xs text-muted-foreground">
+                        {new Date(scene.editedAt).toLocaleDateString()}
                       </div>
                     </div>
                   </Card>
