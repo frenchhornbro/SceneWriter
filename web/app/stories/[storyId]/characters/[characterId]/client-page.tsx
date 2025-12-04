@@ -82,9 +82,11 @@ export default function CharacterDetailClientPage({
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold">{characterData.name}</h1>
-                <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
-                  {characterData.role}
-                </span>
+                {characterData.role && (
+                  <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
+                    {characterData.role}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -108,40 +110,50 @@ export default function CharacterDetailClientPage({
         </div>
 
         <div className="space-y-6">
-          <Card className="p-6 bg-surface border-border">
-            <h2 className="text-xl font-semibold mb-3">Physical Appearance</h2>
-            <p className="text-muted-foreground leading-relaxed">{characterData.physicalDescription}</p>
-          </Card>
+          {characterData.physicalDescription && (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-3">Physical Description</h2>
+              <p className="text-muted-foreground leading-relaxed">{characterData.physicalDescription}</p>
+            </Card>
+          )}
 
-          <Card className="p-6 bg-surface border-border">
-            <h2 className="text-xl font-semibold mb-3">Personality</h2>
-            <p className="text-muted-foreground leading-relaxed">{characterData.personality}</p>
-          </Card>
+          {characterData.personality && (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-3">Personality</h2>
+              <p className="text-muted-foreground leading-relaxed">{characterData.personality}</p>
+            </Card>
+          )}
 
-          <Card className="p-6 bg-surface border-border">
-            <h2 className="text-xl font-semibold mb-3">Background</h2>
-            <p className="text-muted-foreground leading-relaxed">{characterData.backstory}</p>
-          </Card>
+          {characterData.backstory && (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-3">Backstory</h2>
+              <p className="text-muted-foreground leading-relaxed">{characterData.backstory}</p>
+            </Card>
+          )}
 
-          <Card className="p-6 bg-surface border-border">
-            <h2 className="text-xl font-semibold mb-3">Additional Notes</h2>
-            <p className="text-muted-foreground leading-relaxed">{characterData.additionalNotes}</p>
-          </Card>
+          {characterData.additionalNotes && (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-3">Additional Notes</h2>
+              <p className="text-muted-foreground leading-relaxed">{characterData.additionalNotes}</p>
+            </Card>
+          )}
 
-          <Card className="p-6 bg-surface border-border">
-            <h2 className="text-xl font-semibold mb-4">Relationships</h2>
-            <div className="space-y-4">
-              {characterData.relationships.map((rel: any, index: number) => (
-                <div key={index} className="p-4 rounded-lg bg-background border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold">{rel.name}</h3>
-                    <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary">{rel.role}</span>
+          {characterData.relationships && characterData.relationships.length ? (
+            <Card className="p-6 bg-surface border-border">
+              <h2 className="text-xl font-semibold mb-4">Relationships</h2>
+              <div className="space-y-4">
+                {characterData.relationships.map((rel: any, index: number) => (
+                  <div key={index} className="p-4 rounded-lg bg-background border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold">{rel.name}</h3>
+                      <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary">{rel.role}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{rel.description}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{rel.description}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
+                ))}
+              </div>
+            </Card>
+          ) : null}
         </div>
       </main>
 
