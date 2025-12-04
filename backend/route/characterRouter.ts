@@ -3,8 +3,28 @@ import { Request, Response, Router } from "express";
 const characterRouter = Router({ mergeParams: true });
 
 characterRouter.get("/", async (req: Request, res: Response) => {
-  const { storyId } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  // TODO: Return actual data from the DB
+  res.status(200).json({
+    characters: [
+      {
+        id: 1,
+        name: "Sample Character 1",
+        role: "Protagonist",
+        editedAt: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        name: "Sample Character 2",
+        role: "Antagonist",
+        editedAt: new Date().toISOString(),
+      },
+      {
+        id: 3,
+        name: "Sample Character 3",
+        editedAt: new Date().toISOString(),
+      }
+    ],
+  });
 });
 
 characterRouter.get("/:characterId", async (req: Request, res: Response) => {

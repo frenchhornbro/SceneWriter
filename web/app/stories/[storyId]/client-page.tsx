@@ -19,12 +19,6 @@ const SAMPLE_STORY = {
   createdAt: "2025-01-15",
 }
 
-const SAMPLE_CHARACTERS = [
-  { id: 1, name: "Captain Elena Voss", role: "Protagonist" },
-  { id: 2, name: "Dr. Marcus Chen", role: "Supporting" },
-  { id: 3, name: "Zara the Wanderer", role: "Antagonist" },
-]
-
 const SAMPLE_SCENES = [
   { id: 1, title: "The Discovery", chapter: 1, pov: "Captain Elena Voss" },
   { id: 2, title: "Ancient Warnings", chapter: 1, pov: "Dr. Marcus Chen" },
@@ -56,9 +50,28 @@ export default function StoryDetailClientPage({
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeTab = searchParams.get("tab") || "characters"
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [charactersData, setCharactersData] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+    serverRequest(`api/story/${params.storyId}/character`, {}, "GET",
+      async (request) => {
+        const data = await request.json()
+        setCharactersData(data.characters)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load story data: ${error}`)
+      },
+      async () => {
+        setIsLoading(false)
+      }
+    )
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -116,6 +129,14 @@ export default function StoryDetailClientPage({
 
   const handleTabChange = (value: string) => {
     router.push(`/stories/${params.storyId}?tab=${value}`, { scroll: false })
+  }
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  }
+
+  if (errorMessage) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500">{errorMessage}</div>
   }
 
   return (
@@ -211,11 +232,18 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {SAMPLE_CHARACTERS.map((character) => (
+              {charactersData.map((character: any) => (
                 <Link key={character.id} href={`/stories/${params.storyId}/characters/${character.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
-                    <h3 className="font-semibold mb-1">{character.name}</h3>
-                    <p className="text-sm text-muted-foreground">{character.role}</p>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-semibold mb-1">{character.name}</h3>
+                      <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
+                        {character.role}
+                      </span>
+                    </div>
+                    <div className="flex gap-4 text-xs text-muted-foreground">
+                      {new Date(character.editedAt).toLocaleDateString()}
+                    </div>
                   </Card>
                 </Link>
               ))}
