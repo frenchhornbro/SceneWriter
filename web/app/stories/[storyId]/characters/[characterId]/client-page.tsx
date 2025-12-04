@@ -29,7 +29,7 @@ export default function CharacterDetailClientPage({
         setCharacterData(data)
       },
       async (error) => {
-        setErrorMessage(`Failed to load character\n${error}`)
+        setErrorMessage(`Failed to load character: ${error}`)
       },
       async () => {
         setIsLoading(false)
@@ -131,7 +131,7 @@ export default function CharacterDetailClientPage({
           <Card className="p-6 bg-surface border-border">
             <h2 className="text-xl font-semibold mb-4">Relationships</h2>
             <div className="space-y-4">
-              {characterData.relationships.map((rel: any, index: any) => (
+              {characterData.relationships.map((rel: any, index: number) => (
                 <div key={index} className="p-4 rounded-lg bg-background border border-border">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold">{rel.name}</h3>

@@ -10,7 +10,45 @@ sceneRouter.get("/", async (req: Request, res: Response) => {
 
 sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
   const { storyId, sceneId } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  // TODO: Return actual data from the DB
+  res.status(200).json({
+    id: sceneId,
+    storyId: storyId,
+    storyTitle: "Sample Story Title",
+    sceneId: sceneId,
+    version: 1,
+    sceneText: "This is the sample text of the scene.\nThis is the second paragraph of the scene.",
+    overview: "This is a sample overview of the scene.",
+    order: 1,
+    chapterNumber: 1,
+    title: "Sample Scene Title",
+    pov: "Third Person",
+    location: "Sample Location",
+    characters: [
+      {
+        id: 1,
+        name: "Alice",
+      },
+      {
+        id: 2,
+        name: "Bob"
+      }
+    ],
+    plotPoints: [
+      {
+        id: 1,
+        startingText: "A mysterious figure arrives",
+      },
+      {
+        id: 2,
+        startingText: "The villagers react to the newcomer"
+      }
+    ],
+    tone: "Suspenseful",
+    additionalNotes: "These are some sample additional notes about the scene.",
+    createdAt: new Date().toISOString(),
+    editedAt: new Date().toISOString(),
+  });
 });
 
 /*

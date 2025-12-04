@@ -13,6 +13,7 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
   res.status(200).json({
     id: characterId,
     storyId: storyId,
+    storyTitle: "Sample Story Title",
     name: "Sample Character",
     role: "Protagonist",
     physicalDescription: "This is a sample physical description of the character.",
@@ -21,11 +22,13 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
     additionalNotes: "These are some sample notes about the character.",
     relationships: [
       {
+        id: 1,
         name: "Bob",
         description: "Friendship",
         role: "Sidekick"
       },
       {
+        id: 2,
         name: "Eve",
         description: "Rivalry",
         role: "Antagonist"
