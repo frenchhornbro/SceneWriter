@@ -141,19 +141,64 @@ export default function CharacterDetailClientPage({
           {characterData.relationships && characterData.relationships.length ? (
             <Card className="p-6 bg-surface border-border">
               <h2 className="text-xl font-semibold mb-4">Relationships</h2>
-              <div className="space-y-4">
-                {characterData.relationships.map((rel: any, index: number) => (
-                  <div key={index} className="p-4 rounded-lg bg-background border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold">{rel.name}</h3>
-                      <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary">{rel.role}</span>
+              {characterData.relationships.map((relatedCharacter: any) => (
+                <Link
+                  key={relatedCharacter.id}
+                  href={`/stories/${params.storyId}/characters/${relatedCharacter.id}`}
+                >
+                  <Card className="p-4 bg-background border-border hover:border-primary/50 transition-colors cursor-pointer">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold">{relatedCharacter.name}</h3>
+                        <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary">{relatedCharacter.role}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{relatedCharacter.description}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{rel.description}</p>
-                  </div>
-                ))}
-              </div>
+                  </Card>
+                </Link>
+              ))}
             </Card>
-          ) : null}
+          ) : (
+            <p className="text-sm text-muted-foreground">No listed relationships</p>
+          )}
+
+          <Card className="p-6 bg-surface border-border">
+            <h2 className="text-xl font-semibold mb-4">Connected Plot Points</h2>
+            {characterData.connectedPlotPoints && characterData.connectedPlotPoints.length > 0 ? (
+              <div className="space-y-4">
+                {characterData.connectedPlotPoints.map((plotpoint: any) => (
+                  <Link
+                  key={plotpoint.id}
+                    href={`/stories/${params.storyId}/plotpoints/${plotpoint.id}`}
+                    className="block p-4 rounded-lg bg-background border border-border hover:border-primary/50 transition-colors"
+                  >
+                    <h3 className="font-semibold mb-1">{plotpoint.title}</h3>
+                    <p className="text-sm text-muted-foreground truncate">{plotpoint.description}</p>
+                  </Link>
+                ))}
+              </div>) : (
+              <p className="text-sm text-muted-foreground">No connected plot points</p>
+            )}
+          </Card>
+
+          <Card className="p-6 bg-surface border-border">
+            <h2 className="text-xl font-semibold mb-4">Connected Scenes</h2>
+            {characterData.connectedScenes && characterData.connectedScenes.length > 0 ? (
+              <div className="space-y-4">
+                {characterData.connectedScenes.map((scene: any) => (
+                  <Link
+                  key={scene.id}
+                    href={`/stories/${params.storyId}/plotpoints/${scene.id}`}
+                    className="block p-4 rounded-lg bg-background border border-border hover:border-primary/50 transition-colors"
+                  >
+                    <h3 className="font-semibold mb-1">{scene.title}</h3>
+                    <p className="text-sm text-muted-foreground truncate">{scene.description}</p>
+                  </Link>
+                ))}
+              </div>) : (
+              <p className="text-sm text-muted-foreground">No connected scenes</p>
+            )}
+          </Card>
         </div>
       </main>
 
