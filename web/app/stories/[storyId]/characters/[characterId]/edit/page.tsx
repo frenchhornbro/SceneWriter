@@ -12,107 +12,121 @@ import { useParams, useRouter } from "next/navigation"
 import { useState, type FormEvent, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
 
-// TODO: Fetch actual characters from the story
-const SAMPLE_CHARACTERS = [
-  { id: 1, name: "Captain Elena Voss" },
-  { id: 2, name: "Dr. Marcus Chen" },
-  { id: 3, name: "Zara the Wanderer" },
-]
-
-// TODO: Replace with actual character data
-const SAMPLE_CHARACTER = {
-  id: 1,
-  name: "Captain Elena Voss",
-  age: "38",
-  height: "5'9\"",
-  description:
-    "A seasoned spaceship captain with a troubled past. Elena lost her family in the War of the Outer Colonies, which drives her relentless pursuit of peace in the galaxy.",
-  backstory: "Former military commander turned independent ship captain. Grew up on a frontier colony world.",
-  relationships: ["2"], // IDs of related characters
-}
-
 export default function EditCharacterPage() {
   const params = useParams()
   const router = useRouter()
   const storyId = params.storyId as string
   const characterId = params.characterId as string
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [characterData, setCharacterData] = useState<any>(null)
+  const [allCharactersData, setAllCharactersData] = useState<any>([])
+  const [allPlotPointsData, setAllPlotPointsData] = useState<any>([])
+  const [allScenesData, setAllScenesData] = useState<any>([])
 
   const [name, setName] = useState("")
-  const [age, setAge] = useState("")
-  const [height, setHeight] = useState("")
-  const [description, setDescription] = useState("")
+  const [role, setRole] = useState("")
+  const [physicalDescription, setPhysicalDescription] = useState("")
+  const [personality, setPersonality] = useState("")
   const [backstory, setBackstory] = useState("")
+  const [additionalNotes, setAdditionalNotes] = useState("")
   const [relationships, setRelationships] = useState<string[]>([])
+  const [connectedPlotPoints, setConnectedPlotPoints] = useState<string[]>([])
+  const [connectedScenes, setConnectedScenes] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // TODO: Fetch actual character data based on characterId
   useEffect(() => {
-    setName(SAMPLE_CHARACTER.name)
-    setAge(SAMPLE_CHARACTER.age)
-    setHeight(SAMPLE_CHARACTER.height)
-    setDescription(SAMPLE_CHARACTER.description)
-    setBackstory(SAMPLE_CHARACTER.backstory)
-    setRelationships(SAMPLE_CHARACTER.relationships)
+    setIsLoading(true)
+    serverRequest(`api/story/${storyId}/character/${characterId}`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setCharacterData(data)
+        setName(data.name)
+        setRole(data.role || "")
+        setPhysicalDescription(data.physicalDescription || "")
+        setPersonality(data.personality || "")
+        setBackstory(data.backstory || "")
+        setAdditionalNotes(data.additionalNotes || "")
+        setRelationships(data.relationships ? data.relationships.map((rel: any) => rel.id.toString()) : [])
+        setConnectedPlotPoints(data.connectedPlotPoints ? data.connectedPlotPoints.map((pp: any) => pp.id.toString()) : [])
+        setConnectedScenes(data.connectedScenes ? data.connectedScenes.map((scene: any) => scene.id.toString()) : [])
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load character: ${error}`)
+      }
+    )
+    serverRequest(`api/story/${storyId}/character`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllCharactersData(data.characters)
+      },
+      async (error) => {
+        console.error(`Failed to load characters for relationships: ${error}`)
+      }
+    )
+    serverRequest(`api/story/${storyId}/plotpoint`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllPlotPointsData(data.plotPoints)
+      },
+      async (error) => {
+        console.error(`Failed to load plot points for connections: ${error}`)
+      }
+    )
+    serverRequest(`api/story/${storyId}/scene`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllScenesData(data.scenes)
+      },
+      async (error) => {
+        console.error(`Failed to load scenes for connections: ${error}`)
+      }
+    )
   }, [])
+
+  useEffect(() => {
+    if (characterData && allCharactersData && allPlotPointsData && allScenesData) {
+      setIsLoading(false)
+    }
+  }, [characterData, allCharactersData, allPlotPointsData, allScenesData])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
-        if (!name.trim() || isSubmitting) return
-
-        setIsSubmitting(true)
-        try {
-          await fetch("https://example.com/api/characters", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              characterId,
-              storyId,
-              name,
-              age: age || null,
-              height: height || null,
-              description: description || null,
-              backstory: backstory || null,
-              relationships,
-            }),
-          })
-          // Don't navigate, just save
-        } catch (error) {
-          console.error("Failed to update character:", error)
-        } finally {
-          setIsSubmitting(false)
-        }
+        handleSubmit(undefined, false)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [characterId, storyId, name, age, height, description, backstory, relationships, isSubmitting])
+  }, [name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPoints, connectedScenes, isSubmitting])
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-
-    if (!name.trim()) {
-      alert("Name is required")
+  async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
+    e?.preventDefault()
+    if (!name.trim() || isSubmitting) {
       return
     }
-
     setIsSubmitting(true)
-    serverRequest(`api/story/${storyId}/character/${characterId}`, {
-        name,
-        age: age || null,
-        height: height || null,
-        description: description || null,
-        backstory: backstory || null,
-        relationships
-      }, "PUT",
+    await serverRequest(`api/story/${storyId}/character/${characterId}`, {
+      name: name.trim(),
+      role: role.trim(),
+      physicalDescription: physicalDescription.trim(),
+      personality: personality.trim(),
+      backstory: backstory.trim(),
+      additionalNotes: additionalNotes.trim(),
+      relationships,
+      connectedPlotPoints,
+      connectedScenes
+    }, "PUT",
       async (response) => {
-        router.push(`/stories/${storyId}/characters/${characterId}`)
+        if (doRedirect) {
+          router.push(`/stories/${storyId}/characters/${characterId}`)
+        }
       },
       async (error) => {
-        console.error("Error updating character:", error)
-        alert("An error occurred while updating the character")
+        console.error("Failed to update character: ", error)
+        alert(`Failed to update character: ${error}`)
       },
       async () => {
         setIsSubmitting(false)
@@ -132,6 +146,42 @@ export default function EditCharacterPage() {
 
   const removeRelationship = (characterId: string) => {
     setRelationships(relationships.filter((id) => id !== characterId))
+  }
+
+  const handleConnectedPlotPointsChange = (value: string) => {
+    if (value && !connectedPlotPoints.includes(value)) {
+      setConnectedPlotPoints([...connectedPlotPoints, value])
+    }
+  }
+
+  const removeConnectedPlotPoint = (plotPointId: string) => {
+    setConnectedPlotPoints(connectedPlotPoints.filter((id) => id !== plotPointId))
+  }
+
+  const handleConnectedScenesChange = (value: string) => {
+    if (value && !connectedScenes.includes(value)) {
+      setConnectedScenes([...connectedScenes, value])
+    }
+  }
+
+  const removeConnectedScene = (sceneId: string) => {
+    setConnectedScenes(connectedScenes.filter((id) => id !== sceneId))
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading character data...</p>
+      </div>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{errorMessage}</p>
+      </div>
+    )
   }
 
   return (
@@ -168,43 +218,29 @@ export default function EditCharacterPage() {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="age" className="text-sm font-medium">
-                  Age
-                </Label>
-                <Input
-                  id="age"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="e.g., 32"
-                  className="bg-surface-light border-border"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="height" className="text-sm font-medium">
-                  Height
-                </Label>
-                <Input
-                  id="height"
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  placeholder="e.g., 5'8&quot;"
-                  className="bg-surface-light border-border"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="physicalDescription" className="text-sm font-medium">
+                Physical Description
+              </Label>
+              <Textarea
+                id="physicalDescription"
+                value={physicalDescription}
+                onChange={(e) => setPhysicalDescription(e.target.value)}
+                placeholder="Character's physical appearance..."
+                rows={4}
+                className="bg-surface-light border-border resize-none"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium">
-                Description
+              <Label htmlFor="personality" className="text-sm font-medium">
+                Personality
               </Label>
               <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Physical appearance, personality traits..."
+                id="personality"
+                value={personality}
+                onChange={(e) => setPersonality(e.target.value)}
+                placeholder="Character's personality traits..."
                 rows={4}
                 className="bg-surface-light border-border resize-none"
               />
@@ -225,6 +261,20 @@ export default function EditCharacterPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="additionalNotes" className="text-sm font-medium">
+                Additional Notes
+              </Label>
+              <Textarea
+                id="additionalNotes"
+                value={additionalNotes}
+                onChange={(e) => setAdditionalNotes(e.target.value)}
+                placeholder="Additional notes on this character..."
+                rows={4}
+                className="bg-surface-light border-border resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="relationships" className="text-sm font-medium">
                 Relationships to Existing Characters
               </Label>
@@ -233,9 +283,9 @@ export default function EditCharacterPage() {
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SAMPLE_CHARACTERS.filter(
-                    (char) => char.id.toString() !== characterId && !relationships.includes(char.id.toString()),
-                  ).map((character) => (
+                  {allCharactersData.filter(
+                    (char: any) => char.id.toString() !== characterId && !relationships.includes(char.id.toString()),
+                  ).map((character: any) => (
                     <SelectItem key={character.id} value={character.id.toString()}>
                       {character.name}
                     </SelectItem>
@@ -246,7 +296,7 @@ export default function EditCharacterPage() {
               {relationships.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {relationships.map((charId) => {
-                    const character = SAMPLE_CHARACTERS.find((c) => c.id.toString() === charId)
+                    const character = allCharactersData.find((c: any) => c.id.toString() === charId)
                     return (
                       <div
                         key={charId}
@@ -256,6 +306,92 @@ export default function EditCharacterPage() {
                         <button
                           type="button"
                           onClick={() => removeRelationship(charId)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedPlotPoints" className="text-sm font-medium">
+                Connected Plot Points
+              </Label>
+              <Select onValueChange={handleConnectedPlotPointsChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select plot points" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allPlotPointsData.filter(
+                    (plotPoint: any) => !connectedPlotPoints.includes(plotPoint.id.toString()),
+                  ).map((plotPoint: any) => (
+                    <SelectItem key={plotPoint.id} value={plotPoint.id.toString()}>
+                      {plotPoint.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedPlotPoints.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedPlotPoints.map((plotPointId) => {
+                    const plotPoint = allPlotPointsData.find((p: any) => p.id.toString() === plotPointId)
+                    return (
+                      <div
+                        key={plotPointId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        <span>{plotPoint?.title}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedPlotPoint(plotPointId)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedScenes" className="text-sm font-medium">
+                Connected Scenes
+              </Label>
+              <Select onValueChange={handleConnectedScenesChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select scenes" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allScenesData.filter(
+                    (scene: any) => !connectedScenes.includes(scene.id.toString()),
+                  ).map((scene: any) => (
+                    <SelectItem key={scene.id} value={scene.id.toString()}>
+                      {scene.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedScenes.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedScenes.map((sceneId) => {
+                    const scene = allScenesData.find((s: any) => s.id.toString() === sceneId)
+                    return (
+                      <div
+                        key={sceneId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        <span>{scene?.title}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedScene(sceneId)}
                           className="hover:text-foreground"
                         >
                           ×

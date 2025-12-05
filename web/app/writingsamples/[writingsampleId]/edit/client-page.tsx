@@ -73,6 +73,7 @@ export default function EditWritingSampleClientPage({
       },
       async (error) => {
         console.error("Failed to update writing sample: ", error)
+        alert(`Failed to update writing sample: ${error}`)
       },
       async () => {
         setIsSubmitting(false)
