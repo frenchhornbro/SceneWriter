@@ -1,5 +1,6 @@
 "use client"
 
+import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { serverRequest } from "@/lib/requests"
@@ -43,7 +44,9 @@ export default function WritingSamplesPage() {
   }, [])
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    return (
+      <Loading itemDescription="writing style samples" />
+    )
   }
 
   if (errorMessage) {

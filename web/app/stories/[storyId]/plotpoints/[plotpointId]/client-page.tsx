@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
+import { Loading } from "@/components/loading"
 
 export default function PlotPointDetailClientPage({
   params,
@@ -52,9 +53,7 @@ export default function PlotPointDetailClientPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-foreground text-lg">Loading plot point...</p>
-      </div>
+      <Loading itemDescription="plot point" />
     )
   }
 

@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { serverRequest } from "@/lib/requests"
+import { Loading } from "@/components/loading"
 
 export default function EditWritingSampleClientPage({
   params,
@@ -83,10 +84,7 @@ export default function EditWritingSampleClientPage({
 
   if (isLoading) {
     return (
-    <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-      <div className="text-foreground text-lg">Loading writing sample data...</div>
-      <Loader className="w-8 h-8 animate-spin text-muted-foreground" />
-    </div>
+      <Loading itemDescription="character data" />
     )
   }
 

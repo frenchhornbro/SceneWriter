@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, User } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useState, type FormEvent, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
+import { Loading } from "@/components/loading"
 
 export default function EditCharacterPage() {
   const params = useParams()
@@ -53,6 +54,7 @@ export default function EditCharacterPage() {
       },
       async (error) => {
         setErrorMessage(`Failed to load character: ${error}`)
+        setIsLoading(false)
       }
     )
     serverRequest(`api/story/${storyId}/character`, {}, "GET",
@@ -61,7 +63,8 @@ export default function EditCharacterPage() {
         setAllCharactersData(data.characters)
       },
       async (error) => {
-        console.error(`Failed to load characters for relationships: ${error}`)
+        setErrorMessage(`Failed to load characters for relationships: ${error}`)
+        setIsLoading(false)
       }
     )
     serverRequest(`api/story/${storyId}/plotpoint`, {}, "GET",
@@ -70,7 +73,8 @@ export default function EditCharacterPage() {
         setAllPlotPointsData(data.plotPoints)
       },
       async (error) => {
-        console.error(`Failed to load plot points for connections: ${error}`)
+        setErrorMessage(`Failed to load plot points for connections: ${error}`)
+        setIsLoading(false)
       }
     )
     serverRequest(`api/story/${storyId}/scene`, {}, "GET",
@@ -79,7 +83,8 @@ export default function EditCharacterPage() {
         setAllScenesData(data.scenes)
       },
       async (error) => {
-        console.error(`Failed to load scenes for connections: ${error}`)
+        setErrorMessage(`Failed to load scenes for connections: ${error}`)
+        setIsLoading(false)
       }
     )
   }, [])
@@ -170,9 +175,7 @@ export default function EditCharacterPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading character data...</p>
-      </div>
+      <Loading itemDescription="character" />
     )
   }
 

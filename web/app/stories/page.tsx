@@ -1,4 +1,5 @@
 "use client"
+import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { serverRequest } from "@/lib/requests"
@@ -44,9 +45,7 @@ export default function StoriesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading stories...</p>
-      </div>
+      <Loading itemDescription="stories" />
     )
   }
 
