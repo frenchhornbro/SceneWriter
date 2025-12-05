@@ -12,32 +12,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { serverRequest } from "@/lib/requests"
-
-const SAMPLE_SCENE = {
-  id: 1,
-  title: "The Discovery",
-  chapter: 1,
-  pov: "Captain Elena Voss",
-  location: "Bridge of the Starship Endeavor",
-  generatedText: `The stars stretched endlessly before them, a canvas of infinite possibilities. Captain Elena Voss stood at the viewport, her reflection ghostlike against the cosmic backdrop. Behind her, the bridge hummed with quiet efficiency—the familiar symphony of a starship at work.
-
-"Captain, we're detecting an anomaly," Lieutenant Sarah Park announced from her station, fingers dancing across holographic displays. "Energy signature unlike anything in our database."
-
-Elena turned, her expression measured but curious. "Show me."
-
-The main viewscreen flickered to life, revealing a pulsing distortion in the fabric of space itself. Dr. Marcus Chen moved closer, his analytical mind already racing through possibilities. "That's... fascinating. The readings suggest it's not natural."
-
-Elena's first officer, Commander Hayes, stepped forward, his jaw set in familiar concern. "Captain, regulations suggest we report this and wait for reinforcement before—"
-
-"Before we investigate," Elena finished with a slight smile. "I know the protocols, Commander." She studied the anomaly, weighing risk against discovery. This was why they were out here—not to play it safe, but to push humanity's understanding further into the unknown.
-
-She straightened, decision made. "But sometimes the greatest discoveries require calculated risks. Helm, set course for that anomaly. All hands to stations. Let's see what the universe wants to show us."`,
-}
-
-const SAMPLE_STORY = {
-  id: 1,
-  title: "The Chronicles of Echoing Stars",
-}
+import { Loading } from "@/components/loading"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function EditSceneClientPage({
   params,
@@ -45,60 +21,149 @@ export default function EditSceneClientPage({
   params: { storyId: string; sceneId: string }
 }) {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [sceneData, setSceneData] = useState<any>(null)
+  const [allCharactersData, setAllCharactersData] = useState<any[]>([])
+  const [allPlotPointsData, setAllPlotPointsData] = useState<any[]>([])
   const [isSaving, setIsSaving] = useState(false)
 
-  const [formData, setFormData] = useState({
-    title: SAMPLE_SCENE.title,
-    chapter: SAMPLE_SCENE.chapter.toString(),
-    pov: SAMPLE_SCENE.pov,
-    location: SAMPLE_SCENE.location,
-    generatedText: SAMPLE_SCENE.generatedText,
-  })
+  const [sceneText, setSceneText] = useState("")
+  const [overview, setOverview] = useState("")
+  const [chapterNumber, setChapterNumber] = useState(0)
+  const [title, setTitle] = useState("")
+  const [pov, setPov] = useState("")
+  const [location, setLocation] = useState("")
+  const [tone, setTone] = useState("")
+  const [additionalNotes, setAdditionalNotes] = useState("")
+  const [connectedCharacters, setConnectedCharacters] = useState<string[]>([])
+  const [connectedPlotPoints, setConnectedPlotPoints] = useState<string[]>([])
+
+  useEffect(() => {
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setSceneData(data)
+        setSceneText(data.sceneText || "")
+        setOverview(data.overview || "")
+        setChapterNumber(data.chapter || 0)
+        setTitle(data.title || "")
+        setPov(data.pov || "")
+        setLocation(data.location || "")
+        setTone(data.tone || "")
+        setAdditionalNotes(data.additionalNotes || "")
+        setConnectedCharacters(data.connectedCharacters || [])
+        setConnectedPlotPoints(data.connectedPlotPoints || [])
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load scene: ${error}`)
+        setIsLoading(false)
+      }
+    )
+    serverRequest(`api/story/${params.storyId}/character`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllCharactersData(data.characters)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load characters for relationships: ${error}`)
+        setIsLoading(false)
+      }
+    )
+    serverRequest(`api/story/${params.storyId}/plotpoint`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllPlotPointsData(data.plotPoints)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load plot points for connections: ${error}`)
+        setIsLoading(false)
+      }
+    )
+  }, [])
+
+  useEffect(() => {
+    if (sceneData && allCharactersData && allPlotPointsData) {
+      setIsLoading(false)
+    }
+  }, [sceneData, allCharactersData, allPlotPointsData])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
-        if (isSaving) return
-
-        setIsSaving(true)
-        try {
-          await fetch("https://example.com/api/scenes", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sceneId: params.sceneId,
-              ...formData,
-              chapter: Number.parseInt(formData.chapter),
-            }),
-          })
-          // Don't navigate, just save
-        } catch (error) {
-          console.error("Failed to update scene:", error)
-        } finally {
-          setIsSaving(false)
-        }
+        handleSubmit(undefined, false)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [params.sceneId, formData, isSaving])
+  }, [params.sceneId, isSaving])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
+    e?.preventDefault()
+    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || isSaving) {
+      return
+    }
     setIsSaving(true)
-    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {
-        ...formData,
-        chapter: Number.parseInt(formData.chapter),
-      }, "PUT",
-      async (request) => {
-        router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)
+    await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {
+      generatedText: sceneText,
+      overview: overview,
+      chapter: chapterNumber,
+      title: title.trim(),
+      pov: pov,
+      location: location,
+      tone: tone,
+      additionalNotes: additionalNotes,
+      connectedCharacters: connectedCharacters,
+      connectedPlotPoints: connectedPlotPoints,
+    }, "PUT",
+      async (response) => {
+        if (doRedirect) {
+          router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)
+        }
       },
       async (error) => {
-        console.error("Failed to update scene:", error)
+        console.error("Failed to update scene: ", error)
+        alert(`Failed to update scene: ${error}`)
+      },
+      async () => {
         setIsSaving(false)
       }
+    )
+  }
+
+  const handleConnectedCharactersChange = (value: string) => {
+    if (value && !connectedCharacters.includes(value)) {
+      setConnectedCharacters([...connectedCharacters, value])
+    }
+  }
+
+  const removeConnectedCharacter = (characterId: string) => {
+    setConnectedCharacters(connectedCharacters.filter((id) => id !== characterId))
+  }
+
+  const handleConnectedPlotPointsChange = (value: string) => {
+    if (value && !connectedPlotPoints.includes(value)) {
+      setConnectedPlotPoints([...connectedPlotPoints, value])
+    }
+  }
+
+  const removeConnectedPlotPoint = (plotPointId: string) => {
+    setConnectedPlotPoints(connectedPlotPoints.filter((id) => id !== plotPointId))
+  }
+
+  if (isLoading) {
+    return (
+      <Loading itemDescription="scene" />
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <p className="text-red-500">{errorMessage}</p>
+      </div>
     )
   }
 
@@ -115,7 +180,7 @@ export default function EditSceneClientPage({
 
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Edit Scene</h1>
-          <p className="text-muted-foreground">Edit the scene details for {SAMPLE_STORY.title}</p>
+          <p className="text-muted-foreground">Edit the scene details for {sceneData.storyTitle}</p>
         </div>
 
         <Card className="p-6 bg-surface border-border">
@@ -127,8 +192,8 @@ export default function EditSceneClientPage({
                 </Label>
                 <Input
                   id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   required
                   className="bg-surface-light border-border"
                 />
@@ -140,19 +205,41 @@ export default function EditSceneClientPage({
                   id="chapter"
                   type="number"
                   min="1"
-                  value={formData.chapter}
-                  onChange={(e) => setFormData({ ...formData, chapter: e.target.value })}
+                  value={chapterNumber}
+                  onChange={(e) => setChapterNumber(Number(e.target.value))}
                   className="bg-surface-light border-border"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="overview">Overview</Label>
+              <Textarea
+                id="overview"
+                value={overview}
+                onChange={(e) => setOverview(e.target.value)}
+                rows={20}
+                className="bg-surface-light border-border text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="generatedText">Scene Text</Label>
+              <Textarea
+                id="generatedText"
+                value={sceneText}
+                onChange={(e) => setSceneText(e.target.value)}
+                rows={20}
+                className="bg-surface-light border-border text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="pov">Point of View</Label>
               <Input
                 id="pov"
-                value={formData.pov}
-                onChange={(e) => setFormData({ ...formData, pov: e.target.value })}
+                value={pov}
+                onChange={(e) => setPov(e.target.value)}
                 placeholder="Which character's perspective?"
                 className="bg-surface-light border-border"
               />
@@ -162,22 +249,119 @@ export default function EditSceneClientPage({
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 placeholder="Where does this scene take place?"
                 className="bg-surface-light border-border"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="generatedText">Generated Scene Text</Label>
-              <Textarea
-                id="generatedText"
-                value={formData.generatedText}
-                onChange={(e) => setFormData({ ...formData, generatedText: e.target.value })}
-                rows={20}
-                className="bg-surface-light border-border font-mono text-sm leading-relaxed"
+              <Label htmlFor="tone">Tone</Label>
+              <Input
+                id="tone"
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                placeholder="What is the tone of this scene?"
+                className="bg-surface-light border-border"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="additionalNotes">Additional Notes</Label>
+              <Textarea
+                id="additionalNotes"
+                value={additionalNotes}
+                onChange={(e) => setAdditionalNotes(e.target.value)}
+                rows={20}
+                className="bg-surface-light border-border text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedCharacters" className="text-sm font-medium">
+                Connected Characters
+              </Label>
+              <Select onValueChange={handleConnectedCharactersChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select characters" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allCharactersData.filter(
+                    (char: any) => !connectedCharacters.includes(char.id.toString()),
+                  ).map((character: any) => (
+                    <SelectItem key={character.id} value={character.id.toString()}>
+                      {character.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedCharacters.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedCharacters.map((charId) => {
+                    const character = allCharactersData.find((c: any) => c.id.toString() === charId)
+                    return (
+                      <div
+                        key={charId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        <span>{character?.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedCharacter(charId)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedPlotPoints" className="text-sm font-medium">
+                Connected Plot Points
+              </Label>
+              <Select onValueChange={handleConnectedPlotPointsChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select plot points" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allPlotPointsData.filter(
+                    (plotPoint: any) => !connectedPlotPoints.includes(plotPoint.id.toString()),
+                  ).map((plotPoint: any) => (
+                    <SelectItem key={plotPoint.id} value={plotPoint.id.toString()}>
+                      {plotPoint.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedPlotPoints.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedPlotPoints.map((plotPointId) => {
+                    const plotPoint = allPlotPointsData.find((p: any) => p.id.toString() === plotPointId)
+                    return (
+                      <div
+                        key={plotPointId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        <span>{plotPoint?.title}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedPlotPoint(plotPointId)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
