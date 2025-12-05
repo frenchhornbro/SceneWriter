@@ -45,6 +45,9 @@ writingStyleRouter.post("/", async (req: Request, res: Response) => {
 });
 
 writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) => {
+  const { writingStyleId } = req.params;
+  const { title, content } = req.body;
+  // TODO: Update the DB
   res.status(501).json({error: "Not implemented."});
 });
 

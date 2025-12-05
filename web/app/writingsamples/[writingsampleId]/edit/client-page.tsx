@@ -7,24 +7,11 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-
-// TODO: Replace with actual data fetching
-const SAMPLE_WRITING = {
-  id: 1,
-  title: "Elena's First Command",
-  prompt: "Write a scene where your protagonist takes on a leadership role for the first time.",
-  content: `The bridge of the Starship Endeavor hummed with quiet efficiency. Captain Elena Voss stood at the center, her eyes fixed on the main viewscreen where stars stretched into infinite darkness. The soft blue glow of the control panels cast angular shadows across her face, highlighting the scar that ran down her left cheek—a permanent reminder of the War of the Outer Colonies.
-
-"Captain," Lieutenant Sarah Park called from the navigation station, her voice tight with concern. "We're picking up an anomalous energy signature. Bearing two-seven-mark-three."
-
-Elena's jaw tightened. In all her years navigating the void, she'd learned that 'anomalous' was rarely a good sign. "Put it on screen."
-
-The viewscreen shimmered, replacing the star field with a swirling mass of colors that shouldn't exist—purples and greens that seemed to fold in on themselves, defying the laws of physics she'd spent her career trusting.`,
-}
+import { serverRequest } from "@/lib/requests"
 
 export default function EditWritingSampleClientPage({
   params,
@@ -32,33 +19,36 @@ export default function EditWritingSampleClientPage({
   params: { writingsampleId: string }
 }) {
   const router = useRouter()
-  const [title, setTitle] = useState(SAMPLE_WRITING.title)
-  const [content, setContent] = useState(SAMPLE_WRITING.content)
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [writingStyleData, setWritingStyleData] = useState<any>(null)
+  const [title, setTitle] = useState(writingStyleData ? writingStyleData.title : "")
+  const [content, setContent] = useState(writingStyleData ? writingStyleData.content : "")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+    serverRequest(`api/writingstyle/${params.writingsampleId}`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setWritingStyleData(data)
+        setTitle(data.title)
+        setContent(data.content)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load writing sample: ${error}`)
+      },
+      async () => {
+        setIsLoading(false)
+      }
+    )
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
-        if (!title.trim() || isSubmitting) return
-
-        setIsSubmitting(true)
-        try {
-          await fetch("https://example.com/api/writingsamples", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              writingsampleId: params.writingsampleId,
-              title,
-              content,
-            }),
-          })
-          // Don't navigate, just save
-        } catch (error) {
-          console.error("Failed to update writing sample:", error)
-        } finally {
-          setIsSubmitting(false)
-        }
+        handleSubmit(undefined, false)
       }
     }
 
@@ -66,28 +56,45 @@ export default function EditWritingSampleClientPage({
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [params.writingsampleId, title, content, isSubmitting])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return
-
-    setIsSubmitting(true)
-    try {
-      // TODO: Replace with actual API endpoint
-      await fetch("https://example.com/api/writingsamples", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          writingsampleId: params.writingsampleId,
-          title,
-          content,
-        }),
-      })
-
-      router.push(`/writingsamples/${params.writingsampleId}`)
-    } catch (error) {
-      console.error("Failed to update writing sample:", error)
-      setIsSubmitting(false)
+  async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
+    e?.preventDefault()
+    if (!title.trim() || isSubmitting) {
+      return
     }
+    setIsSubmitting(true)
+    await serverRequest(`api/writingstyle/${params.writingsampleId}`, {
+      title: title.trim(),
+      content: content,
+    }, "PUT",
+      async (response) => {
+        if (doRedirect) {
+          router.push(`/writingsamples/${params.writingsampleId}`)
+        }
+      },
+      async (error) => {
+        console.error("Failed to update writing sample: ", error)
+      },
+      async () => {
+        setIsSubmitting(false)
+      }
+    )
+  }
+
+  if (isLoading) {
+    return (
+    <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+      <div className="text-foreground text-lg">Loading writing sample data...</div>
+      <Loader className="w-8 h-8 animate-spin text-muted-foreground" />
+    </div>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{errorMessage}</p>
+      </div>
+    )
   }
 
   return (
@@ -121,7 +128,7 @@ export default function EditWritingSampleClientPage({
               <div>
                 <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Prompt</Label>
                 <Card className="p-4 bg-surface-light border-border mt-2">
-                  <p className="text-foreground leading-relaxed">{SAMPLE_WRITING.prompt}</p>
+                  <p className="text-foreground leading-relaxed">{writingStyleData.prompt}</p>
                 </Card>
               </div>
 
@@ -152,7 +159,7 @@ export default function EditWritingSampleClientPage({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (
