@@ -1,27 +1,27 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE Story (
-  id BIGINT PRIMARY KEY AUTOINCREMENT,
-  title VARCHAR(255) NOT NULL,
-  subtitle VARCHAR(255),
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  subtitle TEXT,
   overview TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   edited_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE PlotPoint (
-  id BIGINT PRIMARY KEY AUTOINCREMENT,
-  story_id BIGINT NOT NULL,
-  title VARCHAR(255),
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  story_id INTEGER NOT NULL,
+  title TEXT,
   description TEXT NOT NULL,
   FOREIGN KEY (story_id) REFERENCES Story(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Character (
-  id BIGINT PRIMARY KEY AUTOINCREMENT,
-  story_id BIGINT NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  role VARCHAR(100),
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  story_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  role TEXT,
   physical_description TEXT,
   personality TEXT,
   backstory TEXT,
@@ -32,16 +32,16 @@ CREATE TABLE Character (
 );
 
 CREATE TABLE Scene (
-  id BIGINT,
-  version SMALLINT NOT NULL DEFAULT 1,
-  story_id BIGINT NOT NULL,
+  id INTEGER,
+  version INTEGER NOT NULL DEFAULT 1,
+  story_id INTEGER NOT NULL,
   scene_text TEXT NOT NULL,
   overview TEXT,
-  order SMALLINT NOT NULL,
-  chapter_number SMALLINT,
-  title VARCHAR(255),
-  pov VARCHAR(255),
-  location VARCHAR(255),
+  scene_order INTEGER NOT NULL,
+  chapter_number INTEGER,
+  title TEXT,
+  pov TEXT,
+  location TEXT,
   tone TEXT,
   additional_notes TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -51,18 +51,18 @@ CREATE TABLE Scene (
 );
 
 CREATE TABLE WritingStyleSample (
-  id BIGINT PRIMARY KEY AUTOINCREMENT,
-  title VARCHAR(255),
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
   prompt TEXT NOT NULL,
   content TEXT NOT NULL,
-  word_count INT,
+  word_count INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   edited_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE CharacterRelationship (
-  character_id BIGINT NOT NULL,
-  related_character_id BIGINT NOT NULL,
+  character_id INTEGER NOT NULL,
+  related_character_id INTEGER NOT NULL,
   description TEXT,
   PRIMARY KEY (character_id, related_character_id),
   FOREIGN KEY (character_id) REFERENCES Character(id) ON DELETE CASCADE,
@@ -70,18 +70,18 @@ CREATE TABLE CharacterRelationship (
 );
 
 CREATE TABLE SceneCharacter (
-  scene_id BIGINT NOT NULL,
-  scene_version SMALLINT NOT NULL,
-  character_id BIGINT NOT NULL,
+  scene_id INTEGER NOT NULL,
+  scene_version INTEGER NOT NULL,
+  character_id INTEGER NOT NULL,
   PRIMARY KEY (scene_id, scene_version, character_id),
   FOREIGN KEY (scene_id, scene_version) REFERENCES Scene(id, version) ON DELETE CASCADE,
   FOREIGN KEY (character_id) REFERENCES Character(id) ON DELETE CASCADE
 );
 
 CREATE TABLE ScenePlotPoint (
-  scene_id BIGINT NOT NULL,
-  scene_version SMALLINT NOT NULL,
-  plot_point_id BIGINT NOT NULL,
+  scene_id INTEGER NOT NULL,
+  scene_version INTEGER NOT NULL,
+  plot_point_id INTEGER NOT NULL,
   PRIMARY KEY (scene_id, scene_version, plot_point_id),
   FOREIGN KEY (scene_id, scene_version) REFERENCES Scene(id, version) ON DELETE CASCADE,
   FOREIGN KEY (plot_point_id) REFERENCES PlotPoint(id) ON DELETE CASCADE
