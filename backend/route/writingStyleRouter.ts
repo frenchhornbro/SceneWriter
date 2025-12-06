@@ -48,7 +48,8 @@ writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) =
 });
 
 writingStyleRouter.post("/", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const writingStyleId = 1; // TODO: Replace with actual created writing style ID
+  res.status(201).json({ writingStyleId });
 });
 
 writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) => {

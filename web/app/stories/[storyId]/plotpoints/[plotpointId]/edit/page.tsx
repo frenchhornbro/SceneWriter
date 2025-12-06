@@ -96,8 +96,8 @@ export default function EditPlotPointPage() {
     serverRequest(`api/story/${storyId}/plotpoint/${plotpointId}`, {
         title,
         description,
-        connectedCharacters: connectedCharacterIds,
-        connectedScenes: connectedSceneIds,
+        connectedCharacterIds,
+        connectedSceneIds,
       }, "PUT",
       async (response) => {
         if (doRedirect) {
@@ -165,9 +165,7 @@ export default function EditPlotPointPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">
-                Title
-              </Label>
+              <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 value={title}

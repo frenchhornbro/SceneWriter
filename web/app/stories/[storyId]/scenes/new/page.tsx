@@ -97,16 +97,16 @@ export default function NewScenePage() {
     }
     setIsGenerating(true)
     await serverRequest(`api/story/${storyId}/scene`, {
-      overview: overview,
+      overview: overview.trim(),
       chapter: chapterNumber,
       title: title.trim(),
-      pov: pov,
-      location: location,
-      tone: tone,
-      additionalNotes: additionalNotes,
-      connectedCharacterIds: connectedCharacterIds,
-      connectedPlotPointIds: connectedPlotPointIds,
-      connectedWritingStyleSampleIds: connectedWritingStyleSampleIds,
+      pov: pov.trim(),
+      location: location.trim(),
+      tone: tone.trim(),
+      additionalNotes: additionalNotes.trim(),
+      connectedCharacterIds,
+      connectedPlotPointIds,
+      connectedWritingStyleSampleIds,
     }, "POST",
       async (response) => {
         const data = await response.json()

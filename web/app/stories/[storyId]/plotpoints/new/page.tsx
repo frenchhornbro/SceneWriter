@@ -7,77 +7,89 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, X } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
-
-// TODO: Replace with actual data fetching
-const SAMPLE_CHARACTERS = [
-  { id: 1, name: "Captain Elena Voss" },
-  { id: 2, name: "Dr. Marcus Chen" },
-  { id: 3, name: "Zara the Wanderer" },
-]
-
-const SAMPLE_SCENES = [
-  { id: 1, title: "The Discovery" },
-  { id: 2, title: "Ancient Warnings" },
-  { id: 3, title: "Confrontation at the Station" },
-]
+import { Loading } from "@/components/loading"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function NewPlotPointPage() {
   const params = useParams()
   const router = useRouter()
   const storyId = params.storyId as string
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [allCharactersData, setAllCharactersData] = useState<any[]>([])
+  const [allScenesData, setAllScenesData] = useState<any[]>([])
 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [selectedCharacters, setSelectedCharacters] = useState<number[]>([])
-  const [selectedScenes, setSelectedScenes] = useState<number[]>([])
+  const [connectedCharacterIds, setConnectedCharacterIds] = useState<number[]>([])
+  const [connectedSceneIds, setConnectedSceneIds] = useState<number[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const addCharacter = (value: string) => {
-    const id = Number.parseInt(value)
-    if (!selectedCharacters.includes(id)) {
-      setSelectedCharacters([...selectedCharacters, id])
-    }
-  }
-
-  const removeCharacter = (id: number) => {
-    setSelectedCharacters(selectedCharacters.filter((cId) => cId !== id))
-  }
-
-  const addScene = (value: string) => {
-    const id = Number.parseInt(value)
-    if (!selectedScenes.includes(id)) {
-      setSelectedScenes([...selectedScenes, id])
-    }
-  }
-
-  const removeScene = (id: number) => {
-    setSelectedScenes(selectedScenes.filter((sId) => sId !== id))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return
-
-    setIsSubmitting(true)
-    serverRequest(`api/story/${storyId}/plotpoint`, {
-          storyId,
-          title,
-          description,
-          characterIds: selectedCharacters,
-          sceneIds: selectedScenes,
-        }, "POST",
+  useEffect(() => {
+    setIsLoading(true)
+    serverRequest(`api/story/${storyId}/character`, {}, "GET",
       async (response) => {
-        router.push(`/stories/${storyId}?tab=plotpoints`)
+        const data = await response.json()
+        setAllCharactersData(data.characters || [])
       },
       async (error) => {
-        console.error("Failed to create plot point:", error)
-        alert("An error occurred while creating the plot point")
+        setErrorMessage(`Failed to load characters: ${error}`)
+        setIsLoading(false)
+      }
+    )
+    serverRequest(`api/story/${storyId}/scene`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllScenesData(data.scenes || [])
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load scenes: ${error}`)
+        setIsLoading(false)
+      }
+    )
+  }, [])
+
+  useEffect(() => {
+    if (allCharactersData && allScenesData) {
+      setIsLoading(false)
+    }
+  }, [allCharactersData, allScenesData])
+
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [title, description, connectedCharacterIds, connectedSceneIds, isSubmitting])
+  
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!description.trim() || isSubmitting) {
+      return
+    }
+    setIsSubmitting(true)
+    serverRequest(`api/story/${storyId}/plotpoint/`, {
+        title,
+        description,
+        connectedCharacters: connectedCharacterIds,
+        connectedScenes: connectedSceneIds,
+      }, "POST",
+      async (response) => {
+        const data = await response.json()
+        const plotPointId = data.plotPointId
+        router.push(`/stories/${storyId}/plotpoints/${plotPointId}`)
+      },
+      async (error) => {
+        console.error("Failed to update plot point:", error)
       },
       async () => {
         setIsSubmitting(false)
@@ -85,21 +97,41 @@ export default function NewPlotPointPage() {
     )
   }
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return
-      }
-
-      if (e.key === "n" && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
-        e.preventDefault()
-        router.push(`/stories/${storyId}/plotpoints/new`)
-      }
+  const handleConnectedCharactersChange = (characterId: string) => {
+    const characterIdNum = Number(characterId)
+    if (characterIdNum && !connectedCharacterIds.includes(characterIdNum)) {
+      setConnectedCharacterIds([...connectedCharacterIds, characterIdNum])
     }
+  }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [router, storyId])
+  const removeConnectedCharacter = (characterId: number) => {
+    setConnectedCharacterIds(connectedCharacterIds.filter((id) => id !== characterId))
+  }
+
+  const handleConnectedScenesChange = (sceneId: string) => {
+    const sceneIdNum = Number(sceneId)
+    if (sceneIdNum && !connectedSceneIds.includes(sceneIdNum)) {
+      setConnectedSceneIds([...connectedSceneIds, sceneIdNum])
+    }
+  }
+
+  const removeConnectedScene = (sceneId: number) => {
+    setConnectedSceneIds(connectedSceneIds.filter((id) => id !== sceneId))
+  }
+
+  if (isLoading) {
+    return (
+      <Loading itemDescription="plot point" />
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-destructive">{errorMessage}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen">
@@ -113,66 +145,70 @@ export default function NewPlotPointPage() {
         </Link>
 
         <Card className="p-6 bg-surface border-border">
-          <h1 className="text-2xl font-bold mb-6">Add Plot Point</h1>
+          <h1 className="text-2xl font-bold mb-6">Add New Plot Point</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">
-                Title <span className="text-primary">*</span>
-              </Label>
+              <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter plot point title"
-                required
                 className="bg-background border-border"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">
+                Description <span className="text-primary">*</span>
+              </Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe this plot point..."
+                required
                 rows={4}
                 className="bg-background border-border"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Associated Characters</Label>
-              <Select onValueChange={addCharacter}>
-                <SelectTrigger className="bg-background border-border">
+              <Label htmlFor="connectedPlotPoints" className="text-sm font-medium">
+                Connected Characters
+              </Label>
+              <Select onValueChange={handleConnectedCharactersChange}>
+                <SelectTrigger className="bg-surface-light border-border">
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SAMPLE_CHARACTERS.filter((c) => !selectedCharacters.includes(c.id)).map((character) => (
-                    <SelectItem key={character.id} value={character.id.toString()}>
+                  {allCharactersData.filter(
+                    (character: any) => !connectedCharacterIds.includes(character.id),
+                  ).map((character: any) => (
+                    <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {selectedCharacters.length > 0 && (
+              {connectedCharacterIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedCharacters.map((cId) => {
-                    const character = SAMPLE_CHARACTERS.find((c) => c.id === cId)
+                  {connectedCharacterIds.map((characterId) => {
+                    const character = allCharactersData.find((c: any) => c.id === characterId)
                     return (
                       <div
-                        key={cId}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm"
+                        key={characterId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
                       >
                         <span>{character?.name}</span>
                         <button
                           type="button"
-                          onClick={() => removeCharacter(cId)}
-                          className="hover:text-foreground cursor-pointer"
+                          onClick={() => removeConnectedCharacter(characterId)}
+                          className="hover:text-foreground"
                         >
-                          <X className="w-3 h-3" />
+                          ×
                         </button>
                       </div>
                     )
@@ -182,36 +218,40 @@ export default function NewPlotPointPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Associated Scenes</Label>
-              <Select onValueChange={addScene}>
-                <SelectTrigger className="bg-background border-border">
+              <Label htmlFor="connectedScenes" className="text-sm font-medium">
+                Connected Scenes
+              </Label>
+              <Select onValueChange={handleConnectedScenesChange}>
+                <SelectTrigger className="bg-surface-light border-border">
                   <SelectValue placeholder="Select scenes" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SAMPLE_SCENES.filter((s) => !selectedScenes.includes(s.id)).map((scene) => (
-                    <SelectItem key={scene.id} value={scene.id.toString()}>
+                  {allScenesData.filter(
+                    (scene: any) => !connectedSceneIds.includes(scene.id),
+                  ).map((scene: any) => (
+                    <SelectItem key={scene.id} value={scene.id}>
                       {scene.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {selectedScenes.length > 0 && (
+              {connectedSceneIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedScenes.map((sId) => {
-                    const scene = SAMPLE_SCENES.find((s) => s.id === sId)
+                  {connectedSceneIds.map((sceneId) => {
+                    const scene = allScenesData.find((s: any) => s.id === sceneId)
                     return (
                       <div
-                        key={sId}
+                        key={sceneId}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
                       >
                         <span>{scene?.title}</span>
                         <button
                           type="button"
-                          onClick={() => removeScene(sId)}
-                          className="hover:text-foreground cursor-pointer"
+                          onClick={() => removeConnectedScene(sceneId)}
+                          className="hover:text-foreground"
                         >
-                          <X className="w-3 h-3" />
+                          ×
                         </button>
                       </div>
                     )
@@ -234,7 +274,7 @@ export default function NewPlotPointPage() {
                 disabled={isSubmitting || !title.trim()}
                 className="flex-1 bg-primary hover:bg-primary-hover text-white"
               >
-                {isSubmitting ? "Creating..." : "Create"}
+                {isSubmitting ? "Creating..." : "Create Plot Point"}
               </Button>
             </div>
           </form>

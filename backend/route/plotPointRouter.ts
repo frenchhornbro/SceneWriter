@@ -39,7 +39,8 @@ plotPointRouter.get("/:plotPointId", async (req: Request, res: Response) => {
 });
 
 plotPointRouter.post("/", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const plotPointId = 1; // TODO: Replace with actual created plot point ID
+  res.status(201).json({ plotPointId });
 });
 
 plotPointRouter.put("/:plotPointId", async (req: Request, res: Response) => {

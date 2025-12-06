@@ -43,7 +43,8 @@ storyRouter.get("/:storyId/export", async (req: Request, res: Response) => {
 });
 
 storyRouter.post("/", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const storyId = 1; // TODO: Replace with actual created story ID
+  res.status(201).json({ storyId });
 });
 
 storyRouter.put("/:storyId", async (req: Request, res: Response) => {

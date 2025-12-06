@@ -81,7 +81,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
   console.log(sceneText);
   const sceneId = 1; //TODO: Replace with actual created scene ID
-  res.status(200).json({ sceneId });
+  res.status(201).json({ sceneId });
 });
 
 // QQQ: Does this need to be its own endpoint?
@@ -109,7 +109,7 @@ sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => 
   const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
   console.log(sceneText);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
-  res.status(200).json({ sceneId });
+  res.status(201).json({ sceneId });
 });
 
 sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
