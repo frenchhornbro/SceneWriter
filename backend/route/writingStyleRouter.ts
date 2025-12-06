@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewWritingStyleSample } from "../data-access/writingStyleDataAcess";
+import { createNewWritingStyleSample, getWritingStyleSample } from "../data-access/writingStyleDataAcess";
 
 const writingStyleRouter = Router();
 
@@ -36,15 +36,24 @@ writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {
 
 writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
-  // TODO: Return actual data from the DB
+  const id = Number(writingStyleId);
+  if (!id) {
+    res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
+    return;
+  }
+  const writingStyleSample = await getWritingStyleSample(id);
+  if (!writingStyleSample) {
+    res.status(404).json({error: "Writing style sample not found."});
+    return;
+  }
   res.status(200).json({
-    id: writingStyleId,
-    title: "Sample Writing Style",
-    prompt: "This is a sample prompt for the writing style.",
-    content: "This is the sample content of the writing style.\nThis is the second paragraph.",
-    wordCount: 12345,
-    createdAt: new Date().toISOString(),
-    editedAt: new Date().toISOString(),
+    id: writingStyleSample.id,
+    title: writingStyleSample.title,
+    prompt: writingStyleSample.prompt,
+    content: writingStyleSample.content,
+    wordCount: writingStyleSample.word_count,
+    createdAt: writingStyleSample.created_at,
+    editedAt: writingStyleSample.edited_at,
   });
 });
 
