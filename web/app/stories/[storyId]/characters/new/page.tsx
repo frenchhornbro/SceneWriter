@@ -9,53 +9,108 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, User } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useState, type FormEvent } from "react"
+import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
-
-// TODO: Fetch actual characters from the story
-const SAMPLE_CHARACTERS = [
-  { id: 1, name: "Captain Elena Voss" },
-  { id: 2, name: "Dr. Marcus Chen" },
-  { id: 3, name: "Zara the Wanderer" },
-]
+import { Loading } from "@/components/loading"
 
 export default function NewCharacterPage() {
   const params = useParams()
   const router = useRouter()
   const storyId = params.storyId as string
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [allCharactersData, setAllCharactersData] = useState<any>([])
+  const [allPlotPointsData, setAllPlotPointsData] = useState<any>([])
+  const [allScenesData, setAllScenesData] = useState<any>([])
 
   const [name, setName] = useState("")
-  const [age, setAge] = useState("")
-  const [height, setHeight] = useState("")
-  const [description, setDescription] = useState("")
+  const [role, setRole] = useState("")
+  const [physicalDescription, setPhysicalDescription] = useState("")
+  const [personality, setPersonality] = useState("")
   const [backstory, setBackstory] = useState("")
-  const [relationships, setRelationships] = useState<string[]>([])
+  const [additionalNotes, setAdditionalNotes] = useState("")
+  const [relationships, setRelationships] = useState<any>([])
+  const [connectedPlotPointIds, setConnectedPlotPointsIds] = useState<number[]>([])
+  const [connectedSceneIds, setConnectedSceneIds] = useState<number[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-
-    if (!name.trim()) {
-      alert("Name is required")
-      return
-    }
-
-    setIsSubmitting(true)
-    serverRequest(`api/story/${storyId}/character`, {
-          storyId,
-          name,
-          age: age || null,
-          height: height || null,
-          description: description || null,
-          backstory: backstory || null,
-          relationships,
-        }, "POST",
+  useEffect(() => {
+    setIsLoading(true)
+    serverRequest(`api/story/${storyId}/character`, {}, "GET",
       async (response) => {
-        router.push(`/stories/${storyId}?tab=characters`,)
+        const data = await response.json()
+        setAllCharactersData(data.characters)
       },
       async (error) => {
-        console.error("Failed to create character:", error)
-        alert("An error occurred while creating the character")
+        setErrorMessage(`Failed to load characters for relationships: ${error}`)
+        setIsLoading(false)
+      }
+    )
+    serverRequest(`api/story/${storyId}/plotpoint`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllPlotPointsData(data.plotPoints)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load plot points for connections: ${error}`)
+        setIsLoading(false)
+      }
+    )
+    serverRequest(`api/story/${storyId}/scene`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllScenesData(data.scenes)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load scenes for connections: ${error}`)
+        setIsLoading(false)
+      }
+    )
+  }, [])
+
+  useEffect(() => {
+    if (allCharactersData && allPlotPointsData && allScenesData) {
+      setIsLoading(false)
+    }
+  }, [allCharactersData, allPlotPointsData, allScenesData])
+
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds, isSubmitting])
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!name.trim() || isSubmitting) {
+      return
+    }
+    setIsSubmitting(true)
+    await serverRequest(`api/story/${storyId}/character/`, {
+      name: name.trim(),
+      role: role.trim(),
+      physicalDescription: physicalDescription.trim(),
+      personality: personality.trim(),
+      backstory: backstory.trim(),
+      additionalNotes: additionalNotes.trim(),
+      relationships,
+      connectedPlotPointIds: connectedPlotPointIds,
+      connectedSceneIds: connectedSceneIds
+    }, "POST",
+      async (response) => {
+        const data = await response.json()
+        const characterId = data.characterId
+        router.push(`/stories/${storyId}/characters/${characterId}`)
+      },
+      async (error) => {
+        console.error("Failed to update character: ", error)
+        alert(`Failed to update character: ${error}`)
       },
       async () => {
         setIsSubmitting(false)
@@ -67,14 +122,55 @@ export default function NewCharacterPage() {
     router.push(`/stories/${storyId}?tab=characters`)
   }
 
-  const handleRelationshipChange = (value: string) => {
-    if (value && !relationships.includes(value)) {
-      setRelationships([...relationships, value])
+  const handleRelationshipChange = (characterId: string) => {
+    const characterIdNum = Number(characterId)
+    if (characterIdNum && !relationships.some((character: any) => character.id === characterIdNum)) {
+      setRelationships([...relationships, {
+        id: characterIdNum,
+        name: allCharactersData.find((c: any) => c.id === characterIdNum)?.name || "",
+        role: allCharactersData.find((c: any) => c.id === characterIdNum)?.role || "" //TODO: Allow user to set role
+      }])
     }
   }
 
-  const removeRelationship = (characterId: string) => {
-    setRelationships(relationships.filter((id) => id !== characterId))
+  const removeRelationship = (characterId: number) => {
+    setRelationships(relationships.filter((character: any) => character.id !== characterId))
+  }
+
+  const handleConnectedPlotPointsChange = (plotPointId: string) => {
+    const plotPointIdNum = Number(plotPointId)
+    if (plotPointIdNum && !connectedPlotPointIds.includes(plotPointIdNum)) {
+      setConnectedPlotPointsIds([...connectedPlotPointIds, plotPointIdNum])
+    }
+  }
+
+  const removeConnectedPlotPoint = (plotPointId: number) => {
+    setConnectedPlotPointsIds(connectedPlotPointIds.filter((id) => id !== plotPointId))
+  }
+
+  const handleConnectedScenesChange = (sceneId: string) => {
+    const sceneIdNum = Number(sceneId)
+    if (sceneIdNum && !connectedSceneIds.includes(sceneIdNum)) {
+      setConnectedSceneIds([...connectedSceneIds, sceneIdNum])
+    }
+  }
+
+  const removeConnectedScene = (sceneId: number) => {
+    setConnectedSceneIds(connectedSceneIds.filter((id) => id !== sceneId))
+  }
+
+  if (isLoading) {
+    return (
+      <Loading />
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{errorMessage}</p>
+      </div>
+    )
   }
 
   return (
@@ -111,43 +207,29 @@ export default function NewCharacterPage() {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="age" className="text-sm font-medium">
-                  Age
-                </Label>
-                <Input
-                  id="age"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="e.g., 32"
-                  className="bg-surface-light border-border"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="height" className="text-sm font-medium">
-                  Height
-                </Label>
-                <Input
-                  id="height"
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  placeholder="e.g., 5'8&quot;"
-                  className="bg-surface-light border-border"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="physicalDescription" className="text-sm font-medium">
+                Physical Description
+              </Label>
+              <Textarea
+                id="physicalDescription"
+                value={physicalDescription}
+                onChange={(e) => setPhysicalDescription(e.target.value)}
+                placeholder="Character's physical appearance..."
+                rows={4}
+                className="bg-surface-light border-border resize-none"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium">
-                Description
+              <Label htmlFor="personality" className="text-sm font-medium">
+                Personality
               </Label>
               <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Physical appearance, personality traits..."
+                id="personality"
+                value={personality}
+                onChange={(e) => setPersonality(e.target.value)}
+                placeholder="Character's personality traits..."
                 rows={4}
                 className="bg-surface-light border-border resize-none"
               />
@@ -168,6 +250,20 @@ export default function NewCharacterPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="additionalNotes" className="text-sm font-medium">
+                Additional Notes
+              </Label>
+              <Textarea
+                id="additionalNotes"
+                value={additionalNotes}
+                onChange={(e) => setAdditionalNotes(e.target.value)}
+                placeholder="Additional notes on this character..."
+                rows={4}
+                className="bg-surface-light border-border resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="relationships" className="text-sm font-medium">
                 Relationships to Existing Characters
               </Label>
@@ -176,8 +272,10 @@ export default function NewCharacterPage() {
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SAMPLE_CHARACTERS.filter((char) => !relationships.includes(char.id.toString())).map((character) => (
-                    <SelectItem key={character.id} value={character.id.toString()}>
+                  {allCharactersData.filter(
+                    (char: any) => !relationships.some((character: any) => character.id === char.id),
+                  ).map((character: any) => (
+                    <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
                   ))}
@@ -186,17 +284,103 @@ export default function NewCharacterPage() {
 
               {relationships.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {relationships.map((charId) => {
-                    const character = SAMPLE_CHARACTERS.find((c) => c.id.toString() === charId)
+                  {relationships.map((characterData: any) => {
+                    const character = allCharactersData.find((c: any) => c.id === characterData.id)
                     return (
                       <div
-                        key={charId}
+                        key={characterData.id}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
                       >
                         <span>{character?.name}</span>
                         <button
                           type="button"
-                          onClick={() => removeRelationship(charId)}
+                          onClick={() => removeRelationship(characterData.id)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedPlotPoints" className="text-sm font-medium">
+                Connected Plot Points
+              </Label>
+              <Select onValueChange={handleConnectedPlotPointsChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select plot points" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allPlotPointsData.filter(
+                    (plotPoint: any) => !connectedPlotPointIds.includes(plotPoint.id),
+                  ).map((plotPoint: any) => (
+                    <SelectItem key={plotPoint.id} value={plotPoint.id}>
+                      {plotPoint.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedPlotPointIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedPlotPointIds.map((plotPointId) => {
+                    const plotPoint = allPlotPointsData.find((p: any) => p.id === plotPointId)
+                    return (
+                      <div
+                        key={plotPointId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        <span>{plotPoint?.title}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedPlotPoint(plotPointId)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedScenes" className="text-sm font-medium">
+                Connected Scenes
+              </Label>
+              <Select onValueChange={handleConnectedScenesChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select scenes" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allScenesData.filter(
+                    (scene: any) => !connectedSceneIds.includes(scene.id),
+                  ).map((scene: any) => (
+                    <SelectItem key={scene.id} value={scene.id}>
+                      {scene.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedSceneIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedSceneIds.map((sceneId) => {
+                    const scene = allScenesData.find((s: any) => s.id === sceneId)
+                    return (
+                      <div
+                        key={sceneId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        <span>{scene?.title}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedScene(sceneId)}
                           className="hover:text-foreground"
                         >
                           ×

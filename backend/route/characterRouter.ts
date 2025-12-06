@@ -63,7 +63,8 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
 
 characterRouter.post("/", async (req: Request, res: Response) => {
   const { storyId } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  const characterId = 1; //TODO: Create character in DB and return actual ID
+  res.status(200).json({ characterId: characterId });
 });
 
 characterRouter.put("/:characterId", async (req: Request, res: Response) => {

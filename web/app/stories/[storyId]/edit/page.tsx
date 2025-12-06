@@ -16,7 +16,6 @@ export default function EditStoryPage() {
   const storyId = params.storyId as string
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
-  const [storyData, setStoryData] = useState<any>(null)
 
   const [title, setTitle] = useState("")
   const [subtitle, setSubtitle] = useState("")
@@ -27,7 +26,6 @@ export default function EditStoryPage() {
     serverRequest(`api/story/${storyId}`, {}, "GET",
       async (response) => {
         const data = await response.json()
-        setStoryData(data)
         setTitle(data.title)
         setSubtitle(data.subtitle || "")
         setOverview(data.overview || "")
