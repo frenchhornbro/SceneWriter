@@ -1,5 +1,7 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
+| 12/5/2025 | 2 | Fixing edit pages |
+| 12/4/2025 | 8 hours | Pulling placeholder data on loading |
 | 12/3/2025 | 4.5 hours | Finalizing data models and pulling placeholder data on loading |
 | 12/3/2025 | 2 hours | Created all placeholder endpoints |
 | 12/2/2025 | 3 hours | Setup additional router, connecting frontend to placeholder endpoints in backend |

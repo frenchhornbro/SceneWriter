@@ -113,13 +113,12 @@ export default function EditWritingSampleClientPage({
           <Card className="p-6 bg-surface border-border">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Give your writing a title"
-                  required
                   className="bg-background border-border"
                 />
               </div>
@@ -132,14 +131,17 @@ export default function EditWritingSampleClientPage({
               </div>
 
               <div>
-                <Label htmlFor="content">Your Response</Label>
+                <Label htmlFor="content">
+                  Your Response <span className="text-primary">*</span>
+                </Label>
                 <Textarea
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Write your response to the prompt..."
                   rows={20}
-                  className="bg-background border-border font-serif"
+                  required
+                  className="bg-background border-border"
                 />
               </div>
             </div>

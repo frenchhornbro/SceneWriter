@@ -189,14 +189,11 @@ export default function EditSceneClientPage({
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="title">
-                  Title <span className="text-red-400">*</span>
-                </Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  required
                   className="bg-surface-light border-border"
                 />
               </div>
@@ -226,12 +223,15 @@ export default function EditSceneClientPage({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="generatedText">Scene Text</Label>
+              <Label htmlFor="generatedText">
+                Scene Text <span className="text-primary">*</span>
+              </Label>
               <Textarea
                 id="generatedText"
                 value={sceneText}
                 onChange={(e) => setSceneText(e.target.value)}
                 rows={20}
+                required
                 className="bg-surface-light border-border text-sm leading-relaxed"
               />
             </div>

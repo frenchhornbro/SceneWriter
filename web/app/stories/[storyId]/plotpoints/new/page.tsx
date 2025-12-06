@@ -118,7 +118,7 @@ export default function NewPlotPointPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="title">
-                Title <span className="text-destructive">*</span>
+                Title <span className="text-primary">*</span>
               </Label>
               <Input
                 id="title"
