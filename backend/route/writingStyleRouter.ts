@@ -7,7 +7,7 @@ writingStyleRouter.get("/", async (req: Request, res: Response) => {
   res.status(200).json({
     writingStyles: [
       {
-        id: 123,
+        id: 1,
         title: "Sample Writing Style 1",
         prompt: "This is a sample prompt for writing style 1.",
         contentPage: "This is the sample content of writing style 1.\nThis is the second paragraph.",
@@ -15,7 +15,7 @@ writingStyleRouter.get("/", async (req: Request, res: Response) => {
         editedAt: new Date().toISOString(),
       },
       {
-        id: 456,
+        id: 2,
         title: "Sample Writing Style 2",
         prompt: "This is a sample prompt for writing style 2.",
         contentPage: "This is the sample content of writing style 2.\nThis is the second paragraph.",

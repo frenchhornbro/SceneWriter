@@ -46,7 +46,7 @@ export default function EditSceneClientPage({
         setSceneData(data)
         setSceneText(data.sceneText || "")
         setOverview(data.overview || "")
-        setChapterNumber(data.chapter || 0)
+        setChapterNumber(data.chapterNumber || 1)
         setTitle(data.title || "")
         setPov(data.pov || "")
         setLocation(data.location || "")
@@ -98,11 +98,12 @@ export default function EditSceneClientPage({
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [params.sceneId, isSaving])
+  }, [isSaving])
 
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
-    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || isSaving) {
+    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isSaving) {
+      // TODO: Show error message
       return
     }
     setIsSaving(true)

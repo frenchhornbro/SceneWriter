@@ -43,6 +43,7 @@ sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
     location: "Sample Location",
     connectedCharacterIds: [1, 2],
     connectedPlotPointIds: [1, 2],
+    connectedWritingStyleSampleIds: [1, 2],
     tone: "Suspenseful",
     additionalNotes: "These are some sample additional notes about the scene.",
     createdAt: new Date().toISOString(),
@@ -62,27 +63,50 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   }
   const { storyId } = req.params;
   const {
-    writingStyleSamples,
-    description,
-    characters,
-    plotPoints,
+    overview,
+    connectedCharacterIds,
+    connectedPlotPointIds,
+    connectedWritingStyleSampleIds,
     pointOfView,
     location
   } = req.body;
-  if (!description) {
-    return res.status(400).json({error: "Missing scene description."});
+  if (!overview || !connectedPlotPointIds || !connectedPlotPointIds.length) {
+    return res.status(400).json({error: "Scene overview or connected plot points are required."});
   }
-  if (!plotPoints) {
-    return res.status(400).json({error: "Missing plot points."});
-  }
+  const plotPoints = ["TODO: Get from DB based on connectedPlotPointIds"];
+  const characters = ["TODO: Get from DB based on connectedCharacterIds"];
+  const writingStyleSamples = ["TODO: Get from DB based on connectedWritingStyleSampleIds"];
   // TODO: Pass in POV and location to influence generation
-  const { sceneText } = await generateScene(writingStyleSamples, description, characters, plotPoints);
+  const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
   res.status(200).json({ scene: sceneText });
 });
 
+// QQQ: Does this need to be its own endpoint?
 sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  // QQQ: Do I want to send the user the text, or save it in the DB and have them pull from there?
+  if (!req.body) {
+    return res.status(400).json({error: "Missing request body."});
+  }
+  const { storyId } = req.params;
+  const {
+    overview,
+    connectedCharacterIds,
+    connectedPlotPointIds,
+    connectedWritingStyleSampleIds,
+    pointOfView,
+    location
+  } = req.body;
+  if (!overview || !connectedPlotPointIds || !connectedPlotPointIds.length) {
+    return res.status(400).json({error: "Scene overview or connected plot points are required."});
+  }
+  const plotPoints = ["TODO: Get from DB based on connectedPlotPointIds"];
+  const characters = ["TODO: Get from DB based on connectedCharacterIds"];
+  const writingStyleSamples = ["TODO: Get from DB based on connectedWritingStyleSampleIds"];
+  // TODO: Pass in POV and location to influence generation
+  const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
+  // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
+  res.status(200).json({ scene: sceneText });
 });
 
 sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
