@@ -26,6 +26,13 @@ writingStyleRouter.get("/", async (req: Request, res: Response) => {
   });
 });
 
+writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {
+  // TODO: Generate a prompt with AI
+  res.status(200).json({
+    prompt: "Write a scene where your protagonist takes on a leadership role for the first time.",
+  });
+});
+
 writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
   // TODO: Return actual data from the DB

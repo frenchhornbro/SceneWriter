@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
+import { Loading } from "@/components/loading"
 
 export default function NewWritingSamplePage() {
   const router = useRouter()
@@ -19,33 +20,37 @@ export default function NewWritingSamplePage() {
   const [response, setResponse] = useState("")
   const [prompt, setPrompt] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    // Fetch prompt from example.com
-    const fetchPrompt = async () => {
-      try {
-        // TODO: Replace with actual API endpoint
-        await fetch("https://example.com/api/prompts")
-        // Placeholder prompt
-        setPrompt("Write a scene where your protagonist takes on a leadership role for the first time.")
-      } catch (error) {
-        console.error("Failed to fetch prompt:", error)
-        setPrompt("Write a compelling scene that explores your character's development.")
-      } finally {
+    setIsLoading(true)
+    serverRequest("api/writingstyle/prompt", {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setPrompt(data.prompt)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load prompt: ${error}`)
+        console.error(`Failed to load prompt: ${error}`)
+      },
+      async () => {
         setIsLoading(false)
       }
-    }
-
-    fetchPrompt()
+    )
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return
-
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!title.trim()) {
+      return
+    }
     setIsSubmitting(true)
-    serverRequest("api/writingstyle", { title: title.trim(), prompt, response }, "POST",
+    serverRequest("api/writingstyle", {
+      title: title.trim(),
+      prompt,
+      content: response
+    }, "POST",
       async (response) => {
         router.push("/writingsamples")
       },
@@ -58,8 +63,14 @@ export default function NewWritingSamplePage() {
 
   if (isLoading) {
     return (
+      <Loading itemDescription="prompt" />
+    )
+  }
+
+  if (errorMessage) {
+    return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-red-500">{errorMessage}</p>
       </div>
     )
   }
@@ -107,7 +118,7 @@ export default function NewWritingSamplePage() {
                   onChange={(e) => setResponse(e.target.value)}
                   placeholder="Write your response to the prompt..."
                   rows={20}
-                  className="bg-background border-border font-serif"
+                  className="bg-background border-border"
                 />
               </div>
             </div>

@@ -55,7 +55,7 @@ export default function EditWritingSampleClientPage({
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [params.writingsampleId, title, content, isSubmitting])
+  }, [title, content, isSubmitting])
 
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
