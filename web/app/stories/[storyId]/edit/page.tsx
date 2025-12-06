@@ -131,7 +131,6 @@ export default function EditStoryPage() {
                 placeholder="Enter your story subtitle"
                 value={subtitle}
                 onChange={(e) => setSubtitle(e.target.value)}
-                required
                 className="bg-background border-border focus:border-primary"
               />
             </div>

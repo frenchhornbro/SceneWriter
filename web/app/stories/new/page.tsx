@@ -1,6 +1,5 @@
 "use client"
 
-import { Nav } from "@/components/nav"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,17 +7,18 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { serverRequest } from "@/lib/requests"
 import { useRouter } from "next/navigation"
-import { useState, type FormEvent } from "react"
+import { useState } from "react"
 
 export default function NewStoryPage() {
   const router = useRouter()
   const [title, setTitle] = useState("")
+  const [subtitle, setSubtitle] = useState("")
   const [overview, setOverview] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) {
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!title.trim() || isSubmitting) {
       return
     }
 
@@ -28,7 +28,7 @@ export default function NewStoryPage() {
         router.push("/stories")
       },
       async (error) => {
-        console.error("Failed to create story:", error)
+        console.error(`Failed to create story: ${error}`)
       },
       async () => {
         setIsSubmitting(false)
@@ -42,8 +42,6 @@ export default function NewStoryPage() {
 
   return (
     <div className="min-h-screen">
-      <Nav />
-
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Create New Story</h1>
@@ -63,6 +61,18 @@ export default function NewStoryPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
+                className="bg-background border-border focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subtitle" className="text-sm font-medium">Subtitle</Label>
+              <Input
+                id="subtitle"
+                type="text"
+                placeholder="Enter your story subtitle"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
                 className="bg-background border-border focus:border-primary"
               />
             </div>
@@ -96,7 +106,7 @@ export default function NewStoryPage() {
                 disabled={!title.trim() || isSubmitting}
                 className="bg-primary hover:bg-primary-hover text-white"
               >
-                {isSubmitting ? "Creating..." : "Create"}
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
