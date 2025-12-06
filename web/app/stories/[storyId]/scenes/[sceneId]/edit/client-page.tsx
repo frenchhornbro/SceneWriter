@@ -36,8 +36,8 @@ export default function EditSceneClientPage({
   const [location, setLocation] = useState("")
   const [tone, setTone] = useState("")
   const [additionalNotes, setAdditionalNotes] = useState("")
-  const [connectedCharacters, setConnectedCharacters] = useState<string[]>([])
-  const [connectedPlotPoints, setConnectedPlotPoints] = useState<string[]>([])
+  const [connectedCharacterIds, setConnectedCharacterIds] = useState<number[]>([])
+  const [connectedPlotPointIds, setConnectedPlotPointIds] = useState<number[]>([])
 
   useEffect(() => {
     serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "GET",
@@ -52,8 +52,8 @@ export default function EditSceneClientPage({
         setLocation(data.location || "")
         setTone(data.tone || "")
         setAdditionalNotes(data.additionalNotes || "")
-        setConnectedCharacters(data.connectedCharacters || [])
-        setConnectedPlotPoints(data.connectedPlotPoints || [])
+        setConnectedCharacterIds(data.connectedCharacterIds || [])
+        setConnectedPlotPointIds(data.connectedPlotPointIds || [])
       },
       async (error) => {
         setErrorMessage(`Failed to load scene: ${error}`)
@@ -115,8 +115,8 @@ export default function EditSceneClientPage({
       location: location,
       tone: tone,
       additionalNotes: additionalNotes,
-      connectedCharacters: connectedCharacters,
-      connectedPlotPoints: connectedPlotPoints,
+      connectedCharacterIds: connectedCharacterIds,
+      connectedPlotPointIds: connectedPlotPointIds,
     }, "PUT",
       async (response) => {
         if (doRedirect) {
@@ -133,24 +133,26 @@ export default function EditSceneClientPage({
     )
   }
 
-  const handleConnectedCharactersChange = (value: string) => {
-    if (value && !connectedCharacters.includes(value)) {
-      setConnectedCharacters([...connectedCharacters, value])
+  const handleConnectedCharactersChange = (characterId: string) => {
+    const characterIdNum = Number(characterId);
+    if (characterIdNum && !connectedCharacterIds.includes(characterIdNum)) {
+      setConnectedCharacterIds([...connectedCharacterIds, characterIdNum])
     }
   }
 
-  const removeConnectedCharacter = (characterId: string) => {
-    setConnectedCharacters(connectedCharacters.filter((id) => id !== characterId))
+  const removeConnectedCharacter = (characterId: number) => {
+    setConnectedCharacterIds(connectedCharacterIds.filter((id) => id !== characterId))
   }
 
-  const handleConnectedPlotPointsChange = (value: string) => {
-    if (value && !connectedPlotPoints.includes(value)) {
-      setConnectedPlotPoints([...connectedPlotPoints, value])
+  const handleConnectedPlotPointsChange = (plotPointId: string) => {
+    const plotPointIdNum = Number(plotPointId);
+    if (plotPointIdNum && !connectedPlotPointIds.includes(plotPointIdNum)) {
+      setConnectedPlotPointIds([...connectedPlotPointIds, plotPointIdNum])
     }
   }
 
-  const removeConnectedPlotPoint = (plotPointId: string) => {
-    setConnectedPlotPoints(connectedPlotPoints.filter((id) => id !== plotPointId))
+  const removeConnectedPlotPoint = (plotPointId: number) => {
+    setConnectedPlotPointIds(connectedPlotPointIds.filter((id) => id !== plotPointId))
   }
 
   if (isLoading) {
@@ -288,19 +290,19 @@ export default function EditSceneClientPage({
                 </SelectTrigger>
                 <SelectContent>
                   {allCharactersData.filter(
-                    (char: any) => !connectedCharacters.includes(char.id.toString()),
+                    (char: any) => !connectedCharacterIds.includes(char.id),
                   ).map((character: any) => (
-                    <SelectItem key={character.id} value={character.id.toString()}>
+                    <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {connectedCharacters.length > 0 && (
+              {connectedCharacterIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedCharacters.map((charId) => {
-                    const character = allCharactersData.find((c: any) => c.id.toString() === charId)
+                  {connectedCharacterIds.map((charId) => {
+                    const character = allCharactersData.find((c: any) => c.id === charId)
                     return (
                       <div
                         key={charId}
@@ -331,19 +333,19 @@ export default function EditSceneClientPage({
                 </SelectTrigger>
                 <SelectContent>
                   {allPlotPointsData.filter(
-                    (plotPoint: any) => !connectedPlotPoints.includes(plotPoint.id.toString()),
+                    (plotPoint: any) => !connectedPlotPointIds.includes(plotPoint.id),
                   ).map((plotPoint: any) => (
-                    <SelectItem key={plotPoint.id} value={plotPoint.id.toString()}>
+                    <SelectItem key={plotPoint.id} value={plotPoint.id}>
                       {plotPoint.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {connectedPlotPoints.length > 0 && (
+              {connectedPlotPointIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedPlotPoints.map((plotPointId) => {
-                    const plotPoint = allPlotPointsData.find((p: any) => p.id.toString() === plotPointId)
+                  {connectedPlotPointIds.map((plotPointId) => {
+                    const plotPoint = allPlotPointsData.find((p: any) => p.id === plotPointId)
                     return (
                       <div
                         key={plotPointId}

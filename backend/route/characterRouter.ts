@@ -54,30 +54,8 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
         role: "Antagonist"
       }
     ],
-    connectedPlotPoints: [
-      {
-        id: 1,
-        title: "Sample Plot Point 1",
-        description: "This is a sample description of plot point 1."
-      },
-      {
-        id: 2,
-        title: "Sample Plot Point 2",
-        description: "This is a sample description of plot point 2."
-      }
-    ],
-    connectedScenes: [
-      {
-        id: 1,
-        title: "Sample Scene 1",
-        description: "This is a sample description of scene 1."
-      },
-      {
-        id: 2,
-        title: "Sample Scene 2",
-        description: "This is a sample description of scene 2."
-      },
-    ],
+    connectedPlotPointIds: [1, 2],
+    connectedSceneIds: [1, 2],
     createdAt: new Date().toISOString(),
     editedAt: new Date().toISOString(),
   });

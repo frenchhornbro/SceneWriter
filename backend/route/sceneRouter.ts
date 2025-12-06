@@ -41,28 +41,8 @@ sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
     title: "Sample Scene Title",
     pov: "Third Person",
     location: "Sample Location",
-    characters: [
-      {
-        id: 1,
-        name: "Alice",
-      },
-      {
-        id: 2,
-        name: "Bob"
-      }
-    ],
-    plotPoints: [
-      {
-        id: 1,
-        title: "Sample Plot Point Title 1",
-        startingText: "Sample Plot Point Starting Text 1"
-      },
-      {
-        id: 2,
-        title: "Sample Plot Point Title 2",
-        startingText: "Sample Plot Point Starting Text 2"
-      }
-    ],
+    connectedCharacterIds: [1, 2],
+    connectedPlotPointIds: [1, 2],
     tone: "Suspenseful",
     additionalNotes: "These are some sample additional notes about the scene.",
     createdAt: new Date().toISOString(),
