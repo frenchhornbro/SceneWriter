@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { generateScene } from "../model/model";
+import { generateScene } from "../ai/model";
 
 const sceneRouter = Router({ mergeParams: true });
 
