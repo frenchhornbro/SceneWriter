@@ -115,7 +115,7 @@ export default function WritingSampleDetailClientPage({
         <Card className="p-8 bg-surface border-border">
           <div className="prose prose-invert prose-lg max-w-none">
             {writingStyleData.content.split("\n").map((paragraph: any, index: number) => (
-              <p key={index} className="mb-6 text-foreground font-serif text-lg leading-relaxed">
+              <p key={index} className="mb-6 text-foreground text-lg leading-relaxed">
                 {paragraph}
               </p>
             ))}

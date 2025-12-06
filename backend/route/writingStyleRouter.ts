@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample } from "../data-access/writingStyleDataAcess";
+import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAcess";
 
 const writingStyleRouter = Router();
 
@@ -66,8 +66,20 @@ writingStyleRouter.post("/", async (req: Request, res: Response) => {
 writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
   const { title, content } = req.body;
-  // TODO: Update the DB
-  res.status(501).json({error: "Not implemented."});
+  const id = Number(writingStyleId);
+  if (!id) {
+    res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
+    return;
+  }
+  if (!title || !content) {
+    res.status(400).json({error: "Missing required fields: title, content."});
+    return;
+  }
+  const titleString = title.toString().trim();
+  const contentString = content.toString().trim();
+  const wordCount = contentString.split(/\s+/).length;
+  await updateWritingStyleSample(id, titleString, contentString, wordCount);
+  res.status(200).json({});
 });
 
 writingStyleRouter.delete("/:writingStyleId", async (req: Request, res: Response) => {
