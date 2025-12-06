@@ -48,8 +48,8 @@ export default function NewWritingSamplePage() {
     setIsSubmitting(true)
     serverRequest("api/writingstyle", {
       title: title.trim(),
-      prompt,
-      content: response
+      prompt: prompt.trim(),
+      content: response.trim()
     }, "POST",
       async (response) => {
         router.push("/writingsamples")
@@ -92,7 +92,7 @@ export default function NewWritingSamplePage() {
           <Card className="p-6 bg-surface border-border">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   value={title}
@@ -111,7 +111,9 @@ export default function NewWritingSamplePage() {
               </div>
 
               <div>
-                <Label htmlFor="response">Your Response</Label>
+                <Label htmlFor="response">
+                  Your Response <span className="text-primary">*</span>
+                </Label>
                 <Textarea
                   id="response"
                   value={response}

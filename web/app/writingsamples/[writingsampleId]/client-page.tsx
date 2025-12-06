@@ -15,6 +15,7 @@ export default function WritingSampleDetailClientPage({
 }: {
   params: { writingsampleId: string }
 }) {
+  const writingStyleId = params.writingsampleId
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
@@ -24,7 +25,7 @@ export default function WritingSampleDetailClientPage({
 
   useEffect(() => {
     setIsLoading(true)
-    serverRequest(`api/writingstyle/${1}`, {}, "GET",
+    serverRequest(`api/writingstyle/${writingStyleId}`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setWritingStyleData(data)

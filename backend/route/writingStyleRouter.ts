@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import { createNewWritingStyleSample } from "../data-access/writingStyleDataAcess";
 
 const writingStyleRouter = Router();
 
@@ -48,7 +49,16 @@ writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) =
 });
 
 writingStyleRouter.post("/", async (req: Request, res: Response) => {
-  const writingStyleId = 1; // TODO: Replace with actual created writing style ID
+  const { title, prompt, content } = req.body;
+  if (!title || !prompt || !content) {
+    res.status(400).json({error: "Missing required fields: title, prompt, content."});
+    return;
+  }
+  const titleString = title.toString().trim();
+  const promptString = prompt.toString().trim();
+  const contentString = content.toString().trim();
+  const wordCount = contentString.split(/\s+/).length;
+  const writingStyleId = await createNewWritingStyleSample(titleString, promptString, contentString, wordCount);
   res.status(201).json({ writingStyleId });
 });
 
