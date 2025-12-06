@@ -1,30 +1,22 @@
 import { Request, Response, Router } from "express";
-import { createNewWritingStyleSample, getWritingStyleSample } from "../data-access/writingStyleDataAcess";
+import { createNewWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample } from "../data-access/writingStyleDataAcess";
 
 const writingStyleRouter = Router();
 
 writingStyleRouter.get("/", async (req: Request, res: Response) => {
-  // TODO: Return actual data from the DB (Stop at the first newline after content, or 500 characters, whichever comes first)
-  res.status(200).json({
-    writingStyles: [
-      {
-        id: 1,
-        title: "Sample Writing Style 1",
-        prompt: "This is a sample prompt for writing style 1.",
-        contentPage: "This is the sample content of writing style 1.\nThis is the second paragraph.",
-        wordCount: 321,
-        editedAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        title: "Sample Writing Style 2",
-        prompt: "This is a sample prompt for writing style 2.",
-        contentPage: "This is the sample content of writing style 2.\nThis is the second paragraph.",
-        wordCount: 654,
-        editedAt: new Date().toISOString(),
-      }
-    ],
+  const writingStyleSamples = await getAllWritingStyleSamples();
+  const writingStyleSamplesWithContentPage = writingStyleSamples.map(sample => {
+    return {
+      id: sample.id,
+      title: sample.title,
+      prompt: sample.prompt,
+      contentPage: sample.content.length > 200 ? sample.content.substring(0, 200) + "..." : sample.content,
+      wordCount: sample.word_count,
+      createdAt: sample.created_at,
+      editedAt: sample.edited_at,
+    };
   });
+  res.status(200).json({ writingStyleSamples: writingStyleSamplesWithContentPage });
 });
 
 writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {

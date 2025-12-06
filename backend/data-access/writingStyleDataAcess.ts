@@ -12,6 +12,16 @@ export async function getWritingStyleSample(writingStyleId: number): Promise<any
   });
 }
 
+export async function getAllWritingStyleSamples(): Promise<any[]> {
+  return await errorHandlerWrapper("getAllWritingStyleSamples", async () => {
+    const query = `
+      SELECT * FROM WritingStyleSample ORDER BY edited_at DESC;
+    `;
+    const result = queryDB(query);
+    return result;
+  });
+}
+
 export async function createNewWritingStyleSample(title: string, prompt: string, content: string, wordCount: number): Promise<void> {
   await errorHandlerWrapper("createNewWritingStyleSample", async () => {
     const query = `

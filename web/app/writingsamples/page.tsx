@@ -32,7 +32,7 @@ export default function WritingSamplesPage() {
     serverRequest("api/writingstyle", {}, "GET",
       async (request) => {
         const data = await request.json()
-        setWritingStyleData(data.writingStyles)
+        setWritingStyleData(data.writingStyleSamples)
       },
       async (error) => {
         setErrorMessage(`Failed to load writing samples: ${error}`)
