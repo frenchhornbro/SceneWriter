@@ -1,5 +1,6 @@
 "use client"
 
+import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -7,76 +8,68 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { serverRequest } from "@/lib/requests"
 import { useParams, useRouter } from "next/navigation"
-import { useState, type FormEvent, useEffect } from "react"
-
-// TODO: Replace with actual data fetching
-const SAMPLE_STORY = {
-  id: 1,
-  title: "The Chronicles of Echoing Stars",
-  overview:
-    "An epic space opera following a crew of misfits as they uncover ancient secrets that could reshape the galaxy.",
-}
+import { useState, useEffect } from "react"
 
 export default function EditStoryPage() {
   const params = useParams()
   const router = useRouter()
   const storyId = params.storyId as string
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [storyData, setStoryData] = useState<any>(null)
 
   const [title, setTitle] = useState("")
+  const [subtitle, setSubtitle] = useState("")
   const [overview, setOverview] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // TODO: Fetch actual story data based on storyId
   useEffect(() => {
-    setTitle(SAMPLE_STORY.title)
-    setOverview(SAMPLE_STORY.overview)
+    serverRequest(`api/story/${storyId}`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setStoryData(data)
+        setTitle(data.title)
+        setSubtitle(data.subtitle || "")
+        setOverview(data.overview || "")
+      },
+      async (error) => {
+        console.error(`Failed to fetch story data: ${error}`)
+        setErrorMessage(`Failed to fetch story data: ${error}`)
+      },
+      async () => {
+        setIsLoading(false)
+      }
+    )
   }, [])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
-        if (!title.trim() || isSubmitting) return
-
-        setIsSubmitting(true)
-        try {
-          await fetch("https://example.com/api/stories", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              storyId,
-              title: title.trim(),
-              overview: overview.trim(),
-            }),
-          })
-          // Don't navigate, just save
-        } catch (error) {
-          console.error("Failed to update story:", error)
-        } finally {
-          setIsSubmitting(false)
-        }
+        await handleSubmit(undefined, false)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [storyId, title, overview, isSubmitting])
+  }, [title, overview, isSubmitting])
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-
-    if (!title.trim()) {
+  async function handleSubmit(e?: React.FormEvent, doRedirect: boolean = true) {
+    e?.preventDefault()
+    if (!title.trim() || isSubmitting) {
       return
     }
-
     setIsSubmitting(true)
     serverRequest(`api/story/${storyId}`, {
         storyId,
         title: title.trim(),
+        subtitle: subtitle.trim(),
         overview: overview.trim()
       }, "PUT",
       async (response) => {
-        router.push(`/stories/${storyId}`)
+        if (doRedirect) {
+          router.push(`/stories/${storyId}`)
+        }
       },
       async (error) => {
         console.error("Failed to update story:", error)
@@ -89,6 +82,20 @@ export default function EditStoryPage() {
 
   const handleCancel = () => {
     router.push(`/stories/${storyId}`)
+  }
+
+  if (isLoading) {
+    return (
+      <Loading itemDescription="story" />
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{errorMessage}</p>
+      </div>
+    )
   }
 
   return (
@@ -111,6 +118,19 @@ export default function EditStoryPage() {
                 placeholder="Enter your story title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                required
+                className="bg-background border-border focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subtitle" className="text-sm font-medium">Subtitle</Label>
+              <Input
+                id="subtitle"
+                type="text"
+                placeholder="Enter your story subtitle"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
                 required
                 className="bg-background border-border focus:border-primary"
               />
