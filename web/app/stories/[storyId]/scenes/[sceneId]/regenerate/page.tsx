@@ -16,7 +16,7 @@ import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SceneGenerationOverlay from "@/components/scene-generation-overlay"
 
-export default function EditSceneClientPage() {
+export default function RegenerateScenePage() {
   const params = useParams()
   const storyId = params.storyId as string
   const sceneId = params.sceneId as string
@@ -30,7 +30,7 @@ export default function EditSceneClientPage() {
   const [isRegenerating, setIsRegenerating] = useState(false)
 
   const [overview, setOverview] = useState("")
-  const [chapterNumber, setChapterNumber] = useState(0)
+  const [chapterNumber, setChapterNumber] = useState(1)
   const [title, setTitle] = useState("")
   const [pov, setPov] = useState("")
   const [location, setLocation] = useState("")

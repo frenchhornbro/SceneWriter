@@ -1,181 +1,178 @@
 "use client"
 
 import type React from "react"
-
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Loader2, X } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { serverRequest } from "@/lib/requests"
-
-// Sample data - TODO: Replace with actual data fetching
-const SAMPLE_PLOTPOINTS = [
-  { id: 1, title: "Discovery of Ancient Artifact" },
-  { id: 2, title: "Betrayal Revealed" },
-  { id: 3, title: "Alliance Forms" },
-]
-
-const SAMPLE_CHARACTERS = [
-  { id: 1, name: "Captain Elena Voss" },
-  { id: 2, name: "Dr. Marcus Chen" },
-  { id: 3, name: "Zara the Wanderer" },
-]
-
-const SAMPLE_WRITINGS = [
-  { id: 1, title: "Chapter 1: The Discovery - Draft" },
-  { id: 2, title: "Character Study: Elena" },
-  { id: 3, title: "Scene: Ancient Warnings" },
-]
+import { Loading } from "@/components/loading"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import SceneGenerationOverlay from "@/components/scene-generation-overlay"
 
 export default function NewScenePage() {
   const params = useParams()
-  const router = useRouter()
   const storyId = params.storyId as string
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [allCharactersData, setAllCharactersData] = useState<any[]>([])
+  const [allPlotPointsData, setAllPlotPointsData] = useState<any[]>([])
+  const [allWritingStyleSamplesData, setAllWritingStyleSamplesData] = useState<any[]>([])
+  const [isGenerating, setIsGenerating] = useState(false)
 
-  const [selectedPlotPoints, setSelectedPlotPoints] = useState<number[]>([])
-  const [selectedCharacters, setSelectedCharacters] = useState<number[]>([])
-  const [selectedWritings, setSelectedWritings] = useState<number[]>(
-    SAMPLE_WRITINGS.map((w) => w.id), // All selected by default
-  )
-  const [description, setDescription] = useState("")
-  const [pointOfView, setPointOfView] = useState("")
+  const [overview, setOverview] = useState("")
+  const [chapterNumber, setChapterNumber] = useState(1)
+  const [title, setTitle] = useState("")
+  const [pov, setPov] = useState("")
   const [location, setLocation] = useState("")
-  const [povSuggestions, setPovSuggestions] = useState<string[]>([])
-  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([])
-  const [showPovSuggestions, setShowPovSuggestions] = useState(false)
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState("")
+  const [tone, setTone] = useState("")
+  const [additionalNotes, setAdditionalNotes] = useState("")
+  const [connectedCharacterIds, setConnectedCharacterIds] = useState<number[]>([])
+  const [connectedPlotPointIds, setConnectedPlotPointIds] = useState<number[]>([])
+  const [connectedWritingStyleSampleIds, setConnectedWritingStyleSampleIds] = useState<number[]>([])
 
   useEffect(() => {
-    const fetchPovSuggestions = async () => {
-      try {
-        const response = await fetch("https://example.com/api/pov-suggestions")
-        if (response.ok) {
-          const data = await response.json()
-          setPovSuggestions(data.suggestions || [])
-        }
-      } catch (err) {
-        setPovSuggestions([])
-      }
-    }
-
-    if (showPovSuggestions && povSuggestions.length === 0) {
-      fetchPovSuggestions()
-    }
-  }, [showPovSuggestions, povSuggestions.length])
-
-  useEffect(() => {
-    const fetchLocationSuggestions = async () => {
-      try {
-        const response = await fetch("https://example.com/api/location-suggestions")
-        if (response.ok) {
-          const data = await response.json()
-          setLocationSuggestions(data.suggestions || [])
-        }
-      } catch (err) {
-        setLocationSuggestions([])
-      }
-    }
-
-    if (showLocationSuggestions && locationSuggestions.length === 0) {
-      fetchLocationSuggestions()
-    }
-  }, [showLocationSuggestions, locationSuggestions.length])
-
-  const addPlotPoint = (value: string) => {
-    const id = Number.parseInt(value)
-    if (!selectedPlotPoints.includes(id)) {
-      setSelectedPlotPoints([...selectedPlotPoints, id])
-    }
-  }
-
-  const removePlotPoint = (id: number) => {
-    setSelectedPlotPoints(selectedPlotPoints.filter((ppId) => ppId !== id))
-  }
-
-  const addCharacter = (value: string) => {
-    const id = Number.parseInt(value)
-    if (!selectedCharacters.includes(id)) {
-      setSelectedCharacters([...selectedCharacters, id])
-    }
-  }
-
-  const removeCharacter = (id: number) => {
-    setSelectedCharacters(selectedCharacters.filter((cId) => cId !== id))
-  }
-
-  const addWriting = (value: string) => {
-    const id = Number.parseInt(value)
-    if (!selectedWritings.includes(id)) {
-      setSelectedWritings([...selectedWritings, id])
-    }
-  }
-
-  const removeWriting = (id: number) => {
-    setSelectedWritings(selectedWritings.filter((wId) => wId !== id))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-
-    if (selectedPlotPoints.length === 0) {
-      setError("Please select at least one plot point")
-      return
-    }
-
-    setIsSubmitting(true)
-    serverRequest(`api/story/${storyId}/scene`, {
-          storyId,
-          plotPoints: selectedPlotPoints,
-          characters: selectedCharacters,
-          writingStyleSamples: selectedWritings,
-          description,
-          pointOfView,
-          location,
-        }, "POST",
+    serverRequest(`api/story/${storyId}/character`, {}, "GET",
       async (response) => {
         const data = await response.json()
-        const newSceneId = data.id
-        if (!newSceneId) {
-          throw new Error("Invalid scene ID")
-        }
-        router.push(`/stories/${storyId}/scenes/${newSceneId}`)
+        setAllCharactersData(data.characters)
       },
       async (error) => {
-        console.error("Failed to create scene:", error)
-        setError("Failed to create scene. Please try again.")
-        setIsSubmitting(false)
+        setErrorMessage(`Failed to load characters for relationships: ${error}`)
+        setIsLoading(false)
       }
     )
-  }
+    serverRequest(`api/story/${storyId}/plotpoint`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllPlotPointsData(data.plotPoints)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load plot points for connections: ${error}`)
+        setIsLoading(false)
+      }
+    )
+    serverRequest(`api/writingstyle`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAllWritingStyleSamplesData(data.writingStyles)
+      },
+      async (error) => {
+        setErrorMessage(`Failed to load writing style samples for connections: ${error}`)
+        setIsLoading(false)
+      }
+    )
+  }, [])
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return
-      }
+    if (allCharactersData && allPlotPointsData && allWritingStyleSamplesData) {
+      setIsLoading(false)
+    }
+  }, [allCharactersData, allPlotPointsData, allWritingStyleSamplesData])
 
-      if (e.key === "n" && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
-        router.push(`/stories/${storyId}/scenes/new`)
+        handleSubmit(undefined)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [router, storyId])
+  }, [isGenerating])
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
+    if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isGenerating) {
+      // TODO: Show error message
+      return
+    }
+    setIsGenerating(true)
+    await serverRequest(`api/story/${storyId}/scene`, {
+      overview: overview,
+      chapter: chapterNumber,
+      title: title.trim(),
+      pov: pov,
+      location: location,
+      tone: tone,
+      additionalNotes: additionalNotes,
+      connectedCharacterIds: connectedCharacterIds,
+      connectedPlotPointIds: connectedPlotPointIds,
+      connectedWritingStyleSampleIds: connectedWritingStyleSampleIds,
+    }, "POST",
+      async (response) => {
+        const data = await response.json()
+        const sceneId = data.sceneId;
+        router.push(`/stories/${storyId}/scenes/${sceneId}`)
+      },
+      async (error) => {
+        console.error("Failed to generate scene: ", error)
+        alert(`Failed to generate scene: ${error}`)
+      },
+      async () => {
+        setIsGenerating(false)
+      }
+    )
+  }
+
+  const handleConnectedCharactersChange = (characterId: string) => {
+    const characterIdNum = Number(characterId);
+    if (characterIdNum && !connectedCharacterIds.includes(characterIdNum)) {
+      setConnectedCharacterIds([...connectedCharacterIds, characterIdNum])
+    }
+  }
+
+  const removeConnectedCharacter = (characterId: number) => {
+    setConnectedCharacterIds(connectedCharacterIds.filter((id) => id !== characterId))
+  }
+
+  const handleConnectedPlotPointsChange = (plotPointId: string) => {
+    const plotPointIdNum = Number(plotPointId);
+    if (plotPointIdNum && !connectedPlotPointIds.includes(plotPointIdNum)) {
+      setConnectedPlotPointIds([...connectedPlotPointIds, plotPointIdNum])
+    }
+  }
+
+  const removeConnectedPlotPoint = (plotPointId: number) => {
+    setConnectedPlotPointIds(connectedPlotPointIds.filter((id) => id !== plotPointId))
+  }
+
+  const handleConnectedWritingStyleSamplesChange = (writingStyleSampleId: string) => {
+    const writingStyleSampleIdNum = Number(writingStyleSampleId);
+    if (writingStyleSampleIdNum && !connectedWritingStyleSampleIds.includes(writingStyleSampleIdNum)) {
+      setConnectedWritingStyleSampleIds([...connectedWritingStyleSampleIds, writingStyleSampleIdNum])
+    }
+  }
+
+  const removeConnectedWritingStyleSample = (writingStyleSampleId: number) => {
+    setConnectedWritingStyleSampleIds(connectedWritingStyleSampleIds.filter((id) => id !== writingStyleSampleId))
+  }
+
+  if (isLoading) {
+    return (
+      <Loading itemDescription="scene" />
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <p className="text-red-500">{errorMessage}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen">
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Link
           href={`/stories/${storyId}?tab=scenes`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
@@ -185,91 +182,126 @@ export default function NewScenePage() {
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Add New Scene</h1>
-          <p className="text-muted-foreground">Create a new scene for your story</p>
+          <h1 className="text-3xl font-bold mb-2">Add a New Scene</h1>
+          <p className="text-muted-foreground">List context to provide for AI and generate a new scene for your story</p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <Card className="p-6 bg-surface border-border space-y-6">
-            {/* Plot Points */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="plotpoints" className="text-base">
-                  Plot Points <span className="text-primary">*</span>
-                </Label>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+        <Card className="p-6 bg-surface border-border">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="bg-surface-light border-border"
+                />
               </div>
-              <Select onValueChange={addPlotPoint}>
-                <SelectTrigger className="bg-surface-light border-border">
-                  <SelectValue placeholder="Select plot points" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SAMPLE_PLOTPOINTS.filter((pp) => !selectedPlotPoints.includes(pp.id)).map((plotpoint) => (
-                    <SelectItem key={plotpoint.id} value={plotpoint.id.toString()}>
-                      {plotpoint.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
 
-              {selectedPlotPoints.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedPlotPoints.map((ppId) => {
-                    const plotpoint = SAMPLE_PLOTPOINTS.find((p) => p.id === ppId)
-                    return (
-                      <div
-                        key={ppId}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm"
-                      >
-                        <span>{plotpoint?.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removePlotPoint(ppId)}
-                          className="hover:text-foreground cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="chapter">Chapter</Label>
+                <Input
+                  id="chapter"
+                  type="number"
+                  min="1"
+                  value={chapterNumber}
+                  onChange={(e) => setChapterNumber(Number(e.target.value))}
+                  className="bg-surface-light border-border"
+                />
+              </div>
             </div>
 
-            {/* Characters */}
-            <div className="space-y-3">
-              <Label htmlFor="characters" className="text-base">
-                Characters
+            <div className="space-y-2">
+              <Label htmlFor="overview">Overview</Label>
+              <Textarea
+                id="overview"
+                value={overview}
+                onChange={(e) => setOverview(e.target.value)}
+                rows={20}
+                className="bg-surface-light border-border text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pov">Point of View</Label>
+              <Input
+                id="pov"
+                value={pov}
+                onChange={(e) => setPov(e.target.value)}
+                placeholder="Which character's perspective?"
+                className="bg-surface-light border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Where does this scene take place?"
+                className="bg-surface-light border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tone">Tone</Label>
+              <Input
+                id="tone"
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                placeholder="What is the tone of this scene?"
+                className="bg-surface-light border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="additionalNotes">Additional Notes</Label>
+              <Textarea
+                id="additionalNotes"
+                value={additionalNotes}
+                onChange={(e) => setAdditionalNotes(e.target.value)}
+                rows={20}
+                className="bg-surface-light border-border text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="connectedCharacters" className="text-sm font-medium">
+                Connected Characters
               </Label>
-              <Select onValueChange={addCharacter}>
+              <Select onValueChange={handleConnectedCharactersChange}>
                 <SelectTrigger className="bg-surface-light border-border">
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SAMPLE_CHARACTERS.filter((c) => !selectedCharacters.includes(c.id)).map((character) => (
-                    <SelectItem key={character.id} value={character.id.toString()}>
+                  {allCharactersData.filter(
+                    (char: any) => !connectedCharacterIds.includes(char.id),
+                  ).map((character: any) => (
+                    <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {selectedCharacters.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedCharacters.map((cId) => {
-                    const character = SAMPLE_CHARACTERS.find((c) => c.id === cId)
+              {connectedCharacterIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedCharacterIds.map((charId) => {
+                    const character = allCharactersData.find((c: any) => c.id === charId)
                     return (
                       <div
-                        key={cId}
+                        key={charId}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
                       >
                         <span>{character?.name}</span>
                         <button
                           type="button"
-                          onClick={() => removeCharacter(cId)}
-                          className="hover:text-foreground cursor-pointer"
+                          onClick={() => removeConnectedCharacter(charId)}
+                          className="hover:text-foreground"
                         >
-                          <X className="w-3 h-3" />
+                          ×
                         </button>
                       </div>
                     )
@@ -278,120 +310,41 @@ export default function NewScenePage() {
               )}
             </div>
 
-            {/* Scene Description */}
-            <div className="space-y-3">
-              <Label htmlFor="description" className="text-base">
-                Scene Description
+            <div className="space-y-2">
+              <Label htmlFor="connectedPlotPoints" className="text-sm font-medium">
+                Connected Plot Points
               </Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what happens in this scene..."
-                className="min-h-[120px] bg-background border-border focus:border-primary"
-              />
-            </div>
-
-            {/* Point of View */}
-            <div className="space-y-3 relative">
-              <Label htmlFor="pov" className="text-base">
-                Point of View
-              </Label>
-              <Input
-                id="pov"
-                value={pointOfView}
-                onChange={(e) => setPointOfView(e.target.value)}
-                onFocus={() => setShowPovSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowPovSuggestions(false), 200)}
-                placeholder="e.g., First person, Third person limited..."
-                className="bg-background border-border focus:border-primary"
-              />
-              {showPovSuggestions && povSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full bg-surface border border-border rounded-md shadow-lg mt-1">
-                  {povSuggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => {
-                        setPointOfView(suggestion)
-                        setShowPovSuggestions(false)
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-surface-light transition-colors cursor-pointer"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Location */}
-            <div className="space-y-3 relative">
-              <Label htmlFor="location" className="text-base">
-                Location
-              </Label>
-              <Input
-                id="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                onFocus={() => setShowLocationSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
-                placeholder="e.g., Ancient temple, Space station..."
-                className="bg-background border-border focus:border-primary"
-              />
-              {showLocationSuggestions && locationSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full bg-surface border border-border rounded-md shadow-lg mt-1">
-                  {locationSuggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => {
-                        setLocation(suggestion)
-                        setShowLocationSuggestions(false)
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-surface-light transition-colors cursor-pointer"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Associated Writings */}
-            <div className="space-y-3">
-              <Label htmlFor="writings" className="text-base">
-                Associated Writings
-              </Label>
-              <Select onValueChange={addWriting}>
+              <Select onValueChange={handleConnectedPlotPointsChange}>
                 <SelectTrigger className="bg-surface-light border-border">
-                  <SelectValue placeholder="Select writings" />
+                  <SelectValue placeholder="Select plot points" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SAMPLE_WRITINGS.filter((w) => !selectedWritings.includes(w.id)).map((writing) => (
-                    <SelectItem key={writing.id} value={writing.id.toString()}>
-                      {writing.title}
+                  {allPlotPointsData.filter(
+                    (plotPoint: any) => !connectedPlotPointIds.includes(plotPoint.id),
+                  ).map((plotPoint: any) => (
+                    <SelectItem key={plotPoint.id} value={plotPoint.id}>
+                      {plotPoint.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {selectedWritings.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedWritings.map((wId) => {
-                    const writing = SAMPLE_WRITINGS.find((w) => w.id === wId)
+              {connectedPlotPointIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedPlotPointIds.map((plotPointId) => {
+                    const plotPoint = allPlotPointsData.find((p: any) => p.id === plotPointId)
                     return (
                       <div
-                        key={wId}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm"
+                        key={plotPointId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
                       >
-                        <span>{writing?.title}</span>
+                        <span>{plotPoint?.title}</span>
                         <button
                           type="button"
-                          onClick={() => removeWriting(wId)}
-                          className="hover:text-foreground cursor-pointer"
+                          onClick={() => removeConnectedPlotPoint(plotPointId)}
+                          className="hover:text-foreground"
                         >
-                          <X className="w-3 h-3" />
+                          ×
                         </button>
                       </div>
                     )
@@ -400,57 +353,71 @@ export default function NewScenePage() {
               )}
             </div>
 
-            {/* Action Buttons */}
+            <div className="space-y-2">
+              <Label htmlFor="connectedWritingStyleSamples" className="text-sm font-medium">
+                Connected Writing Style Samples
+              </Label>
+              <Select onValueChange={handleConnectedWritingStyleSamplesChange}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select writing style samples" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allWritingStyleSamplesData.filter(
+                    (writingStyleSample: any) => !connectedWritingStyleSampleIds.includes(writingStyleSample.id),
+                  ).map((writingStyleSample: any) => (
+                    <SelectItem key={writingStyleSample.id} value={writingStyleSample.id}>
+                      {writingStyleSample.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {connectedWritingStyleSampleIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {connectedWritingStyleSampleIds.map((writingStyleSampleId) => {
+                    const writingStyleSample = allWritingStyleSamplesData.find((w: any) => w.id === writingStyleSampleId)
+                    return (
+                      <div
+                        key={writingStyleSampleId}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                      >
+                        {/* TODO: Figure out what to show instead of title (maybe prompt page) */}
+                        <span>{writingStyleSample?.title}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConnectedWritingStyleSample(writingStyleSampleId)}
+                          className="hover:text-foreground"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-3 pt-4">
-              <Link href={`/stories/${storyId}?tab=scenes`} className="flex-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-border bg-transparent"
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-              </Link>
               <Button
                 type="submit"
-                className="flex-1 bg-primary hover:bg-primary-hover text-white"
-                disabled={isSubmitting}
+                disabled={isGenerating}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create"
-                )}
+                {isGenerating ? "Generating..." : "Generate"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(`/stories/${storyId}?tab=scenes`)}
+                className="border-border hover:bg-surface-light bg-transparent"
+              >
+                Cancel
               </Button>
             </div>
-          </Card>
-        </form>
+          </form>
+        </Card>
 
-        {/* Loading Overlay */}
-        {isSubmitting && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <Card className="p-8 bg-surface border-border text-center space-y-4 max-w-md">
-              <div className="flex justify-center">
-                <Loader2 className="w-12 h-12 text-primary animate-spin" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Generating Scene</h2>
-                <p className="text-muted-foreground">
-                  Our AI is crafting your scene with the selected plot points and characters...
-                </p>
-              </div>
-              <div className="flex gap-2 justify-center">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
-              </div>
-            </Card>
-          </div>
-        )}
+        {isGenerating && SceneGenerationOverlay()}
       </main>
     </div>
   )

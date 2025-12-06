@@ -70,7 +70,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
     pointOfView,
     location
   } = req.body;
-  if (!overview || !connectedPlotPointIds || !connectedPlotPointIds.length) {
+  if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
     return res.status(400).json({error: "Scene overview or connected plot points are required."});
   }
   const plotPoints = ["TODO: Get from DB based on connectedPlotPointIds"];
@@ -79,7 +79,9 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   // TODO: Pass in POV and location to influence generation
   const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
-  res.status(200).json({ scene: sceneText });
+  console.log(sceneText);
+  const sceneId = 1; //TODO: Replace with actual created scene ID
+  res.status(200).json({ sceneId });
 });
 
 // QQQ: Does this need to be its own endpoint?
@@ -88,7 +90,7 @@ sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => 
   if (!req.body) {
     return res.status(400).json({error: "Missing request body."});
   }
-  const { storyId } = req.params;
+  const { storyId, sceneId } = req.params;
   const {
     overview,
     connectedCharacterIds,
@@ -97,7 +99,7 @@ sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => 
     pointOfView,
     location
   } = req.body;
-  if (!overview || !connectedPlotPointIds || !connectedPlotPointIds.length) {
+  if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
     return res.status(400).json({error: "Scene overview or connected plot points are required."});
   }
   const plotPoints = ["TODO: Get from DB based on connectedPlotPointIds"];
@@ -105,8 +107,9 @@ sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => 
   const writingStyleSamples = ["TODO: Get from DB based on connectedWritingStyleSampleIds"];
   // TODO: Pass in POV and location to influence generation
   const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
+  console.log(sceneText);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
-  res.status(200).json({ scene: sceneText });
+  res.status(200).json({ sceneId });
 });
 
 sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
