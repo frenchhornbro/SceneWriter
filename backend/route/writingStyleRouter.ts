@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample } from "../data-access/writingStyleDataAcess";
+import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample } from "../data-access/writingStyleDataAcess";
 
 const writingStyleRouter = Router();
 
@@ -71,7 +71,14 @@ writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) =
 });
 
 writingStyleRouter.delete("/:writingStyleId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { writingStyleId } = req.params;
+  const id = Number(writingStyleId);
+  if (!id) {
+    res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
+    return;
+  }
+  await deleteWritingStyleSample(id);
+  res.status(200).json({});
 });
 
 export default writingStyleRouter;

@@ -52,7 +52,9 @@ export default function NewWritingSamplePage() {
       content: response.trim()
     }, "POST",
       async (response) => {
-        router.push("/writingsamples")
+        const data = await response.json()
+        const writingStyleId = data.writingStyleId
+        router.push(`/writingsamples/${writingStyleId}`)
       },
       async (error) => {
         console.error("Failed to create writing sample:", error)

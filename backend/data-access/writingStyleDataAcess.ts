@@ -23,7 +23,7 @@ export async function getAllWritingStyleSamples(): Promise<any[]> {
 }
 
 export async function createNewWritingStyleSample(title: string, prompt: string, content: string, wordCount: number): Promise<void> {
-  await errorHandlerWrapper("createNewWritingStyleSample", async () => {
+  return await errorHandlerWrapper("createNewWritingStyleSample", async () => {
     const query = `
       INSERT INTO WritingStyleSample (title, prompt, content, word_count)
       VALUES (?, ?, ?, ?);
@@ -32,5 +32,15 @@ export async function createNewWritingStyleSample(title: string, prompt: string,
     const result = updateDB(query, params);
     const writingStyleId = result.lastInsertRowid;
     return writingStyleId;
+  });
+}
+
+export async function deleteWritingStyleSample(writingStyleId: number): Promise<void> {
+  return await errorHandlerWrapper("deleteWritingStyleSample", async () => {
+    const query = `
+      DELETE FROM WritingStyleSample WHERE id = ?;
+    `;
+    const params = [writingStyleId];
+    updateDB(query, params);
   });
 }
