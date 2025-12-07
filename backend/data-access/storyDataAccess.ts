@@ -1,5 +1,16 @@
 import { errorHandlerWrapper } from "./dataAccessUtils";
-import { updateDB } from "./dbOperations";
+import { queryDB, updateDB } from "./dbOperations";
+
+export function getStory(storyId: number): any {
+  return errorHandlerWrapper("getStory", () => {
+    const query = `
+      SELECT * FROM Story WHERE id = ?;
+    `;
+    const params = [storyId];
+    const result = queryDB(query, params)[0];
+    return result;
+  });
+}
 
 export function createNewStory(title: string, subtitle: string, overview: string): any {
   return errorHandlerWrapper("createNewStory", () => {

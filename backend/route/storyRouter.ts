@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
-import { createNewStory } from "../data-access/storyDataAccess";
+import { createNewStory, getStory } from "../data-access/storyDataAccess";
+import { validateId } from "./routerUtils";
 
 const storyRouter = Router();
 
@@ -28,14 +29,24 @@ storyRouter.get("/", async (req: Request, res: Response) => {
 });
 
 storyRouter.get("/:storyId", async (req: Request, res: Response) => {
-  // TODO: Return actual data from the DB
   const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const storyData = getStory(storyIdNum);
+  if (!storyData) {
+    res.status(404).json({error: "Story not found."});
+    return;
+  }
   res.status(200).json({
     id: storyId,
-    title: "Sample Story Title",
-    subtitle: "Sample Story Subtitle",
-    overview: "This is a sample overview of the story.",
-    editedAt: new Date().toISOString(),
+    title: storyData.title,
+    subtitle: storyData.subtitle,
+    overview: storyData.overview,
+    createdAt: storyData.created_at,
+    editedAt: storyData.edited_at,
   })
 });
 
