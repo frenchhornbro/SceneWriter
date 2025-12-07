@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewCharacter, deleteCharacter, getAllCharacters, getCharacter } from "../data-access/characterDataAccess";
+import { createNewCharacter, deleteCharacter, getAllCharacters, getCharacter, updateCharacter } from "../data-access/characterDataAccess";
 import { validateId } from "./routerUtils";
 import { getStory } from "../data-access/storyDataAccess";
 
@@ -28,7 +28,7 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid characterId parameter."});
     return;
   }
-  const { storyTitle } = getStory(storyIdNum);
+  const { title } = getStory(storyIdNum);
   const characterData = getCharacter(characterIdNum);
   const character = characterData["character"];
   if (!character) {
@@ -38,7 +38,7 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
   res.status(200).json({
     id: characterIdNum,
     storyId: storyIdNum,
-    storyTitle: storyTitle,
+    storyTitle: title,
     name: character.name,
     role: character.role,
     physicalDescription: character.physical_description,
@@ -91,7 +91,41 @@ characterRouter.post("/", (req: Request, res: Response) => {
 
 characterRouter.put("/:characterId", async (req: Request, res: Response) => {
   const { storyId, characterId } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const characterIdNum = validateId(characterId);
+  if (!characterIdNum) {
+    res.status(400).json({error: "Missing or invalid characterId parameter."});
+    return;
+  }
+  const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds } = req.body;
+  if (!name) {
+    res.status(400).json({error: "Missing required fields: name."});
+    return;
+  }
+  if (!relationships || !Array.isArray(relationships)) {
+    res.status(400).json({error: "Missing or invalid required fields: relationships."});
+    return;
+  }
+  if (!connectedPlotPointIds || !Array.isArray(connectedPlotPointIds)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedPlotPointIds."});
+    return;
+  }
+  if (!connectedSceneIds || !Array.isArray(connectedSceneIds)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedSceneIds."});
+    return;
+  }
+  const nameString = name.toString().trim();
+  const roleString = `${role ?? ""}`.trim();
+  const physicalDescriptionString = `${physicalDescription ?? ""}`.trim();
+  const personalityString = `${personality ?? ""}`.trim();
+  const backstoryString = `${backstory ?? ""}`.trim();
+  const additionalNotesString = `${additionalNotes ?? ""}`.trim();
+  updateCharacter(storyIdNum, characterIdNum, nameString, roleString, physicalDescriptionString, personalityString, backstoryString, additionalNotesString, relationships, connectedPlotPointIds, connectedSceneIds);
+  res.status(200).json({});
 });
 
 characterRouter.delete("/:characterId", async (req: Request, res: Response) => {

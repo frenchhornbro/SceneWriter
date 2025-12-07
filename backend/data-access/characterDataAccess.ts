@@ -86,13 +86,93 @@ export function createNewCharacter(storyId: number, name: string, role: string, 
     // Connect scenes
     connectedSceneIds.forEach((sceneId) => {
       const sceneQuery = `
-        INSERT INTO CharacterScene (character_id, scene_id)
+        INSERT INTO SceneCharacter (character_id, scene_id)
         VALUES (?, ?);
       `;
       const sceneParams = [characterId, sceneId];
       updateDB(sceneQuery, sceneParams);
     });
     container["characterId"] = characterId;
+  });
+}
+
+export function updateCharacter(storyId: number, characterId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedSceneIds: number[]): void {
+  function processRelationships() {
+    // Delete old relationships
+    const deleteRelationshipsPrompt = `
+      DELETE FROM CharacterRelationship
+      WHERE character_id = ?
+      AND related_character_id NOT IN (${relationships.map(() => "?").join(", ")});
+    `;
+    const deleteRelationshipsParams = [characterId, ...relationships.map((r) => r.id)];
+    updateDB(deleteRelationshipsPrompt, deleteRelationshipsParams);
+    // Add new relationships
+    relationships.forEach((relationship) => {
+      const { id: relatedCharacterId, description } = relationship;
+      const newRelationshipsPrompt = `
+        INSERT INTO CharacterRelationship (character_id, related_character_id, description)
+        VALUES (?, ?, ?)
+        ON CONFLICT(character_id, related_character_id) DO UPDATE SET description = excluded.description;
+      `;
+      const newRelationshipsParams = [characterId, relatedCharacterId, description];
+      updateDB(newRelationshipsPrompt, newRelationshipsParams);
+    });
+  }
+
+  function processConnectedPlotPoints() {
+    // Delete old plot points
+    const deletePlotPointsPrompt = `
+      DELETE FROM CharacterPlotPoint
+      WHERE character_id = ?
+      AND plot_point_id NOT IN (${connectedPlotPointIds.map(() => "?").join(", ")});
+    `;
+    const deletePlotPointsParams = [characterId, ...connectedPlotPointIds];
+    updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
+    // Add new plot points
+    connectedPlotPointIds.forEach((plotPointId) => {
+      const newPlotPointsPrompt = `
+        INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
+        VALUES (?, ?)
+        ON CONFLICT(character_id, plot_point_id) DO NOTHING;
+      `;
+      const newPlotPointsParams = [characterId, plotPointId];
+      updateDB(newPlotPointsPrompt, newPlotPointsParams);
+    });
+  }
+
+  function processConnectedScenes() {
+    // Delete old scenes
+    const deleteScenesPrompt = `
+      DELETE FROM SceneCharacter
+      WHERE character_id = ?
+      AND scene_id NOT IN (${connectedSceneIds.map(() => "?").join(", ")});
+    `;
+    const deleteScenesParams = [characterId, ...connectedSceneIds];
+    updateDB(deleteScenesPrompt, deleteScenesParams);
+    // Add new scenes
+    connectedSceneIds.forEach((sceneId) => {
+      const newScenesPrompt = `
+        INSERT INTO SceneCharacter (character_id, scene_id)
+        VALUES (?, ?)
+        ON CONFLICT(character_id, scene_id) DO NOTHING;
+      `;
+      const newScenesParams = [characterId, sceneId];
+      updateDB(newScenesPrompt, newScenesParams);
+    });
+  }
+
+  return transactionWrapper("updateCharacter", (_) => {
+    // Update character
+    const characterQuery = `
+      UPDATE Character
+      SET name = ?, role = ?, physical_description = ?, personality = ?, backstory = ?, additional_notes = ?, edited_at = CURRENT_TIMESTAMP
+      WHERE id = ?;
+    `;
+    const characterParams = [name, role, physicalDescription, personality, backstory, additionalNotes, characterId];
+    updateDB(characterQuery, characterParams);
+    processRelationships();
+    processConnectedPlotPoints();
+    processConnectedScenes();
   });
 }
 
