@@ -33,6 +33,20 @@ export function getScene(sceneId: number): any {
   });
 }
 
+export function getAllScenes(storyId: number): any[] {
+  return errorHandlerWrapper("getAllScenes", () => {
+    const query = `
+      SELECT id, title, scene_text as sceneText, chapter_number AS chapterNumber, created_at AS createdAt, edited_at AS editedAt
+      FROM Scene
+      WHERE story_id = ?
+      ORDER BY edited_at DESC;
+    `;
+    const params = [storyId];
+    const result = queryDB(query, params);
+    return result;
+  });
+}
+
 export function getNextSceneOrder(storyId: number): number {
   return errorHandlerWrapper("getNextSceneOrder", () => {
     const query = `

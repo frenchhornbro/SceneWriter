@@ -1,31 +1,29 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/model";
 import { validateId } from "./routerUtils";
-import { createNewScene, deleteScene, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 
 const sceneRouter = Router({ mergeParams: true });
 
 sceneRouter.get("/", async (req: Request, res: Response) => {
-  // TODO: Return actual data from the DB
-  res.status(200).json({
-    scenes: [
-      {
-        id: 1,
-        title: "Sample Scene 1",
-        sceneTextPage: "This is sample scene text of scene 1.",
-        chapterNumber: 1,
-        editedAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        title: "Sample Scene 2",
-        sceneTextPage: "This is sample scene text of scene 2.",
-        chapterNumber: 1,
-        editedAt: new Date().toISOString(),
-      },
-    ],
-  });
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const scenes = getAllScenes(storyIdNum);
+  const scenesWithTextPage = scenes.map((scene: any) => ({
+    id: scene.id,
+    title: scene.title,
+    sceneTextPage: scene.sceneText.length > 200 ? scene.sceneText.substring(0, 200) + "..." : scene.sceneText,
+    chapterNumber: scene.chapterNumber,
+    editedAt: scene.editedAt,
+    createdAt: scene.createdAt,
+  }));
+
+  res.status(200).json({ scenes: scenesWithTextPage });
 });
 
 sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
