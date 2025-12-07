@@ -42,7 +42,7 @@ export default function CharacterDetailClientPage({
     setIsDeleting(true)
     serverRequest(`api/story/${params.storyId}/character/${params.characterId}`, {}, "DELETE",
       async (response) => {
-        router.push(`/stories/${params.storyId}`)
+        router.push(`/stories/${params.storyId}?tab=characters`)
       },
       async (error) => {
         console.error("Failed to delete character:", error)

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { validateId } from "./routerUtils";
-import { createNewPlotPoint, getAllPlotPoints, getPlotPoint } from "../data-access/plotPointDataAccess";
+import { createNewPlotPoint, deletePlotPoint, getAllPlotPoints, getPlotPoint } from "../data-access/plotPointDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 
 const plotPointRouter = Router({ mergeParams: true });
@@ -88,7 +88,19 @@ plotPointRouter.put("/:plotPointId", async (req: Request, res: Response) => {
 });
 
 plotPointRouter.delete("/:plotPointId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId, plotPointId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const plotPointIdNum = validateId(plotPointId);
+  if (!plotPointIdNum) {
+    res.status(400).json({error: "Missing or invalid plotPointId parameter."});
+    return;
+  }
+  deletePlotPoint(plotPointIdNum);
+  res.status(200).json({});
 });
 
 export default plotPointRouter;

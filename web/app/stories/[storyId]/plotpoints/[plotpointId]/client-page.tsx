@@ -25,8 +25,8 @@ export default function PlotPointDetailClientPage({
   const handleDelete = async () => {
     setIsDeleting(true)
     serverRequest(`api/story/${params.storyId}/plotpoint/${params.plotpointId}`, {}, "DELETE",
-      async () => {
-        router.push(`/stories/${params.storyId}`)
+      async (response) => {
+        router.push(`/stories/${params.storyId}?tab=plotpoints`)
       },
       async (error) => {
         console.error("Failed to delete plot point:", error)

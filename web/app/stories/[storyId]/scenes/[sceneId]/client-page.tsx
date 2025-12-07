@@ -40,9 +40,9 @@ export default function SceneDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    serverRequest(`api/story/scene/${params.sceneId}`, {}, "DELETE",
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "DELETE",
       async (response) => {
-        router.push(`/stories/${params.storyId}`)
+        router.push(`/stories/${params.storyId}?tab=scenes`)
       },
       async (error) => {
         console.error("Failed to delete scene:", error)

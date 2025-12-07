@@ -75,3 +75,13 @@ export function createNewPlotPoint(storyId: number, title: string, description: 
     });
   });
 }
+
+export function deletePlotPoint(plotPointId: number): void {
+  return errorHandlerWrapper("deletePlotPoint", () => {
+    const deleteQuery = `
+      DELETE FROM PlotPoint WHERE id = ?;
+    `;
+    const deleteParams = [plotPointId];
+    updateDB(deleteQuery, deleteParams);
+  });
+}
