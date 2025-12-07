@@ -1,11 +1,11 @@
 import { Request, Response, Router } from "express";
-import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAcess";
+import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAccess";
 import { generatePrompt } from "../ai/model";
 
 const writingStyleRouter = Router();
 
-writingStyleRouter.get("/", async (req: Request, res: Response) => {
-  const writingStyleSamples = await getAllWritingStyleSamples();
+writingStyleRouter.get("/", (req: Request, res: Response) => {
+  const writingStyleSamples = getAllWritingStyleSamples();
   const writingStyleSamplesWithContentPage = writingStyleSamples.map(sample => {
     return {
       id: sample.id,
@@ -25,14 +25,14 @@ writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {
   res.status(200).json({ prompt: text });
 });
 
-writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) => {
+writingStyleRouter.get("/:writingStyleId", (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
   const id = Number(writingStyleId);
   if (!id) {
     res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
     return;
   }
-  const writingStyleSample = await getWritingStyleSample(id);
+  const writingStyleSample = getWritingStyleSample(id);
   if (!writingStyleSample) {
     res.status(404).json({error: "Writing style sample not found."});
     return;
@@ -48,7 +48,7 @@ writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) =
   });
 });
 
-writingStyleRouter.post("/", async (req: Request, res: Response) => {
+writingStyleRouter.post("/", (req: Request, res: Response) => {
   const { title, prompt, content } = req.body;
   if (!title || !prompt || !content) {
     res.status(400).json({error: "Missing required fields: title, prompt, content."});
@@ -58,11 +58,11 @@ writingStyleRouter.post("/", async (req: Request, res: Response) => {
   const promptString = prompt.toString().trim();
   const contentString = content.toString().trim();
   const wordCount = contentString.split(/\s+/).length;
-  const writingStyleId = await createNewWritingStyleSample(titleString, promptString, contentString, wordCount);
+  const writingStyleId = createNewWritingStyleSample(titleString, promptString, contentString, wordCount);
   res.status(201).json({ writingStyleId });
 });
 
-writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) => {
+writingStyleRouter.put("/:writingStyleId", (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
   const { title, content } = req.body;
   const id = Number(writingStyleId);
@@ -77,18 +77,18 @@ writingStyleRouter.put("/:writingStyleId", async (req: Request, res: Response) =
   const titleString = title.toString().trim();
   const contentString = content.toString().trim();
   const wordCount = contentString.split(/\s+/).length;
-  await updateWritingStyleSample(id, titleString, contentString, wordCount);
+  updateWritingStyleSample(id, titleString, contentString, wordCount);
   res.status(200).json({});
 });
 
-writingStyleRouter.delete("/:writingStyleId", async (req: Request, res: Response) => {
+writingStyleRouter.delete("/:writingStyleId", (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
   const id = Number(writingStyleId);
   if (!id) {
     res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
     return;
   }
-  await deleteWritingStyleSample(id);
+  deleteWritingStyleSample(id);
   res.status(200).json({});
 });
 

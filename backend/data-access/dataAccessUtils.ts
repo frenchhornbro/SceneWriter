@@ -1,6 +1,6 @@
-export async function errorHandlerWrapper(functionName: string, func: () => Promise<any>): Promise<any> {
+export function errorHandlerWrapper(functionName: string, func: () => any): any {
   try {
-    return await func();
+    return func();
   }
   catch (error) {
     console.error(`Database error in ${functionName}: ${error}`);

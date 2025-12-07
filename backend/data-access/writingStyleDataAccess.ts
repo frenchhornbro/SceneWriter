@@ -1,8 +1,8 @@
 import { errorHandlerWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
 
-export async function getWritingStyleSample(writingStyleId: number): Promise<any> {
-  return await errorHandlerWrapper("getWritingStyleSample", async () => {
+export function getWritingStyleSample(writingStyleId: number): any {
+  return errorHandlerWrapper("getWritingStyleSample", () => {
     const query = `
       SELECT * FROM WritingStyleSample WHERE id = ?;
     `;
@@ -12,8 +12,8 @@ export async function getWritingStyleSample(writingStyleId: number): Promise<any
   });
 }
 
-export async function getAllWritingStyleSamples(): Promise<any[]> {
-  return await errorHandlerWrapper("getAllWritingStyleSamples", async () => {
+export function getAllWritingStyleSamples(): any[] {
+  return errorHandlerWrapper("getAllWritingStyleSamples", () => {
     const query = `
       SELECT * FROM WritingStyleSample ORDER BY edited_at DESC;
     `;
@@ -22,8 +22,8 @@ export async function getAllWritingStyleSamples(): Promise<any[]> {
   });
 }
 
-export async function createNewWritingStyleSample(title: string, prompt: string, content: string, wordCount: number): Promise<void> {
-  return await errorHandlerWrapper("createNewWritingStyleSample", async () => {
+export function createNewWritingStyleSample(title: string, prompt: string, content: string, wordCount: number): void {
+  return errorHandlerWrapper("createNewWritingStyleSample", () => {
     const query = `
       INSERT INTO WritingStyleSample (title, prompt, content, word_count)
       VALUES (?, ?, ?, ?);
@@ -35,8 +35,8 @@ export async function createNewWritingStyleSample(title: string, prompt: string,
   });
 }
 
-export async function updateWritingStyleSample(writingStyleId: number, title: string, content: string, wordCount: number): Promise<void> {
-  return await errorHandlerWrapper("updateWritingStyleSample", async () => {
+export function updateWritingStyleSample(writingStyleId: number, title: string, content: string, wordCount: number): void {
+  return errorHandlerWrapper("updateWritingStyleSample", () => {
     const query = `
       UPDATE WritingStyleSample
       SET title = ?, content = ?, word_count = ?, edited_at = CURRENT_TIMESTAMP
@@ -47,8 +47,8 @@ export async function updateWritingStyleSample(writingStyleId: number, title: st
   });
 }
 
-export async function deleteWritingStyleSample(writingStyleId: number): Promise<void> {
-  return await errorHandlerWrapper("deleteWritingStyleSample", async () => {
+export function deleteWritingStyleSample(writingStyleId: number): void {
+  return errorHandlerWrapper("deleteWritingStyleSample", () => {
     const query = `
       DELETE FROM WritingStyleSample WHERE id = ?;
     `;
