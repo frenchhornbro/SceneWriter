@@ -1,6 +1,38 @@
 import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
 
+export function getScene(sceneId: number): any {
+  return transactionWrapper("getScene", (container) => {
+    // Get scene
+    const sceneQuery = `
+      SELECT * FROM Scene WHERE id = ?;
+    `;
+    const sceneParams = [sceneId];
+    const scene = queryDB(sceneQuery, sceneParams)[0];
+    container["scene"] = scene;
+    // Get connected characters
+    const characterQuery = `
+      SELECT c.id, c.name
+      FROM SceneCharacter sc
+      JOIN Character c ON sc.character_id = c.id
+      WHERE sc.scene_id = ?;
+    `;
+    const characterParams = [sceneId];
+    const connectedCharacters = queryDB(characterQuery, characterParams);
+    container["connectedCharacters"] = connectedCharacters;
+    // Get connected plot points
+    const plotPointQuery = `
+      SELECT pp.id, pp.title
+      FROM ScenePlotPoint spp
+      JOIN PlotPoint pp ON spp.plot_point_id = pp.id
+      WHERE spp.scene_id = ?;
+    `;
+    const plotPointParams = [sceneId];
+    const connectedPlotPoints = queryDB(plotPointQuery, plotPointParams);
+    container["connectedPlotPoints"] = connectedPlotPoints;
+  });
+}
+
 export function getNextSceneOrder(storyId: number): number {
   return errorHandlerWrapper("getNextSceneOrder", () => {
     const query = `
@@ -64,6 +96,7 @@ export function createNewScene(
   overview: string,
   sceneText: string,
   sceneOrder: number,
+  chapterNumber: number,
   title: string,
   pov: string,
   location: string,
@@ -73,12 +106,20 @@ export function createNewScene(
   connectedPlotPointIds: number[],
 ): any {
   return transactionWrapper("createNewScene", (container) => {
+    if (sceneIdParam === null) {
+      // Get a new scene ID
+      const idQuery = `
+        SELECT COALESCE(MAX(id), 0) + 1 AS newId FROM Scene;
+      `;
+      const result = queryDB(idQuery, []);
+      sceneIdParam = result[0]?.newId || 1;
+    }
     // Create scene
     const createQuery = `
-      INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, title, pov, location, tone, additional_notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, chapter_number, title, pov, location, tone, additional_notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
-    const createParams = [storyId, sceneIdParam, version, overview, sceneText, sceneOrder, title, pov, location, tone, additionalNotes];
+    const createParams = [storyId, sceneIdParam, version, overview, sceneText, sceneOrder, chapterNumber, title, pov, location, tone, additionalNotes];
     const result = updateDB(createQuery, createParams);
     const sceneId = result.lastInsertRowid;
     container["sceneId"] = sceneId;

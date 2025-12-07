@@ -19,14 +19,15 @@ export async function generateScene(
   tone: string,
 ): Promise<TextGenerationResult> {
   try {
-    const prompt = `Generate a scene in a story given the following information. Do NOT output anything other than the text of the scene.
-      Match the style found in these paragraphs, but not the content (these are NOT part of the story): "${writingStyleExamples}"
-      This is the plot of the story: "${plotPoints}"
-      These are the characters in the story: "${characters}"
-      Here is the overview of the scene to create: "${sceneDescription}"
-      The point of view is: "${pointOfView}"
-      The location is: "${location}"
-      The tone is: "${tone}"`;
+    const prompt = `Generate a scene in a story given the following information.
+      ${writingStyleExamples ? `Match the style found in these paragraphs, but not the content (these are NOT part of the story): "${writingStyleExamples}"` : ""}
+      ${plotPoints ? `This is the plot of the story: "${plotPoints}"` : ""}
+      ${characters ? `These are the characters in the story: "${characters}"` : ""}
+      ${sceneDescription ? `Here is the overview of the scene to create: "${sceneDescription}"` : ""}
+      ${pointOfView ? `The point of view is: "${pointOfView}"` : ""}
+      ${location ? `The location is: "${location}"` : ""}
+      ${tone ? `The tone is: "${tone}"` : ""}
+      Do NOT output anything other than the text of the scene.`;
     console.log(prompt);
     return await processPrompt(prompt);
   } catch (error) {

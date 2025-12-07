@@ -69,6 +69,7 @@ export async function sendRequest(prompt: string, url: string): Promise<TextGene
     break;
   }
   const text = await decodeResponse(response);
+  console.log("Generated text:", text);
   const endTime = Date.now();
   if (getEnvVar("VERBOSE") === "true") {
     console.log(`Scene generated in ${endTime - startTime} ms using model ${model}.`);

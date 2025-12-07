@@ -1,7 +1,8 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/model";
 import { validateId } from "./routerUtils";
-import { createNewScene, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
+import { createNewScene, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
+import { getStory } from "../data-access/storyDataAccess";
 
 const sceneRouter = Router({ mergeParams: true });
 
@@ -29,27 +30,44 @@ sceneRouter.get("/", async (req: Request, res: Response) => {
 
 sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
   const { storyId, sceneId } = req.params;
-  // TODO: Return actual data from the DB
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const { title } = getStory(storyIdNum);
+  const sceneData = getScene(sceneIdNum);
+  const scene = sceneData["scene"];
+  if (!scene) {
+    res.status(404).json({error: "Scene not found."});
+    return;
+  }
   res.status(200).json({
     id: sceneId,
     storyId: storyId,
-    storyTitle: "Sample Story Title",
+    storyTitle: title,
     sceneId: sceneId,
-    version: 1,
-    sceneText: "This is the sample text of the scene.\nThis is the second paragraph of the scene.",
-    overview: "This is a sample overview of the scene.",
-    order: 1,
-    chapterNumber: 1,
-    title: "Sample Scene Title",
-    pov: "Third Person",
-    location: "Sample Location",
-    connectedCharacterIds: [1, 2],
-    connectedPlotPointIds: [1, 2],
-    connectedWritingStyleSampleIds: [1, 2],
-    tone: "Suspenseful",
-    additionalNotes: "These are some sample additional notes about the scene.",
-    createdAt: new Date().toISOString(),
-    editedAt: new Date().toISOString(),
+    version: scene.version,
+    sceneText: scene.scene_text,
+    overview: scene.overview,
+    order: scene.scene_order,
+    chapterNumber: scene.chapter_number,
+    title: scene.title,
+    pov: scene.pov,
+    tone: scene.tone,
+    location: scene.location,
+    connectedCharacterIds: sceneData["connectedCharacters"].map((char: any) => char.id),
+    connectedPlotPointIds: sceneData["connectedPlotPoints"].map((pp: any) => pp.id),
+    connectedCharacters: sceneData["connectedCharacters"],
+    connectedPlotPoints: sceneData["connectedPlotPoints"],
+    additionalNotes: scene.additional_notes,
+    createdAt: scene.created_at,
+    editedAt: scene.edited_at,
   });
 });
 
@@ -71,6 +89,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const {
     overview,
     title,
+    chapterNumber,
     pov,
     location,
     tone,
@@ -93,33 +112,38 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString);
-  const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  console.log("repsonse text = ", text);
+  const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: 1 });
 });
 
 sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => {
-  // QQQ: Do I want to send the user the text, or save it in the DB and have them pull from there?
+  // TODO: Keep the same scene ID but create a new version
   if (!req.body) {
     return res.status(400).json({error: "Missing request body."});
   }
   const { storyId, sceneId } = req.params;
-  const {
-    overview,
-    connectedCharacterIds,
-    connectedPlotPointIds,
-    connectedWritingStyleSampleIds,
-    pointOfView,
-    location
-  } = req.body;
-  if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
-    return res.status(400).json({error: "Scene overview or connected plot points are required."});
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
   }
-  const plotPoints = ["TODO: Get from DB based on connectedPlotPointIds"];
-  const characters = ["TODO: Get from DB based on connectedCharacterIds"];
-  const writingStyleSamples = ["TODO: Get from DB based on connectedWritingStyleSampleIds"];
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const { overview, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, pointOfView, location } = req.body;
+  if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
+    res.status(400).json({error: "Scene overview or connected plot points are required."});
+    return;
+  }
+  // const plotPoints = [];
+  // const characters = [];
+  // const writingStyleSamples = [];
   // TODO: Pass in POV and location to influence generation
-  const { text } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
-  console.log(text);
+  // const { text } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
+  // console.log(text);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
   res.status(201).json({ sceneId });
 });
