@@ -23,7 +23,11 @@ export default function NewStoryPage() {
     }
 
     setIsSubmitting(true)
-    serverRequest("api/story", { title: title.trim(), overview: overview.trim() }, "POST",
+    serverRequest("api/story", {
+      title: title.trim(),
+      subtitle: subtitle.trim(),
+      overview: overview.trim()
+    }, "POST",
       async (response) => {
         router.push("/stories")
       },

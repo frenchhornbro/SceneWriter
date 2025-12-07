@@ -71,7 +71,29 @@ characterRouter.post("/", (req: Request, res: Response) => {
     return;
   }
   const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds } = req.body;
-  const { characterId } = createNewCharacter(storyIdNum, name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds);
+  if (!name) {
+    res.status(400).json({error: "Missing required fields: name."});
+    return;
+  }
+  if (!relationships || !Array.isArray(relationships)) {
+    res.status(400).json({error: "Missing or invalid required fields: relationships."});
+    return;
+  }
+  if (!connectedPlotPointIds || !Array.isArray(connectedPlotPointIds)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedPlotPointIds."});
+    return;
+  }
+  if (!connectedSceneIds || !Array.isArray(connectedSceneIds)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedSceneIds."});
+    return;
+  }
+  const nameString = name.toString().trim();
+  const roleString = `${role ?? ""}`.trim();
+  const physicalDescriptionString = `${physicalDescription ?? ""}`.trim();
+  const personalityString = `${personality ?? ""}`.trim();
+  const backstoryString = `${backstory ?? ""}`.trim();
+  const additionalNotesString = `${additionalNotes ?? ""}`.trim();
+  const { characterId } = createNewCharacter(storyIdNum, nameString, roleString, physicalDescriptionString, personalityString, backstoryString, additionalNotesString, relationships, connectedPlotPointIds, connectedSceneIds);
   res.status(201).json({ characterId });
 });
 

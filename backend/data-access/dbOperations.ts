@@ -20,6 +20,6 @@ export function updateDB(query: string, params: any[] = []): any {
   return db.prepare(query).run(...params);
 }
 
-export function transactionDB(func: () => any): any {
-  return db.transaction(() => func())();
+export function transactionDB(func: (container: any) => any, container: any): any {
+  return db.transaction(() => func(container))();
 }

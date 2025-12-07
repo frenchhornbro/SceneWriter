@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import { createNewStory } from "../data-access/storyDataAccess";
 
 const storyRouter = Router();
 
@@ -43,7 +44,15 @@ storyRouter.get("/:storyId/export", async (req: Request, res: Response) => {
 });
 
 storyRouter.post("/", async (req: Request, res: Response) => {
-  const storyId = 1; // TODO: Replace with actual created story ID
+  const { title, subtitle, overview } = req.body;
+  if (!title) {
+    res.status(400).json({ error: "Title is required." });
+    return;
+  }
+  const titleString = title.toString();
+  const subtitleString = `${subtitle ?? ""}`.toString();
+  const overviewString = `${overview ?? ""}`.toString();
+  const storyId = createNewStory(titleString, subtitleString, overviewString);
   res.status(201).json({ storyId });
 });
 

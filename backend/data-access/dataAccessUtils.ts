@@ -13,7 +13,7 @@ export function errorHandlerWrapper(functionName: string, func: () => any): any 
 export function transactionWrapper(functionName: string, func: (container: any) => any): any {
   return errorHandlerWrapper(functionName, () => {
     const container: any = {};
-    transactionDB(func(container));
+    transactionDB(func, container);
     return container;
   });
 }

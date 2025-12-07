@@ -55,7 +55,7 @@ writingStyleRouter.post("/", (req: Request, res: Response) => {
     res.status(400).json({error: "Missing required fields: prompt, content."});
     return;
   }
-  const titleString = title.toString().trim();
+  const titleString = `${title ?? ""}`.trim();
   const promptString = prompt.toString().trim();
   const contentString = content.toString().trim();
   const wordCount = contentString.split(/\s+/).length;
@@ -71,11 +71,11 @@ writingStyleRouter.put("/:writingStyleId", (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
     return;
   }
-  if (!title || !content) {
-    res.status(400).json({error: "Missing required fields: title, content."});
+  if (!content) {
+    res.status(400).json({error: "Missing required fields: content."});
     return;
   }
-  const titleString = title.toString().trim();
+  const titleString = `${title ?? ""}`.trim();
   const contentString = content.toString().trim();
   const wordCount = contentString.split(/\s+/).length;
   updateWritingStyleSample(id, titleString, contentString, wordCount);
