@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { validateId } from "./routerUtils";
-import { createNewPlotPoint } from "../data-access/plotPointDataAccess";
+import { createNewPlotPoint, getPlotPoint } from "../data-access/plotPointDataAccess";
+import { getStory } from "../data-access/storyDataAccess";
 
 const plotPointRouter = Router({ mergeParams: true });
 
@@ -26,17 +27,35 @@ plotPointRouter.get("/", async (req: Request, res: Response) => {
 
 plotPointRouter.get("/:plotPointId", async (req: Request, res: Response) => {
   const { storyId, plotPointId } = req.params;
-  // TODO: Return actual data from the DB
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const plotPointIdNum = validateId(plotPointId);
+  if (!plotPointIdNum) {
+    res.status(400).json({error: "Missing or invalid plotPointId parameter."});
+    return;
+  }
+  const { title } = getStory(storyIdNum);
+  const plotPointData = getPlotPoint(plotPointIdNum);
+  const plotPoint = plotPointData["plotPoint"];
+  if (!plotPoint) {
+    res.status(404).json({error: "Plot point not found."});
+    return;
+  }
   res.status(200).json({
     id: plotPointId,
     storyId: storyId,
-    storyTitle: "Sample Story Title",
-    title: "Sample Plot Point",
-    description: "This is a sample description of the plot point.",
-    connectedSceneIds: [1, 2],
-    connectedCharacterIds: [1, 2],
-    createdAt: new Date().toISOString(),
-    editedAt: new Date().toISOString(),
+    storyTitle: title,
+    title: plotPoint.title,
+    description: plotPoint.description,
+    connectedSceneIds: plotPointData["connectedScenes"].map((scene: any) => scene.id),
+    connectedCharacterIds: plotPointData["connectedCharacters"].map((character: any) => character.id),
+    connectedScenes: plotPointData["connectedScenes"],
+    connectedCharacters: plotPointData["connectedCharacters"],
+    createdAt: plotPoint.created_at,
+    editedAt: plotPoint.edited_at,
   });
 });
 
