@@ -95,3 +95,13 @@ export function createNewCharacter(storyId: number, name: string, role: string, 
     container["characterId"] = characterId;
   });
 }
+
+export function deleteCharacter(characterId: number): void {
+  return errorHandlerWrapper("deleteCharacter", () => {
+    const query = `
+      DELETE FROM Character WHERE id = ?;
+    `;
+    const params = [characterId];
+    updateDB(query, params);
+  });
+}

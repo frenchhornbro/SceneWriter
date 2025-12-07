@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewCharacter, getAllCharacters, getCharacter } from "../data-access/characterDataAccess";
+import { createNewCharacter, deleteCharacter, getAllCharacters, getCharacter } from "../data-access/characterDataAccess";
 import { validateId } from "./routerUtils";
 import { getStory } from "../data-access/storyDataAccess";
 
@@ -95,7 +95,19 @@ characterRouter.put("/:characterId", async (req: Request, res: Response) => {
 });
 
 characterRouter.delete("/:characterId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId, characterId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const characterIdNum = validateId(characterId);
+  if (!characterIdNum) {
+    res.status(400).json({error: "Missing or invalid characterId parameter."});
+    return;
+  }
+  deleteCharacter(characterIdNum);
+  res.status(200).json({});
 });
 
 export default characterRouter;
