@@ -1,5 +1,47 @@
 import { transactionWrapper } from "./dataAccessUtils";
-import { updateDB } from "./dbOperations";
+import { queryDB, updateDB } from "./dbOperations";
+
+export function getCharacter(characterId: number): any {
+  return transactionWrapper("getCharacter", (container) => {
+    // Get character
+    const characterQuery = `
+      SELECT * FROM Character WHERE id = ?;
+    `;
+    const characterParams = [characterId];
+    const character = queryDB(characterQuery, characterParams)[0];
+    container["character"] = character;
+    // Get relationships
+    const relationshipQuery = `
+      SELECT cr.related_character_id AS id, c.name AS name, c.role AS role, cr.description AS description
+      FROM CharacterRelationship cr
+      JOIN Character c ON cr.related_character_id = c.id
+      WHERE cr.character_id = ?;
+    `;
+    const relationshipParams = [characterId];
+    const relationships = queryDB(relationshipQuery, relationshipParams);
+    container["relationships"] = relationships;
+    // Get connected plot points
+    const plotPointQuery = `
+      SELECT pp.id, pp.title, pp.description
+      FROM CharacterPlotPoint cpp
+      JOIN PlotPoint pp ON cpp.plot_point_id = pp.id
+      WHERE cpp.character_id = ?;
+    `;
+    const plotPointParams = [characterId];
+    const connectedPlotPoints = queryDB(plotPointQuery, plotPointParams);
+    container["connectedPlotPoints"] = connectedPlotPoints;
+    // Get connected scenes
+    const sceneQuery = `
+      SELECT s.id, s.title, s.overview
+      FROM SceneCharacter sc
+      JOIN Scene s ON sc.scene_id = s.id
+      WHERE sc.character_id = ?;
+    `;
+    const sceneParams = [characterId];
+    const connectedScenes = queryDB(sceneQuery, sceneParams);
+    container["connectedScenes"] = connectedScenes;
+  });
+}
 
 export function createNewCharacter(storyId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedSceneIds: number[]): any {
   return transactionWrapper("createNewCharacter", (container) => {

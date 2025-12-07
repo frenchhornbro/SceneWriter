@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
-import { createNewCharacter } from "../data-access/characterDataAccess";
+import { createNewCharacter, getCharacter } from "../data-access/characterDataAccess";
 import { validateId } from "./routerUtils";
+import { getStory } from "../data-access/storyDataAccess";
 
 const characterRouter = Router({ mergeParams: true });
 
@@ -31,35 +32,40 @@ characterRouter.get("/", async (req: Request, res: Response) => {
 
 characterRouter.get("/:characterId", async (req: Request, res: Response) => {
   const { storyId, characterId } = req.params;
-  // TODO: Return actual data from the DB
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const characterIdNum = validateId(characterId);
+  if (!characterIdNum) {
+    res.status(400).json({error: "Missing or invalid characterId parameter."});
+    return;
+  }
+  const { storyTitle } = getStory(storyIdNum);
+  const characterData = getCharacter(characterIdNum);
+  const character = characterData["character"];
+  if (!character) {
+    res.status(404).json({error: "Character not found."});
+    return;
+  }
   res.status(200).json({
-    id: characterId,
-    storyId: storyId,
-    storyTitle: "Sample Story Title",
-    name: "Sample Character",
-    role: "Protagonist",
-    physicalDescription: "This is a sample physical description of the character.",
-    personality: "This is a sample personality description of the character.",
-    backstory: "This is a sample background story of the character.",
-    additionalNotes: "These are some sample notes about the character.",
-    relationships: [
-      {
-        id: 1,
-        name: "Bob",
-        description: "Friendship",
-        role: "Sidekick"
-      },
-      {
-        id: 2,
-        name: "Eve",
-        description: "Rivalry",
-        role: "Antagonist"
-      }
-    ],
-    connectedPlotPointIds: [1, 2],
-    connectedSceneIds: [1, 2],
-    createdAt: new Date().toISOString(),
-    editedAt: new Date().toISOString(),
+    id: characterIdNum,
+    storyId: storyIdNum,
+    storyTitle: storyTitle,
+    name: character.name,
+    role: character.role,
+    physicalDescription: character.physical_description,
+    personality: character.personality,
+    backstory: character.backstory,
+    additionalNotes: character.additional_notes,
+    relationships: characterData["relationships"],
+    connectedPlotPointIds: characterData["connectedPlotPoints"].map((pp: any) => pp.id),
+    connectedSceneIds: characterData["connectedScenes"].map((s: any) => s.id),
+    connectedPlotPoints: characterData["connectedPlotPoints"],
+    connectedScenes: characterData["connectedScenes"],
+    createdAt: character.created_at,
+    editedAt: character.edited_at,
   });
 });
 

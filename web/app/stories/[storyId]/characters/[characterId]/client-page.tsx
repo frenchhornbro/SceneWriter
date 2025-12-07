@@ -191,7 +191,7 @@ export default function CharacterDetailClientPage({
                     className="block p-4 rounded-lg bg-background border border-border hover:border-primary/50 transition-colors"
                   >
                     <h3 className="font-semibold mb-1">{scene.title}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{scene.description}</p>
+                    <p className="text-sm text-muted-foreground truncate">{scene.overview}</p>
                   </Link>
                 ))}
               </div>
