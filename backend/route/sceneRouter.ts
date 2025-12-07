@@ -77,9 +77,9 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const characters = ["TODO: Get from DB based on connectedCharacterIds"];
   const writingStyleSamples = ["TODO: Get from DB based on connectedWritingStyleSampleIds"];
   // TODO: Pass in POV and location to influence generation
-  const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
+  const { text } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
-  console.log(sceneText);
+  console.log(text);
   const sceneId = 1; //TODO: Replace with actual created scene ID
   res.status(201).json({ sceneId });
 });
@@ -106,8 +106,8 @@ sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => 
   const characters = ["TODO: Get from DB based on connectedCharacterIds"];
   const writingStyleSamples = ["TODO: Get from DB based on connectedWritingStyleSampleIds"];
   // TODO: Pass in POV and location to influence generation
-  const { sceneText } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
-  console.log(sceneText);
+  const { text } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
+  console.log(text);
   // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
   res.status(201).json({ sceneId });
 });

@@ -1,11 +1,11 @@
 import { getEnvVar } from "../utils/envAccess";
-import { SceneGenerationResult } from "./types";
+import { TextGenerationResult } from "./types";
 
 const models = [
-  "llama3.2:latest",
-  "gemma3:4b",
+  "gemma3:270m",
   "gemma3:1b",
-  "gemma3:270m"
+  "gemma3:4b",
+  "llama3.2:latest",
 ]
 
 async function sendRequestWithModel(prompt: string, url: string, model: string): Promise<Response> {
@@ -44,7 +44,7 @@ async function decodeResponse(response: Response): Promise<string> {
   return result;
 }
 
-export async function sendRequest(prompt: string, url: string): Promise<SceneGenerationResult> {
+export async function sendRequest(prompt: string, url: string): Promise<TextGenerationResult> {
   // TODO: Allow the user to specify model preference
   const startTime = Date.now();
   let response: any;
@@ -68,10 +68,10 @@ export async function sendRequest(prompt: string, url: string): Promise<SceneGen
     }
     break;
   }
-  const sceneText = await decodeResponse(response);
+  const text = await decodeResponse(response);
   const endTime = Date.now();
   if (getEnvVar("VERBOSE") === "true") {
     console.log(`Scene generated in ${endTime - startTime} ms using model ${model}.`);
   }
-  return {sceneText: sceneText, timeTakenMs: endTime - startTime, modelUsed: model};
+  return {text, timeTakenMs: endTime - startTime, modelUsed: model};
 }

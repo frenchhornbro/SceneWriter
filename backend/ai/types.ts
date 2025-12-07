@@ -1,5 +1,5 @@
-export interface SceneGenerationResult {
-  sceneText: string;
+export interface TextGenerationResult {
+  text: string;
   timeTakenMs: number;
   modelUsed: string;
 }

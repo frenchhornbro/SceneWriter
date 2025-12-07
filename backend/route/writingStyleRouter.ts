@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAcess";
+import { generatePrompt } from "../ai/model";
 
 const writingStyleRouter = Router();
 
@@ -20,10 +21,8 @@ writingStyleRouter.get("/", async (req: Request, res: Response) => {
 });
 
 writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {
-  // TODO: Generate a prompt with AI
-  res.status(200).json({
-    prompt: "Write a scene where your protagonist takes on a leadership role for the first time.",
-  });
+  const { text } = await generatePrompt();
+  res.status(200).json({ prompt: text });
 });
 
 writingStyleRouter.get("/:writingStyleId", async (req: Request, res: Response) => {
