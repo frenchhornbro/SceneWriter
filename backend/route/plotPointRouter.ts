@@ -1,28 +1,26 @@
 import { Request, Response, Router } from "express";
 import { validateId } from "./routerUtils";
-import { createNewPlotPoint, getPlotPoint } from "../data-access/plotPointDataAccess";
+import { createNewPlotPoint, getAllPlotPoints, getPlotPoint } from "../data-access/plotPointDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 
 const plotPointRouter = Router({ mergeParams: true });
 
 plotPointRouter.get("/", async (req: Request, res: Response) => {
-  // TODO: Return actual data from the DB
-  res.status(200).json({
-    plotPoints: [
-      {
-        id: 1,
-        title: "Sample Plot Point 1",
-        descriptionPage: "This is a sample description of plot point 1.",
-        editedAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        title: "Sample Plot Point 2",
-        descriptionPage: "This is a sample description of plot point 2.",
-        editedAt: new Date().toISOString(),
-      },
-    ],
-  });
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const plotPoints = getAllPlotPoints(storyIdNum);
+  const plotPointsWithDescriptionPage = plotPoints.map((pp: any) => ({
+    id: pp.id,
+    title: pp.title,
+    descriptionPage: pp.description.length > 200 ? pp.description.substring(0, 200) + "..." : pp.description,
+    editedAt: pp.editedAt,
+    createdAt: pp.createdAt,
+  }));
+  res.status(200).json({ plotPoints: plotPointsWithDescriptionPage });
 });
 
 plotPointRouter.get("/:plotPointId", async (req: Request, res: Response) => {

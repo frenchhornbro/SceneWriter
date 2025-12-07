@@ -1,4 +1,4 @@
-import { transactionWrapper } from "./dataAccessUtils";
+import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
 
 export function getPlotPoint(plotPointId: number): any {
@@ -30,6 +30,17 @@ export function getPlotPoint(plotPointId: number): any {
     const characterParams = [plotPointId];
     const connectedCharacters = queryDB(characterQuery, characterParams);
     container["connectedCharacters"] = connectedCharacters;
+  });
+}
+
+export function getAllPlotPoints(storyId: number): any[] {
+  return errorHandlerWrapper("getAllPlotPoints", () => {
+    const query = `
+      SELECT id, title, description, created_at AS createdAt, edited_at AS editedAt FROM PlotPoint WHERE story_id = ? ORDER BY edited_at DESC;
+    `;
+    const params = [storyId];
+    const result = queryDB(query, params);
+    return result;
   });
 }
 

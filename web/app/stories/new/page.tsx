@@ -29,7 +29,9 @@ export default function NewStoryPage() {
       overview: overview.trim()
     }, "POST",
       async (response) => {
-        router.push("/stories")
+        const data = await response.json()
+        const { storyId } = data
+        router.push(`/stories/${storyId}`)
       },
       async (error) => {
         console.error(`Failed to create story: ${error}`)

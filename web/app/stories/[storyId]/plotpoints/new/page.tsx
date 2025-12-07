@@ -271,7 +271,7 @@ export default function NewPlotPointPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !title.trim()}
+                disabled={isSubmitting || !description.trim()}
                 className="flex-1 bg-primary hover:bg-primary-hover text-white"
               >
                 {isSubmitting ? "Creating..." : "Create Plot Point"}
