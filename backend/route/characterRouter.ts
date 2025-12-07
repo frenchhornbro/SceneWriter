@@ -1,4 +1,6 @@
 import { Request, Response, Router } from "express";
+import { createNewCharacter } from "../data-access/characterDataAccess";
+import { validateId } from "./routerUtils";
 
 const characterRouter = Router({ mergeParams: true });
 
@@ -61,10 +63,16 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
   });
 });
 
-characterRouter.post("/", async (req: Request, res: Response) => {
+characterRouter.post("/", (req: Request, res: Response) => {
   const { storyId } = req.params;
-  const characterId = 1; //TODO: Create character in DB and return actual ID
-  res.status(201).json({ characterId: characterId });
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds } = req.body;
+  const { characterId } = createNewCharacter(storyIdNum, name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds);
+  res.status(201).json({ characterId });
 });
 
 characterRouter.put("/:characterId", async (req: Request, res: Response) => {

@@ -6,15 +6,10 @@ const dbPath = "db/scenewriter.sqlite";
 const db = new Database(dbPath);
 
 export function createDB(): void {
-  if (fs.existsSync(dbPath)) {
-    process.stdout.write("\rDatabase already exists         ");
-    return;
-  }
-  process.stdout.write("\rCreating database...         ");
+  console.log("Initializing database...");
   const schema = fs.readFileSync(dbSchemaPath, "utf-8");
   db.exec(schema);
-  db.close();
-  process.stdout.write("\rCreated database             ");
+  console.log("Database initialized");
 }
 
 export function queryDB(query: string, params: any[] = []): any[] {
@@ -23,4 +18,8 @@ export function queryDB(query: string, params: any[] = []): any[] {
 
 export function updateDB(query: string, params: any[] = []): any {
   return db.prepare(query).run(...params);
+}
+
+export function transactionDB(func: () => any): any {
+  return db.transaction(() => func())();
 }

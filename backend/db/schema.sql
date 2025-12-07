@@ -1,6 +1,6 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE Story (
+CREATE TABLE IF NOT EXISTS Story (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   subtitle TEXT,
@@ -9,7 +9,7 @@ CREATE TABLE Story (
   edited_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE PlotPoint (
+CREATE TABLE IF NOT EXISTS PlotPoint (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   story_id INTEGER NOT NULL,
   title TEXT,
@@ -17,7 +17,7 @@ CREATE TABLE PlotPoint (
   FOREIGN KEY (story_id) REFERENCES Story(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Character (
+CREATE TABLE IF NOT EXISTS Character (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   story_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE Character (
   FOREIGN KEY (story_id) REFERENCES Story(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Scene (
+CREATE TABLE IF NOT EXISTS Scene (
   id INTEGER,
   version INTEGER NOT NULL DEFAULT 1,
   story_id INTEGER NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE Scene (
   FOREIGN KEY (story_id) REFERENCES Story(id) ON DELETE CASCADE
 );
 
-CREATE TABLE WritingStyleSample (
+CREATE TABLE IF NOT EXISTS WritingStyleSample (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT,
   prompt TEXT NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE WritingStyleSample (
   edited_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE CharacterRelationship (
+CREATE TABLE IF NOT EXISTS CharacterRelationship (
   character_id INTEGER NOT NULL,
   related_character_id INTEGER NOT NULL,
   description TEXT,
@@ -69,7 +69,7 @@ CREATE TABLE CharacterRelationship (
   FOREIGN KEY (related_character_id) REFERENCES Character(id) ON DELETE CASCADE
 );
 
-CREATE TABLE SceneCharacter (
+CREATE TABLE IF NOT EXISTS SceneCharacter (
   scene_id INTEGER NOT NULL,
   scene_version INTEGER NOT NULL,
   character_id INTEGER NOT NULL,
@@ -78,11 +78,19 @@ CREATE TABLE SceneCharacter (
   FOREIGN KEY (character_id) REFERENCES Character(id) ON DELETE CASCADE
 );
 
-CREATE TABLE ScenePlotPoint (
+CREATE TABLE IF NOT EXISTS ScenePlotPoint (
   scene_id INTEGER NOT NULL,
   scene_version INTEGER NOT NULL,
   plot_point_id INTEGER NOT NULL,
   PRIMARY KEY (scene_id, scene_version, plot_point_id),
   FOREIGN KEY (scene_id, scene_version) REFERENCES Scene(id, version) ON DELETE CASCADE,
+  FOREIGN KEY (plot_point_id) REFERENCES PlotPoint(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS CharacterPlotPoint (
+  character_id INTEGER NOT NULL,
+  plot_point_id INTEGER NOT NULL,
+  PRIMARY KEY (character_id, plot_point_id),
+  FOREIGN KEY (character_id) REFERENCES Character(id) ON DELETE CASCADE,
   FOREIGN KEY (plot_point_id) REFERENCES PlotPoint(id) ON DELETE CASCADE
 );

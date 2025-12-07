@@ -42,7 +42,7 @@ export default function NewWritingSamplePage() {
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
-    if (!title.trim()) {
+    if (!response.trim()) {
       return
     }
     setIsSubmitting(true)
@@ -100,7 +100,6 @@ export default function NewWritingSamplePage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Give your writing a title"
-                  required
                   className="bg-background border-border"
                 />
               </div>
@@ -121,6 +120,7 @@ export default function NewWritingSamplePage() {
                   value={response}
                   onChange={(e) => setResponse(e.target.value)}
                   placeholder="Write your response to the prompt..."
+                  required
                   rows={20}
                   className="bg-background border-border"
                 />
@@ -136,7 +136,7 @@ export default function NewWritingSamplePage() {
             </Link>
             <Button
               type="submit"
-              disabled={isSubmitting || !title.trim()}
+              disabled={isSubmitting || !response.trim()}
               className="bg-primary hover:bg-primary-hover text-white"
             >
               {isSubmitting ? (

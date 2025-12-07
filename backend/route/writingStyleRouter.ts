@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAccess";
 import { generatePrompt } from "../ai/model";
+import { validateId } from "./routerUtils";
 
 const writingStyleRouter = Router();
 
@@ -27,7 +28,7 @@ writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {
 
 writingStyleRouter.get("/:writingStyleId", (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
-  const id = Number(writingStyleId);
+  const id = validateId(writingStyleId);
   if (!id) {
     res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
     return;
@@ -50,8 +51,8 @@ writingStyleRouter.get("/:writingStyleId", (req: Request, res: Response) => {
 
 writingStyleRouter.post("/", (req: Request, res: Response) => {
   const { title, prompt, content } = req.body;
-  if (!title || !prompt || !content) {
-    res.status(400).json({error: "Missing required fields: title, prompt, content."});
+  if (!prompt || !content) {
+    res.status(400).json({error: "Missing required fields: prompt, content."});
     return;
   }
   const titleString = title.toString().trim();
@@ -65,7 +66,7 @@ writingStyleRouter.post("/", (req: Request, res: Response) => {
 writingStyleRouter.put("/:writingStyleId", (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
   const { title, content } = req.body;
-  const id = Number(writingStyleId);
+  const id = validateId(writingStyleId);
   if (!id) {
     res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
     return;
@@ -83,7 +84,7 @@ writingStyleRouter.put("/:writingStyleId", (req: Request, res: Response) => {
 
 writingStyleRouter.delete("/:writingStyleId", (req: Request, res: Response) => {
   const { writingStyleId } = req.params;
-  const id = Number(writingStyleId);
+  const id = validateId(writingStyleId);
   if (!id) {
     res.status(400).json({error: "Missing or invalid writingStyleId parameter."});
     return;

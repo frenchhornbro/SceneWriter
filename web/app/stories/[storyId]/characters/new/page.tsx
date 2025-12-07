@@ -100,8 +100,8 @@ export default function NewCharacterPage() {
       backstory: backstory.trim(),
       additionalNotes: additionalNotes.trim(),
       relationships,
-      connectedPlotPointIds: connectedPlotPointIds,
-      connectedSceneIds: connectedSceneIds
+      connectedPlotPointIds,
+      connectedSceneIds
     }, "POST",
       async (response) => {
         const data = await response.json()
@@ -127,8 +127,7 @@ export default function NewCharacterPage() {
     if (characterIdNum && !relationships.some((character: any) => character.id === characterIdNum)) {
       setRelationships([...relationships, {
         id: characterIdNum,
-        name: allCharactersData.find((c: any) => c.id === characterIdNum)?.name || "",
-        role: allCharactersData.find((c: any) => c.id === characterIdNum)?.role || "" //TODO: Allow user to set role
+        description: "" //TODO: Allow user to set role
       }])
     }
   }

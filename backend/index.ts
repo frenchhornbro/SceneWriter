@@ -3,7 +3,7 @@ import app from "./service";
 import { getEnvVar } from "./utils/envAccess";
 import { green } from "./utils/textColor";
 
-process.stdout.write("\nInitializing server...");
+console.log("Initializing server...");
 
 const port = parseInt(getEnvVar("SERVER_PORT")) || 7458;
 
