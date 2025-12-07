@@ -141,7 +141,7 @@ characterRouter.delete("/:characterId", async (req: Request, res: Response) => {
     return;
   }
   deleteCharacter(characterIdNum);
-  res.status(200).json({});
+  res.status(204).json({});
 });
 
 export default characterRouter;

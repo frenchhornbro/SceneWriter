@@ -143,3 +143,13 @@ export function createNewScene(
     });
   });
 }
+
+export function deleteScene(sceneId: number): void {
+  return errorHandlerWrapper("deleteScene", () => {
+    const deleteQuery = `
+      DELETE FROM Scene WHERE id = ?;
+    `;
+    const params = [sceneId];
+    updateDB(deleteQuery, params);
+  });
+}

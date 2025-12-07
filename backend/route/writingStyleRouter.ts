@@ -90,7 +90,7 @@ writingStyleRouter.delete("/:writingStyleId", (req: Request, res: Response) => {
     return;
   }
   deleteWritingStyleSample(id);
-  res.status(200).json({});
+  res.status(204).json({});
 });
 
 export default writingStyleRouter;

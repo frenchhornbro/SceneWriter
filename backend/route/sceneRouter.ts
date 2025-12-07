@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/model";
 import { validateId } from "./routerUtils";
-import { createNewScene, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 
 const sceneRouter = Router({ mergeParams: true });
@@ -154,7 +154,19 @@ sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
 });
 
 sceneRouter.delete("/:sceneId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId, sceneId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  deleteScene(sceneIdNum);
+  res.status(204).json({});
 });
 
 export default sceneRouter;

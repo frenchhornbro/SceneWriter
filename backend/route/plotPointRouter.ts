@@ -100,7 +100,7 @@ plotPointRouter.delete("/:plotPointId", async (req: Request, res: Response) => {
     return;
   }
   deletePlotPoint(plotPointIdNum);
-  res.status(200).json({});
+  res.status(204).json({});
 });
 
 export default plotPointRouter;
