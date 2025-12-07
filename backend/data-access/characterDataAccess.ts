@@ -1,4 +1,4 @@
-import { transactionWrapper } from "./dataAccessUtils";
+import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
 
 export function getCharacter(characterId: number): any {
@@ -40,6 +40,17 @@ export function getCharacter(characterId: number): any {
     const sceneParams = [characterId];
     const connectedScenes = queryDB(sceneQuery, sceneParams);
     container["connectedScenes"] = connectedScenes;
+  });
+}
+
+export function getAllCharacters(storyId: number): any[] {
+  return errorHandlerWrapper("getAllCharacters", () => {
+    const query = `
+      SELECT id, name, role, created_at AS createdAt, edited_at AS editedAt FROM Character WHERE story_id = ? ORDER BY edited_at DESC;
+    `;
+    const params = [storyId];
+    const result = queryDB(query, params);
+    return result;
   });
 }
 

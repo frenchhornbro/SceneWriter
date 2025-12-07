@@ -1,33 +1,19 @@
 import { Request, Response, Router } from "express";
-import { createNewCharacter, getCharacter } from "../data-access/characterDataAccess";
+import { createNewCharacter, getAllCharacters, getCharacter } from "../data-access/characterDataAccess";
 import { validateId } from "./routerUtils";
 import { getStory } from "../data-access/storyDataAccess";
 
 const characterRouter = Router({ mergeParams: true });
 
 characterRouter.get("/", async (req: Request, res: Response) => {
-  // TODO: Return actual data from the DB
-  res.status(200).json({
-    characters: [
-      {
-        id: 1,
-        name: "Sample Character 1",
-        role: "Protagonist",
-        editedAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        name: "Sample Character 2",
-        role: "Antagonist",
-        editedAt: new Date().toISOString(),
-      },
-      {
-        id: 3,
-        name: "Sample Character 3",
-        editedAt: new Date().toISOString(),
-      }
-    ],
-  });
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const characters = getAllCharacters(storyIdNum);
+  res.status(200).json({ characters });
 });
 
 characterRouter.get("/:characterId", async (req: Request, res: Response) => {
