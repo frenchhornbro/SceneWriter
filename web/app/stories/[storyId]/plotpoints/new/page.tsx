@@ -80,8 +80,8 @@ export default function NewPlotPointPage() {
     serverRequest(`api/story/${storyId}/plotpoint/`, {
         title,
         description,
-        connectedCharacters: connectedCharacterIds,
-        connectedScenes: connectedSceneIds,
+        connectedCharacterIds,
+        connectedSceneIds,
       }, "POST",
       async (response) => {
         const data = await response.json()
