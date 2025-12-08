@@ -1,5 +1,6 @@
 | Date | Time | Description |
 | :---: | :---: | --- |
+| 12/6/2025 | 8 hours | Initializing DB, creating logic for each endpoint to attach to the backend |
 | 12/6/2025 | 3 hours | Finished refining and connecting frontend |
 | 12/5/2025 | 2 hours | Fixing edit pages |
 | 12/4/2025 | 8 hours | Pulling placeholder data on loading |

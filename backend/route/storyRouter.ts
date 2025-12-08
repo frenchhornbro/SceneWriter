@@ -1,31 +1,21 @@
 import { Request, Response, Router } from "express";
-import { createNewStory, getStory } from "../data-access/storyDataAccess";
+import { createNewStory, getAllStories, getStory } from "../data-access/storyDataAccess";
 import { validateId } from "./routerUtils";
 
 const storyRouter = Router();
 
 storyRouter.get("/", async (req: Request, res: Response) => {
-  // TODO: Return actual data from the DB
-  res.status(200).json({
-    stories: [
-      {
-        id: 1,
-        title: "Sample Story Title 1",
-        subtitle: "Sample Story Subtitle 1",
-        overview: "This is a sample overview of story 1. It has multiple sentences to give a better idea of the story content.",
-        storyPage: "This is sample content for story 1. It has multiple sentences to simulate a real story content page.",
-        editedAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        title: "Sample Story Title 2",
-        subtitle: "Sample Story Subtitle 2",
-        overview: "This is a sample overview of story 2. It has multiple sentences to give a better idea of the story content.",
-        storyPage: "This is sample content for story 2. It has multiple sentences to simulate a real story content page.",
-        editedAt: new Date().toISOString(),
-      },
-    ],
-  });
+  const stories = getAllStories();
+  const storiesWithPages = stories.map((story: any) => ({
+    id: story.id,
+    title: story.title,
+    subtitle: story.subtitle,
+    overview: story.overview,
+    storyPage: story.overview.length > 200 ? story.overview.substring(0, 200) + "..." : story.overview, //TODO: Compile this from scene text, according to order (or chapters)
+    editedAt: story.editedAt,
+    createdAt: story.createdAt,
+  }));
+  res.status(200).json({ stories: storiesWithPages });
 });
 
 storyRouter.get("/:storyId", async (req: Request, res: Response) => {

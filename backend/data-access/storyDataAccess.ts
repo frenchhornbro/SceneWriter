@@ -12,6 +12,17 @@ export function getStory(storyId: number): any {
   });
 }
 
+export function getAllStories(): any[] {
+  return errorHandlerWrapper("getAllStories", () => {
+    const query = `
+      SELECT id, title, subtitle, overview, created_at AS createdAt, edited_at AS editedAt FROM Story ORDER BY edited_at DESC;
+    `;
+    const params: any[] = [];
+    const result = queryDB(query, params);
+    return result;
+  });
+}
+
 export function createNewStory(title: string, subtitle: string, overview: string): any {
   return errorHandlerWrapper("createNewStory", () => {
     const createQuery = `
