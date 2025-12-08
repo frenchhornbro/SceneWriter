@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewStory, getAllStories, getStory } from "../data-access/storyDataAccess";
+import { createNewStory, deleteStory, getAllStories, getStory } from "../data-access/storyDataAccess";
 import { validateId } from "./routerUtils";
 
 const storyRouter = Router();
@@ -62,7 +62,14 @@ storyRouter.put("/:storyId", async (req: Request, res: Response) => {
 });
 
 storyRouter.delete("/:storyId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  deleteStory(storyIdNum);
+  res.status(204).json({});
 });
 
 export default storyRouter;

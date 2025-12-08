@@ -35,3 +35,13 @@ export function createNewStory(title: string, subtitle: string, overview: string
     return storyId;
   });
 }
+
+export function deleteStory(storyId: number): void {
+  return errorHandlerWrapper("deleteStory", () => {
+    const deleteQuery = `
+      DELETE FROM Story WHERE id = ?;
+    `;
+    const deleteParams = [storyId];
+    updateDB(deleteQuery, deleteParams);
+  });
+}
