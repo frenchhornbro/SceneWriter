@@ -164,11 +164,11 @@ export default function SceneDetailClientPage({
             </Card>
           )}
 
-          {sceneData.characters && sceneData.characters.length ? (
+          {sceneData.connectedCharacters && sceneData.connectedCharacters.length ? (
             <Card className="p-6 bg-surface border-border">
               <h2 className="text-xl font-semibold mb-4">Connected Characters</h2>
               <div className="flex flex-wrap gap-2">
-                {sceneData.characters.map((character: any, index: number) => (
+                {sceneData.connectedCharacters.map((character: any, index: number) => (
                   <Link
                     key={character.id}
                     href={`/stories/${params.storyId}/characters/${character.id}`}
@@ -187,11 +187,11 @@ export default function SceneDetailClientPage({
             <p className="text-sm text-muted-foreground">No connected characters</p>
           )}
 
-          {sceneData.plotPoints && sceneData.plotPoints.length ? (
+          {sceneData.connectedPlotPoints && sceneData.connectedPlotPoints.length ? (
             <Card className="p-6 bg-surface border-border">
               <h2 className="text-xl font-semibold mb-4">Connected Plot Points</h2>
               <div className="flex flex-wrap gap-2">
-                {sceneData.plotPoints.map((plotPoint: any, index: number) => (
+                {sceneData.connectedPlotPoints.map((plotPoint: any, index: number) => (
                   <Link
                     key={plotPoint.id}
                     href={`/stories/${params.storyId}/plotpoints/${plotPoint.id}`}

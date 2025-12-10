@@ -27,7 +27,7 @@ export async function generateScene(
       ${pointOfView ? `The point of view is: "${pointOfView}"` : ""}
       ${location ? `The location is: "${location}"` : ""}
       ${tone ? `The tone is: "${tone}"` : ""}
-      Do NOT output anything other than the text of the scene.`;
+      Generate the text of this scene. Do NOT output anything other than the text of the scene.`;
     console.log(prompt);
     return await processPrompt(prompt);
   } catch (error) {

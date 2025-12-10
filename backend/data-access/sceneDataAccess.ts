@@ -93,7 +93,7 @@ export function getWritingStyleSampleInfo(connectedWritingStyleSampleIds: number
   return errorHandlerWrapper("getWritingStyleSampleInfo", () => {
     const writingStyleSamples = connectedWritingStyleSampleIds.map((sampleId) => {
       const query = `
-        SELECT title, description FROM WritingStyleSample WHERE id = ?;
+        SELECT title, content FROM WritingStyleSample WHERE id = ?;
       `;
       const params = [sampleId];
       const result = queryDB(query, params);
@@ -140,19 +140,19 @@ export function createNewScene(
     // Connect characters
     connectedCharacterIds.forEach((characterId) => {
       const characterQuery = `
-        INSERT INTO SceneCharacter (scene_id, character_id)
-        VALUES (?, ?);
+        INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
+        VALUES (?, ?, ?);
       `;
-      const characterParams = [sceneId, characterId];
+      const characterParams = [sceneId, version, characterId];
       updateDB(characterQuery, characterParams);
     });
     // Connect plot points
     connectedPlotPointIds.forEach((plotPointId) => {
       const plotPointQuery = `
-        INSERT INTO ScenePlotPoint (scene_id, plot_point_id)
-        VALUES (?, ?);
+        INSERT INTO ScenePlotPoint (scene_id, scene_version, plot_point_id)
+        VALUES (?, ?, ?);
       `;
-      const plotPointParams = [sceneId, plotPointId];
+      const plotPointParams = [sceneId, version, plotPointId];
       updateDB(plotPointQuery, plotPointParams);
     });
   });
