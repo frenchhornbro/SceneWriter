@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAccess";
-import { generatePrompt } from "../ai/model";
+import { generatePrompt } from "../ai/prompts";
 import { validateId } from "./routerUtils";
 
 const writingStyleRouter = Router();

@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { generateScene } from "../ai/model";
+import { generateScene } from "../ai/prompts";
 import { validateId } from "./routerUtils";
 import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";

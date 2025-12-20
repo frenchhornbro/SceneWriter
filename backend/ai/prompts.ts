@@ -1,12 +1,12 @@
 import { getEnvVar } from "../utils/envAccess";
-import { sendRequest } from "./requester";
+import { sendLocalRequest } from "./localRequester";
 import { TextGenerationResult } from "./types";
 
-async function processPrompt(prompt: string): Promise<TextGenerationResult> {
+async function processPrompt(prompt: string, modelOverride?: string): Promise<TextGenerationResult> {
   if (getEnvVar("USE_LOCAL_MODEL") !== "true") {
     return { text: "Placeholder, AI API not yet supported.", timeTakenMs: 0, modelUsed: "None" };
   }
-  return sendRequest(prompt, getEnvVar("LOCAL_MODEL_URL"));
+  return sendLocalRequest(prompt, getEnvVar("LOCAL_MODEL_URL"), modelOverride);
 }
 
 export async function generateScene(
@@ -42,7 +42,7 @@ export async function generatePrompt(): Promise<TextGenerationResult> {
     The prompt should be open-ended and simple.
     The responder should be able to use this prompt to write a single short scene, one or two paragraphs long, to demonstrate their writing style.
     Do NOT output anything other than the text of the prompt.`;
-    return await processPrompt(prompt);
+    return await processPrompt(prompt, "gemma3:270m");
   } catch (error) {
     console.error("Error generating prompt:", error);
     throw error;

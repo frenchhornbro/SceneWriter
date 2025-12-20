@@ -2,10 +2,10 @@ import { getEnvVar } from "../utils/envAccess";
 import { TextGenerationResult } from "./types";
 
 const models = [
+  "llama3.2:latest",
   "gemma3:270m",
   "gemma3:1b",
   "gemma3:4b",
-  "llama3.2:latest",
 ]
 
 async function sendRequestWithModel(prompt: string, url: string, model: string): Promise<Response> {
@@ -32,25 +32,41 @@ async function decodeResponse(response: Response): Promise<string> {
   const reader = response.body?.getReader();
   const decoder = new TextDecoder("utf-8");
   let result = "";
-  // TODO: Consider having a decoder timeout
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
+  try {
+    // TODO: Consider having a decoder timeout
+    while (true) {
+      const chunk = await reader.read();
+      const { done, value } = chunk;
+      if (done) {
+        break;
+      }
+      const decoded = decoder.decode(value, { stream: true });
+      console.log(JSON.stringify(decoded));
+      try {
+        result += JSON.parse(decoded)?.response;
+      }
+      catch (e) {
+        console.log("Error parsing chunk, skipping");
+        result += "<ERROR>";
+      }
     }
-    const decoded = decoder.decode(value, { stream: true });
-    result += JSON.parse(decoded).response;
+    return result;
+  } catch (error) {
+    console.error("Error decoding response:", error);
+    console.log("Result:", result);
+    throw error;
   }
-  return result;
 }
 
-export async function sendRequest(prompt: string, url: string): Promise<TextGenerationResult> {
-  // TODO: Allow the user to specify model preference
+export async function sendLocalRequest(prompt: string, url: string, modelOverride?: string): Promise<TextGenerationResult> {
   const startTime = Date.now();
   let response: any;
   let model: string = "";
   for (let i = 0; i < models.length; i++) {
     model = models[i];
+    if (modelOverride && model !== modelOverride) {
+      continue;
+    }
     if (getEnvVar("VERBOSE") === "true") {
       console.log(`Generating scene with model ${model}...`);
     }
