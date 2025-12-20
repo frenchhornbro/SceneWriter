@@ -182,7 +182,7 @@ export default function CharacterDetailClientPage({
                 {characterData.connectedScenes.map((scene: any) => (
                   <Link
                   key={scene.id}
-                    href={`/stories/${params.storyId}/plotpoints/${scene.id}`}
+                    href={`/stories/${params.storyId}/scenes/${scene.id}`}
                     className="block p-4 rounded-lg bg-background border border-border hover:border-primary/50 transition-colors"
                   >
                     <h3 className="font-semibold mb-1">{scene.title}</h3>
