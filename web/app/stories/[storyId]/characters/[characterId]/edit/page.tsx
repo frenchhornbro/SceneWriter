@@ -12,6 +12,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
+import { ErrorPage } from "@/components/errorPage"
 
 export default function EditCharacterPage() {
   const params = useParams()
@@ -181,17 +182,11 @@ export default function EditCharacterPage() {
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="character" />
-    )
+    return <Loading itemDescription="character" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

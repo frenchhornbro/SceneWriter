@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
+import { ErrorPage } from "@/components/errorPage"
 
 export default function PlotPointDetailClientPage({
   params,
@@ -52,17 +53,11 @@ export default function PlotPointDetailClientPage({
   }, [])
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="plot point" />
-    )
+    return <Loading itemDescription="plot point" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500 text-lg">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

@@ -1,4 +1,5 @@
 "use client"
+import { ErrorPage } from "@/components/errorPage"
 import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -44,17 +45,11 @@ export default function StoriesPage() {
   }, [router])
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="stories" />
-    )
+    return <Loading itemDescription="stories" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

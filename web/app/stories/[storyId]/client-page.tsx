@@ -9,6 +9,7 @@ import { useState, useEffect } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
+import { ErrorPage } from "@/components/errorPage"
 
 export default function StoryDetailClientPage({
   params,
@@ -137,13 +138,11 @@ export default function StoryDetailClientPage({
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="story" />
-    )
+    return <Loading itemDescription="story" />
   }
 
   if (errorMessage) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{errorMessage}</div>
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

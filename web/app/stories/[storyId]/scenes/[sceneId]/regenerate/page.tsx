@@ -15,6 +15,7 @@ import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SceneGenerationOverlay from "@/components/scene-generation-overlay"
+import { ErrorPage } from "@/components/errorPage"
 
 export default function RegenerateScenePage() {
   const params = useParams()
@@ -114,7 +115,7 @@ export default function RegenerateScenePage() {
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
     if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isRegenerating) {
-      // TODO: Show error message
+      // TODO: Show error message (but not full page)
       return
     }
     setIsRegenerating(true)
@@ -179,17 +180,11 @@ export default function RegenerateScenePage() {
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="scene" />
-    )
+    return <Loading itemDescription="scene" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-        <p className="text-red-500">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

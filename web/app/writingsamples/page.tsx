@@ -1,5 +1,6 @@
 "use client"
 
+import { ErrorPage } from "@/components/errorPage"
 import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -44,13 +45,11 @@ export default function WritingSamplesPage() {
   }, [])
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="writing style samples" />
-    )
+    return <Loading itemDescription="writing style samples" />
   }
 
   if (errorMessage) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{errorMessage}</div>
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

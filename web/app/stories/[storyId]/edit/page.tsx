@@ -1,5 +1,6 @@
 "use client"
 
+import { ErrorPage } from "@/components/errorPage"
 import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -83,17 +84,11 @@ export default function EditStoryPage() {
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="story" />
-    )
+    return <Loading itemDescription="story" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

@@ -15,6 +15,7 @@ import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SceneGenerationOverlay from "@/components/scene-generation-overlay"
+import { ErrorPage } from "@/components/errorPage"
 
 export default function NewScenePage() {
   const params = useParams()
@@ -157,17 +158,11 @@ export default function NewScenePage() {
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="scene" />
-    )
+    return <Loading itemDescription="scene" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-        <p className="text-red-500">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (

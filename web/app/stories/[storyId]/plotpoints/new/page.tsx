@@ -14,6 +14,7 @@ import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ErrorPage } from "@/components/errorPage"
 
 export default function NewPlotPointPage() {
   const params = useParams()
@@ -120,17 +121,11 @@ export default function NewPlotPointPage() {
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="plot point" />
-    )
+    return <Loading itemDescription="plot point" />
   }
 
   if (errorMessage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-destructive">{errorMessage}</p>
-      </div>
-    )
+    return <ErrorPage errorMessage={errorMessage} />
   }
 
   return (
