@@ -39,6 +39,7 @@ export async function generateScene(
 export async function generatePrompt(): Promise<TextGenerationResult> {
   try {
     const prompt = `Generate a creative writing prompt, one or two sentences long.
+    The prompt should be open-ended and simple.
     The responder should be able to use this prompt to write a single short scene, one or two paragraphs long, to demonstrate their writing style.
     Do NOT output anything other than the text of the prompt.`;
     return await processPrompt(prompt);
