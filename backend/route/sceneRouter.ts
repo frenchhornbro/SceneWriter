@@ -110,7 +110,6 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString);
-  console.log("repsonse text = ", text);
   const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: 1 });
 });

@@ -1,10 +1,11 @@
 import { getEnvVar } from "../utils/envAccess";
 import { sendLocalRequest } from "./localRequester";
+import { sendOpenAIRequest } from "./openAIRequester";
 import { TextGenerationResult } from "./types";
 
 async function processPrompt(prompt: string, modelOverride?: string): Promise<TextGenerationResult> {
   if (getEnvVar("USE_LOCAL_MODEL") !== "true") {
-    return { text: "Placeholder, AI API not yet supported.", timeTakenMs: 0, modelUsed: "None" };
+    return sendOpenAIRequest(prompt, modelOverride);
   }
   return sendLocalRequest(prompt, getEnvVar("LOCAL_MODEL_URL"), modelOverride);
 }

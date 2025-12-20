@@ -68,7 +68,7 @@ export async function sendLocalRequest(prompt: string, url: string, modelOverrid
       continue;
     }
     if (getEnvVar("VERBOSE") === "true") {
-      console.log(`Generating scene with model ${model}...`);
+      console.log(`Generating with model ${model}...`);
     }
     response = await sendRequestWithModel(prompt, url, models[i]);
     if (!response.ok) {
