@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 
 export default function NewWritingSamplePage() {
   const router = useRouter()
+  const promptGenerated = useRef(false);
   const [title, setTitle] = useState("")
   const [response, setResponse] = useState("")
   const [prompt, setPrompt] = useState("")
@@ -25,6 +26,10 @@ export default function NewWritingSamplePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
+    if (promptGenerated.current) {
+      return;
+    }
+    promptGenerated.current = true;
     setIsLoading(true)
     serverRequest("api/writingstyle/prompt", {}, "GET",
       async (response) => {
