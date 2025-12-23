@@ -1,5 +1,6 @@
 import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
+import type { scenePreview } from "@shared/templates/scene";
 
 export function getScene(sceneId: number): any {
   return transactionWrapper("getScene", (container) => {
@@ -33,10 +34,10 @@ export function getScene(sceneId: number): any {
   });
 }
 
-export function getAllScenes(storyId: number): any[] {
+export function getAllScenes(storyId: number): scenePreview[] {
   return errorHandlerWrapper("getAllScenes", () => {
     const query = `
-      SELECT id, title, scene_text as sceneText, chapter_number AS chapterNumber, created_at AS createdAt, edited_at AS editedAt
+      SELECT id, version, title, scene_text, chapter_number, created_at, edited_at
       FROM Scene
       WHERE story_id = ?
       ORDER BY edited_at DESC;

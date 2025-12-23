@@ -10,6 +10,7 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { scenePreview } from "@shared/templates/scene"
 
 export default function StoryDetailClientPage({
   params,
@@ -19,22 +20,40 @@ export default function StoryDetailClientPage({
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeTab = searchParams.get("tab") || "characters"
+  const [loadingEndpoints, setLoadingEndpoints] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [storyData, setStoryData] = useState<any>(null)
   const [charactersData, setCharactersData] = useState<any>(null)
-  const [scenesData, setScenesData] = useState<any>(null)
+  const [scenesData, setScenesData] = useState<scenePreview[]>([])
   const [plotPointsData, setPlotPointsData] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
+  function addLoadingEndpoint(endpointName: string) {
+    setLoadingEndpoints((prev) => new Set(prev).add(endpointName))
+  }
+
+  function removeLoadingEndpoint(endpointName: string) {
+    setLoadingEndpoints((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(endpointName)
+      return newSet
+    })
+  }
+
   useEffect(() => {
     setIsLoading(true)
+    addLoadingEndpoint("storyData")
+    addLoadingEndpoint("charactersData")
+    addLoadingEndpoint("scenesData")
+    addLoadingEndpoint("plotPointsData")
     serverRequest(`api/story/${params.storyId}`, {}, "GET",
       async (request) => {
         const data = await request.json()
         setStoryData(data)
+        removeLoadingEndpoint("storyData")
       },
       async (error) => {
         setErrorMessage(`Failed to load story data: ${error}`)
@@ -45,6 +64,7 @@ export default function StoryDetailClientPage({
       async (request) => {
         const data = await request.json()
         setCharactersData(data.characters)
+        removeLoadingEndpoint("charactersData")
       },
       async (error) => {
         setErrorMessage(`Failed to load character data: ${error}`)
@@ -55,6 +75,7 @@ export default function StoryDetailClientPage({
       async (request) => {
         const data = await request.json()
         setScenesData(data.scenes)
+        removeLoadingEndpoint("scenesData")
       },
       async (error) => {
         setErrorMessage(`Failed to load scene data: ${error}`)
@@ -65,6 +86,7 @@ export default function StoryDetailClientPage({
       async (request) => {
         const data = await request.json()
         setPlotPointsData(data.plotPoints)
+        removeLoadingEndpoint("plotPointsData")
       },
       async (error) => {
         setErrorMessage(`Failed to load plot point data: ${error}`)
@@ -74,10 +96,10 @@ export default function StoryDetailClientPage({
   }, [])
 
   useEffect(() => {
-    if (storyData && charactersData && scenesData && plotPointsData) {
+    if (!loadingEndpoints.size) {
       setIsLoading(false)
     }
-  }, [storyData, charactersData, scenesData, plotPointsData])
+  }, [loadingEndpoints])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -267,15 +289,15 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="space-y-3">
-              {scenesData.map((scene: any) => (
+              {scenesData.map((scene: scenePreview) => (
                 <Link key={scene.id} href={`/stories/${params.storyId}/scenes/${scene.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          {scene.chapterNumber !== undefined ? (
+                          {scene.chapter_number !== undefined ? (
                             <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
-                              Ch. {scene.chapterNumber}
+                              Ch. {scene.chapter_number}
                             </span>
                           ) : (
                             <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
@@ -284,10 +306,10 @@ export default function StoryDetailClientPage({
                           )}
                           <h3 className="font-semibold">{scene.title}</h3>
                         </div>
-                        <p className="text-sm text-muted-foreground">{scene.sceneTextPage}</p>
+                        <p className="text-sm text-muted-foreground">{scene.scene_text}</p>
                       </div>
                       <div className="flex gap-4 text-xs text-muted-foreground">
-                        {new Date(scene.editedAt).toLocaleDateString()}
+                        {new Date(scene.edited_at).toLocaleDateString()}
                       </div>
                     </div>
                   </Card>

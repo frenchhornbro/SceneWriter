@@ -13,16 +13,18 @@ import { useState, useEffect } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { scenePreview } from "@shared/templates/scene"
 
 export default function NewCharacterPage() {
   const params = useParams()
   const router = useRouter()
   const storyId = params.storyId as string
+  const [loadingEndpoints, setLoadingEndpoints] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [allCharactersData, setAllCharactersData] = useState<any>([])
   const [allPlotPointsData, setAllPlotPointsData] = useState<any>([])
-  const [allScenesData, setAllScenesData] = useState<any>([])
+  const [allScenesData, setAllScenesData] = useState<scenePreview[]>([])
 
   const [name, setName] = useState("")
   const [role, setRole] = useState("")
@@ -32,15 +34,31 @@ export default function NewCharacterPage() {
   const [additionalNotes, setAdditionalNotes] = useState("")
   const [relationships, setRelationships] = useState<any>([])
   const [connectedPlotPointIds, setConnectedPlotPointsIds] = useState<number[]>([])
-  const [connectedSceneIds, setConnectedSceneIds] = useState<number[]>([])
+  const [connectedScenes, setConnectedScenes] = useState<scenePreview[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  function addLoadingEndpoint(endpointName: string) {
+    setLoadingEndpoints((prev) => new Set(prev).add(endpointName))
+  }
+
+  function removeLoadingEndpoint(endpointName: string) {
+    setLoadingEndpoints((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(endpointName)
+      return newSet
+    })
+  }
 
   useEffect(() => {
     setIsLoading(true)
+    addLoadingEndpoint("charactersData")
+    addLoadingEndpoint("plotPointsData")
+    addLoadingEndpoint("scenesData")
     serverRequest(`api/story/${storyId}/character`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setAllCharactersData(data.characters)
+        removeLoadingEndpoint("charactersData")
       },
       async (error) => {
         setErrorMessage(`Failed to load characters for relationships: ${error}`)
@@ -51,6 +69,7 @@ export default function NewCharacterPage() {
       async (response) => {
         const data = await response.json()
         setAllPlotPointsData(data.plotPoints)
+        removeLoadingEndpoint("plotPointsData")
       },
       async (error) => {
         setErrorMessage(`Failed to load plot points for connections: ${error}`)
@@ -61,6 +80,7 @@ export default function NewCharacterPage() {
       async (response) => {
         const data = await response.json()
         setAllScenesData(data.scenes)
+        removeLoadingEndpoint("scenesData")
       },
       async (error) => {
         setErrorMessage(`Failed to load scenes for connections: ${error}`)
@@ -70,10 +90,10 @@ export default function NewCharacterPage() {
   }, [])
 
   useEffect(() => {
-    if (allCharactersData && allPlotPointsData && allScenesData) {
+    if (!loadingEndpoints.size) {
       setIsLoading(false)
     }
-  }, [allCharactersData, allPlotPointsData, allScenesData])
+  }, [loadingEndpoints])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -85,7 +105,7 @@ export default function NewCharacterPage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds, isSubmitting])
+  }, [name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedScenes, isSubmitting])
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
@@ -102,7 +122,7 @@ export default function NewCharacterPage() {
       additionalNotes: additionalNotes.trim(),
       relationships,
       connectedPlotPointIds,
-      connectedSceneIds
+      connectedSceneIds: connectedScenes
     }, "POST",
       async (response) => {
         const data = await response.json()
@@ -148,15 +168,18 @@ export default function NewCharacterPage() {
     setConnectedPlotPointsIds(connectedPlotPointIds.filter((id) => id !== plotPointId))
   }
 
-  const handleConnectedScenesChange = (sceneId: string) => {
-    const sceneIdNum = Number(sceneId)
-    if (sceneIdNum && !connectedSceneIds.includes(sceneIdNum)) {
-      setConnectedSceneIds([...connectedSceneIds, sceneIdNum])
+  const handleConnectedScenesChange = (scene: scenePreview) => {
+    const sceneIdNum = Number(scene.id)
+    const versionNum = Number(scene.version)
+    if (sceneIdNum && !connectedScenes.some((cs: scenePreview) => cs.id === sceneIdNum && cs.version === versionNum)) {
+      setConnectedScenes([...connectedScenes, scene])
     }
   }
 
-  const removeConnectedScene = (sceneId: number) => {
-    setConnectedSceneIds(connectedSceneIds.filter((id) => id !== sceneId))
+  const removeConnectedScene = (scene: scenePreview) => {
+    const sceneIdNum = Number(scene.id)
+    const versionNum = Number(scene.version)
+    setConnectedScenes(connectedScenes.filter((cs: scenePreview) => cs.id !== sceneIdNum || cs.version !== versionNum))
   }
 
   if (isLoading) {
@@ -347,34 +370,33 @@ export default function NewCharacterPage() {
               <Label htmlFor="connectedScenes" className="text-sm font-medium">
                 Connected Scenes
               </Label>
-              <Select onValueChange={handleConnectedScenesChange}>
+              <Select onValueChange={(e) => handleConnectedScenesChange(JSON.parse(e))}>
                 <SelectTrigger className="bg-surface-light border-border">
                   <SelectValue placeholder="Select scenes" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allScenesData.filter(
-                    (scene: any) => !connectedSceneIds.includes(scene.id),
-                  ).map((scene: any) => (
-                    <SelectItem key={scene.id} value={scene.id}>
+                  {allScenesData.filter((scene: scenePreview) => !connectedScenes.some((cs: scenePreview) => cs.id === scene.id && cs.version === scene.version))
+                    .map((scene: scenePreview) => (
+                    <SelectItem key={JSON.stringify(scene)} value={JSON.stringify(scene)}>
                       {scene.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {connectedSceneIds.length > 0 && (
+              {connectedScenes.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedSceneIds.map((sceneId) => {
-                    const scene = allScenesData.find((s: any) => s.id === sceneId)
+                  {connectedScenes.map((cs: scenePreview) => {
+                    const sceneData = allScenesData.find((s: scenePreview) => s.id === cs.id && s.version === cs.version)
                     return (
                       <div
-                        key={sceneId}
+                        key={JSON.stringify(cs)}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
                       >
-                        <span>{scene?.title}</span>
+                        <span>{sceneData?.title}</span>
                         <button
                           type="button"
-                          onClick={() => removeConnectedScene(sceneId)}
+                          onClick={() => removeConnectedScene(cs)}
                           className="hover:text-foreground"
                         >
                           ×

@@ -3,6 +3,7 @@ import { generateScene } from "../ai/prompts";
 import { validateId } from "./routerUtils";
 import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
+import type { scenePreview } from "@shared/templates/scene";
 
 const sceneRouter = Router({ mergeParams: true });
 
@@ -13,17 +14,18 @@ sceneRouter.get("/", async (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
     return;
   }
-  const scenes = getAllScenes(storyIdNum);
-  const scenesWithTextPage = scenes.map((scene: any) => ({
+  const scenes: scenePreview[] = getAllScenes(storyIdNum);
+  const scenesPreview: scenePreview[] = scenes.map((scene: scenePreview) => ({
     id: scene.id,
+    version: scene.version,
     title: scene.title,
-    sceneTextPage: scene.sceneText.length > 200 ? scene.sceneText.substring(0, 200) + "..." : scene.sceneText,
-    chapterNumber: scene.chapterNumber,
-    editedAt: scene.editedAt,
-    createdAt: scene.createdAt,
+    scene_text: scene.scene_text.length > 200 ? scene.scene_text.substring(0, 200) + "..." : scene.scene_text,
+    chapter_number: scene.chapter_number,
+    created_at: scene.created_at,
+    edited_at: scene.edited_at,
   }));
 
-  res.status(200).json({ scenes: scenesWithTextPage });
+  res.status(200).json({ scenes: scenesPreview });
 });
 
 sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
