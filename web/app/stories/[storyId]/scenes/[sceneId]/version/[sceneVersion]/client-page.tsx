@@ -25,7 +25,7 @@ export default function SceneDetailClientPage({
 
   useEffect(() => {
     setIsLoading(true)
-    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "GET",
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setSceneData(data)
@@ -41,7 +41,7 @@ export default function SceneDetailClientPage({
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "DELETE",
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {}, "DELETE",
       async (response) => {
         router.push(`/stories/${params.storyId}?tab=scenes`)
       },

@@ -28,8 +28,8 @@ sceneRouter.get("/", async (req: Request, res: Response) => {
   res.status(200).json({ scenes: scenesPreview });
 });
 
-sceneRouter.get("/:sceneId", async (req: Request, res: Response) => {
-  const { storyId, sceneId } = req.params;
+sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {
+  const { storyId, sceneId, sceneVersion } = req.params;
   const storyIdNum = validateId(storyId);
   if (!storyIdNum) {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
@@ -116,8 +116,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   res.status(201).json({ sceneId, version: 1 });
 });
 
-sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => {
-  // TODO: Keep the same scene ID but create a new version
+sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Request, res: Response) => {
   if (!req.body) {
     return res.status(400).json({error: "Missing request body."});
   }
@@ -147,13 +146,13 @@ sceneRouter.post("/:sceneId/regenerate", async (req: Request, res: Response) => 
   res.status(201).json({ sceneId });
 });
 
-sceneRouter.put("/:sceneId", async (req: Request, res: Response) => {
-  const { storyId, sceneId } = req.params;
+sceneRouter.put("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {
+  const { storyId, sceneId, sceneVersion } = req.params;
   res.status(501).json({error: "Not implemented."});
 });
 
-sceneRouter.delete("/:sceneId", async (req: Request, res: Response) => {
-  const { storyId, sceneId } = req.params;
+sceneRouter.delete("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {
+  const { storyId, sceneId, sceneVersion } = req.params;
   const storyIdNum = validateId(storyId);
   if (!storyIdNum) {
     res.status(400).json({error: "Missing or invalid storyId parameter."});

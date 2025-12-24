@@ -41,7 +41,7 @@ export default function EditSceneClientPage({
   const [connectedPlotPointIds, setConnectedPlotPointIds] = useState<number[]>([])
 
   useEffect(() => {
-    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "GET",
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setSceneData(data)
@@ -108,7 +108,7 @@ export default function EditSceneClientPage({
       return
     }
     setIsSaving(true)
-    await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {
+    await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {
       generatedText: sceneText,
       overview: overview,
       chapter: chapterNumber,
