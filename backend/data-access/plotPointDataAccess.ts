@@ -12,13 +12,13 @@ export function getPlotPoint(plotPointId: number): any {
     container["plotPoint"] = plotPoint;
     // Get connected scenes
     const sceneQuery = `
-      SELECT s.id, s.title
+      SELECT s.id, s.version, s.title, s.scene_text, s.overview, s.chapter_number, s.created_at, s.edited_at
       FROM ScenePlotPoint spp
-      JOIN Scene s ON spp.scene_id = s.id
+      JOIN Scene s ON spp.scene_id = s.id AND spp.scene_version = s.version
       WHERE spp.plot_point_id = ?;
     `;
     const sceneParams = [plotPointId];
-    const connectedScenes = queryDB(sceneQuery, sceneParams);
+    const connectedScenes: scenePreview[] = queryDB(sceneQuery, sceneParams);
     container["connectedScenes"] = connectedScenes;
     // Get connected characters
     const characterQuery = `

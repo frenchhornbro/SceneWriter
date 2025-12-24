@@ -37,7 +37,7 @@ export function getScene(sceneId: number): any {
 export function getAllScenes(storyId: number): scenePreview[] {
   return errorHandlerWrapper("getAllScenes", () => {
     const query = `
-      SELECT id, version, title, scene_text, chapter_number, created_at, edited_at
+      SELECT id, version, title, scene_text, overview, chapter_number, created_at, edited_at
       FROM Scene
       WHERE story_id = ?
       ORDER BY edited_at DESC;

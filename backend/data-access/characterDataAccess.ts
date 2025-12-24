@@ -1,3 +1,4 @@
+import { scenePreview } from "@shared/templates/scene";
 import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
 
@@ -32,13 +33,13 @@ export function getCharacter(characterId: number): any {
     container["connectedPlotPoints"] = connectedPlotPoints;
     // Get connected scenes
     const sceneQuery = `
-      SELECT s.id, s.title, s.overview
+      SELECT s.id, s.version, s.title, s.scene_text, s.overview, s.chapter_number, s.created_at, s.edited_at
       FROM SceneCharacter sc
-      JOIN Scene s ON sc.scene_id = s.id
+      JOIN Scene s ON sc.scene_id = s.id AND sc.scene_version = s.version
       WHERE sc.character_id = ?;
     `;
     const sceneParams = [characterId];
-    const connectedScenes = queryDB(sceneQuery, sceneParams);
+    const connectedScenes: scenePreview[] = queryDB(sceneQuery, sceneParams);
     container["connectedScenes"] = connectedScenes;
   });
 }
