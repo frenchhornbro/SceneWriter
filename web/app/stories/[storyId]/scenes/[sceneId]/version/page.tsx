@@ -10,8 +10,8 @@ export default function RedirectToSceneVersionPage() {
 
   useEffect(() => {
     if (!pathname) return
-    if (pathname.endsWith("/version/1")) return
-    router.replace(`${pathname}/version/1`)
+    if (pathname.endsWith("/1")) return
+    router.replace(`${pathname}/1`)
   }, [pathname, router])
 
   return (

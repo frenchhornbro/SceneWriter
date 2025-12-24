@@ -182,12 +182,12 @@ export default function StoryDetailClientPage({
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">{storyData.title}</h1>
+                <h1 className="text-3xl font-bold">{storyData?.title}</h1>
                 <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
-                  {storyData.subtitle}
+                  {storyData?.subtitle}
                 </span>
               </div>
-              <p className="text-muted-foreground max-w-3xl leading-relaxed">{storyData.overview}</p>
+              <p className="text-muted-foreground max-w-3xl leading-relaxed">{storyData?.overview}</p>
             </div>
 
             <div className="flex gap-2">
@@ -260,7 +260,7 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {charactersData.map((character: any) => (
+              {charactersData?.map((character: any) => (
                 <Link key={character.id} href={`/stories/${params.storyId}/characters/${character.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center gap-3 mb-1">
@@ -289,7 +289,7 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="space-y-3">
-              {scenesData.map((scene: scenePreview) => (
+              {scenesData?.map((scene: scenePreview) => (
                 <Link key={scene.id} href={`/stories/${params.storyId}/scenes/${scene.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
@@ -329,7 +329,7 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="space-y-3">
-              {plotPointsData.map((plotpoint: any) => (
+              {plotPointsData?.map((plotpoint: any) => (
                 <Link key={plotpoint.id} href={`/stories/${params.storyId}/plotpoints/${plotpoint.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <h3 className="font-semibold">{plotpoint.title}</h3>
@@ -347,7 +347,7 @@ export default function StoryDetailClientPage({
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleDelete}
         itemType="story"
-        itemName={storyData.title}
+        itemName={storyData?.title}
       />
     </div>
   )

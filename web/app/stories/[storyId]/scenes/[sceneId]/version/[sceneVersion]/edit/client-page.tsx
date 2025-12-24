@@ -9,29 +9,29 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import SceneGenerationOverlay from "@/components/scene-generation-overlay"
 import { ErrorPage } from "@/components/errorPage"
 
-export default function RegenerateScenePage() {
-  const params = useParams()
-  const storyId = params.storyId as string
-  const sceneId = params.sceneId as string
+export default function EditSceneClientPage({
+  params,
+}: {
+  params: { storyId: string; sceneId: string; sceneVersion: string }
+}) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [sceneData, setSceneData] = useState<any>(null)
   const [allCharactersData, setAllCharactersData] = useState<any[]>([])
   const [allPlotPointsData, setAllPlotPointsData] = useState<any[]>([])
-  const [allWritingStyleSamplesData, setAllWritingStyleSamplesData] = useState<any[]>([])
-  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
+  const [sceneText, setSceneText] = useState("")
   const [overview, setOverview] = useState("")
-  const [chapterNumber, setChapterNumber] = useState(1)
+  const [chapterNumber, setChapterNumber] = useState(0)
   const [title, setTitle] = useState("")
   const [pov, setPov] = useState("")
   const [location, setLocation] = useState("")
@@ -39,13 +39,13 @@ export default function RegenerateScenePage() {
   const [additionalNotes, setAdditionalNotes] = useState("")
   const [connectedCharacterIds, setConnectedCharacterIds] = useState<number[]>([])
   const [connectedPlotPointIds, setConnectedPlotPointIds] = useState<number[]>([])
-  const [connectedWritingStyleSampleIds, setConnectedWritingStyleSampleIds] = useState<number[]>([])
 
   useEffect(() => {
-    serverRequest(`api/story/${storyId}/scene/${sceneId}`, {}, "GET",
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setSceneData(data)
+        setSceneText(data.sceneText || "")
         setOverview(data.overview || "")
         setChapterNumber(data.chapterNumber || 1)
         setTitle(data.title || "")
@@ -55,14 +55,13 @@ export default function RegenerateScenePage() {
         setAdditionalNotes(data.additionalNotes || "")
         setConnectedCharacterIds(data.connectedCharacterIds || [])
         setConnectedPlotPointIds(data.connectedPlotPointIds || [])
-        setConnectedWritingStyleSampleIds(data.connectedWritingStyleSampleIds || [])
       },
       async (error) => {
         setErrorMessage(`Failed to load scene: ${error}`)
         setIsLoading(false)
       }
     )
-    serverRequest(`api/story/${storyId}/character`, {}, "GET",
+    serverRequest(`api/story/${params.storyId}/character`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setAllCharactersData(data.characters)
@@ -72,7 +71,7 @@ export default function RegenerateScenePage() {
         setIsLoading(false)
       }
     )
-    serverRequest(`api/story/${storyId}/plotpoint`, {}, "GET",
+    serverRequest(`api/story/${params.storyId}/plotpoint`, {}, "GET",
       async (response) => {
         const data = await response.json()
         setAllPlotPointsData(data.plotPoints)
@@ -82,23 +81,13 @@ export default function RegenerateScenePage() {
         setIsLoading(false)
       }
     )
-    serverRequest(`api/writingstyle`, {}, "GET",
-      async (response) => {
-        const data = await response.json()
-        setAllWritingStyleSamplesData(data.writingStyles)
-      },
-      async (error) => {
-        setErrorMessage(`Failed to load writing style samples for connections: ${error}`)
-        setIsLoading(false)
-      }
-    )
   }, [])
 
   useEffect(() => {
-    if (sceneData && allCharactersData && allPlotPointsData && allWritingStyleSamplesData) {
+    if (sceneData && allCharactersData && allPlotPointsData) {
       setIsLoading(false)
     }
-  }, [sceneData, allCharactersData, allPlotPointsData, allWritingStyleSamplesData])
+  }, [sceneData, allCharactersData, allPlotPointsData])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -110,16 +99,17 @@ export default function RegenerateScenePage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isRegenerating])
+  }, [isSaving])
 
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
-    if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isRegenerating) {
-      // TODO: Show error message (but not full page)
+    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isSaving) {
+      // TODO: Show error message
       return
     }
-    setIsRegenerating(true)
-    await serverRequest(`api/story/${storyId}/scene/${sceneId}/regenerate`, {
+    setIsSaving(true)
+    await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}`, {
+      generatedText: sceneText,
       overview: overview,
       chapter: chapterNumber,
       title: title.trim(),
@@ -129,19 +119,18 @@ export default function RegenerateScenePage() {
       additionalNotes: additionalNotes,
       connectedCharacterIds: connectedCharacterIds,
       connectedPlotPointIds: connectedPlotPointIds,
-      connectedWritingStyleSampleIds: connectedWritingStyleSampleIds,
-    }, "POST",
+    }, "PUT",
       async (response) => {
         if (doRedirect) {
-          router.push(`/stories/${storyId}/scenes/${sceneId}`)
+          router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)
         }
       },
       async (error) => {
-        console.error("Failed to regenerate scene: ", error)
-        alert(`Failed to regenerate scene: ${error}`)
+        console.error("Failed to update scene: ", error)
+        alert(`Failed to update scene: ${error}`)
       },
       async () => {
-        setIsRegenerating(false)
+        setIsSaving(false)
       }
     )
   }
@@ -168,17 +157,6 @@ export default function RegenerateScenePage() {
     setConnectedPlotPointIds(connectedPlotPointIds.filter((id) => id !== plotPointId))
   }
 
-  const handleConnectedWritingStyleSamplesChange = (writingStyleSampleId: string) => {
-    const writingStyleSampleIdNum = Number(writingStyleSampleId);
-    if (writingStyleSampleIdNum && !connectedWritingStyleSampleIds.includes(writingStyleSampleIdNum)) {
-      setConnectedWritingStyleSampleIds([...connectedWritingStyleSampleIds, writingStyleSampleIdNum])
-    }
-  }
-
-  const removeConnectedWritingStyleSample = (writingStyleSampleId: number) => {
-    setConnectedWritingStyleSampleIds(connectedWritingStyleSampleIds.filter((id) => id !== writingStyleSampleId))
-  }
-
   if (isLoading) {
     return <Loading itemDescription="scene" />
   }
@@ -191,16 +169,16 @@ export default function RegenerateScenePage() {
     <div className="min-h-screen">
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Link
-          href={`/stories/${storyId}/scenes/${sceneId}`}
+          href={`/stories/${params.storyId}/scenes/${params.sceneId}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Scene
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Regenerate Scene</h1>
-          <p className="text-muted-foreground">Modify parameters and regenerate your scene</p>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Edit Scene</h1>
+          <p className="text-muted-foreground">Edit the scene details for {sceneData.storyTitle}</p>
         </div>
 
         <Card className="p-6 bg-surface border-border">
@@ -236,6 +214,20 @@ export default function RegenerateScenePage() {
                 value={overview}
                 onChange={(e) => setOverview(e.target.value)}
                 rows={20}
+                className="bg-surface-light border-border text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="generatedText">
+                Scene Text <span className="text-primary">*</span>
+              </Label>
+              <Textarea
+                id="generatedText"
+                value={sceneText}
+                onChange={(e) => setSceneText(e.target.value)}
+                rows={20}
+                required
                 className="bg-surface-light border-border text-sm leading-relaxed"
               />
             </div>
@@ -370,62 +362,18 @@ export default function RegenerateScenePage() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="connectedWritingStyleSamples" className="text-sm font-medium">
-                Connected Writing Style Samples
-              </Label>
-              <Select onValueChange={handleConnectedWritingStyleSamplesChange}>
-                <SelectTrigger className="bg-surface-light border-border">
-                  <SelectValue placeholder="Select writing style samples" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allWritingStyleSamplesData.filter(
-                    (writingStyleSample: any) => !connectedWritingStyleSampleIds.includes(writingStyleSample.id),
-                  ).map((writingStyleSample: any) => (
-                    <SelectItem key={writingStyleSample.id} value={writingStyleSample.id}>
-                      {writingStyleSample.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {connectedWritingStyleSampleIds.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedWritingStyleSampleIds.map((writingStyleSampleId) => {
-                    const writingStyleSample = allWritingStyleSamplesData.find((w: any) => w.id === writingStyleSampleId)
-                    return (
-                      <div
-                        key={writingStyleSampleId}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
-                      >
-                        {/* TODO: Figure out what to show instead of title (maybe prompt page) */}
-                        <span>{writingStyleSample?.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeConnectedWritingStyleSample(writingStyleSampleId)}
-                          className="hover:text-foreground"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
             <div className="flex gap-3 pt-4">
               <Button
                 type="submit"
-                disabled={isRegenerating}
+                disabled={isSaving}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {isRegenerating ? "Regenerating..." : "Regenerate"}
+                {isSaving ? "Saving..." : "Save Changes"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push(`/stories/${storyId}/scenes/${sceneId}`)}
+                onClick={() => router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)}
                 className="border-border hover:bg-surface-light bg-transparent"
               >
                 Cancel
@@ -433,8 +381,6 @@ export default function RegenerateScenePage() {
             </div>
           </form>
         </Card>
-
-        {isRegenerating && SceneGenerationOverlay()}
       </main>
     </div>
   )

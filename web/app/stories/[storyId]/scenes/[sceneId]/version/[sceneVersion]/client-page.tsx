@@ -14,7 +14,7 @@ import { ErrorPage } from "@/components/errorPage"
 export default function SceneDetailClientPage({
   params,
 }: {
-  params: { storyId: string; sceneId: string }
+  params: { storyId: string; sceneId: string; sceneVersion: string }
 }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
