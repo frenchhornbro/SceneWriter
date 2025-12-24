@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { validateId } from "./routerUtils";
-import { createNewPlotPoint, deletePlotPoint, getAllPlotPoints, getPlotPoint } from "../data-access/plotPointDataAccess";
+import { createNewPlotPoint, deletePlotPoint, getAllPlotPoints, getPlotPoint, updatePlotPoint } from "../data-access/plotPointDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 
 const plotPointRouter = Router({ mergeParams: true });
@@ -48,6 +48,7 @@ plotPointRouter.get("/:plotPointId", async (req: Request, res: Response) => {
     storyTitle: title,
     title: plotPoint.title,
     description: plotPoint.description,
+    // TODO: Change to connectedScenes (including version)
     connectedSceneIds: plotPointData["connectedScenes"].map((scene: any) => scene.id),
     connectedCharacterIds: plotPointData["connectedCharacters"].map((character: any) => character.id),
     connectedScenes: plotPointData["connectedScenes"],
@@ -84,7 +85,41 @@ plotPointRouter.post("/", async (req: Request, res: Response) => {
 });
 
 plotPointRouter.put("/:plotPointId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId, plotPointId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const plotPointIdNum = validateId(plotPointId);
+  if (!plotPointIdNum) {
+    res.status(400).json({error: "Missing or invalid plotPointId parameter."});
+    return;
+  }
+  const { title, description, connectedScenes, connectedCharacterIds } = req.body;
+  if (!description) {
+    res.status(400).json({error: "Missing required fields: description."});
+    return;
+  }
+  if (!connectedScenes || !Array.isArray(connectedScenes)) {
+    res.status(400).json({error: "connectedScenes must be an array of numbers."});
+    return;
+  }
+  connectedScenes.forEach((scene: any) => {
+    const { scene_id, version } = scene;
+    if (!validateId(scene_id) || !validateId(version)) {
+      res.status(400).json({error: "Each connected scene must have a valid id and version field."});
+      return;
+    }
+  });
+  if (!connectedCharacterIds || !Array.isArray(connectedCharacterIds)) {
+    res.status(400).json({error: "connectedCharacterIds must be an array of numbers."});
+    return;
+  }
+  const titleString = `${title ?? ""}`.trim();
+  const descriptionString = description.toString().trim();
+  updatePlotPoint(plotPointIdNum, titleString, descriptionString, connectedScenes, connectedCharacterIds);
+  res.status(200).json({});
 });
 
 plotPointRouter.delete("/:plotPointId", async (req: Request, res: Response) => {

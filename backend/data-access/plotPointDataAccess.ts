@@ -1,3 +1,4 @@
+import { scenePreview } from "@shared/templates/scene";
 import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
 
@@ -73,6 +74,59 @@ export function createNewPlotPoint(storyId: number, title: string, description: 
       const characterParams = [plotPointId, characterId];
       updateDB(characterQuery, characterParams);
     });
+  });
+}
+
+export function updatePlotPoint(plotPointId: number, title: string, description: string, connectedScenes: scenePreview[], connectedCharacterIds: number[]): void {
+  function processConnectedCharacters() {
+    // Delete old scenes
+    const deleteScenesPrompt = `
+      DELETE FROM CharacterPlotPoint
+      WHERE plot_point_id = ?
+      AND character_id NOT IN (${connectedCharacterIds.map(() => "?").join(", ")});
+    `;
+    const deleteScenesParams = [plotPointId, ...connectedCharacterIds];
+    updateDB(deleteScenesPrompt, deleteScenesParams);
+    // Add new scenes
+    const newScenesPrompt = `
+      INSERT INTO CharacterPlotPoint (plot_point_id, character_id)
+      VALUES ${connectedCharacterIds.map(() => "(?, ?)").join(", ")}
+      ON CONFLICT(plot_point_id, character_id) DO NOTHING;
+    `;
+    const newScenesParams = connectedCharacterIds.flatMap((characterId: any) => [plotPointId, characterId]);
+    updateDB(newScenesPrompt, newScenesParams);
+  }
+
+  function processConnectedScenes() {
+    // Delete old scenes
+    const deleteScenesPrompt = `
+      DELETE FROM ScenePlotPoint
+      WHERE plot_point_id = ?
+      AND (scene_id, scene_version) NOT IN (${connectedScenes.map(() => "(?, ?)").join(", ")});
+    `;
+    const deleteScenesParams = [plotPointId, ...connectedScenes.flatMap((scene: any) => [scene.scene_id, scene.scene_version])];
+    updateDB(deleteScenesPrompt, deleteScenesParams);
+    // Add new scenes
+    const newScenesPrompt = `
+      INSERT INTO ScenePlotPoint (plot_point_id, scene_id, scene_version)
+      VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")}
+      ON CONFLICT(plot_point_id, scene_id, scene_version) DO NOTHING;
+    `;
+    const newScenesParams = connectedScenes.flatMap((scene: any) => [plotPointId, scene.scene_id, scene.scene_version]);
+    updateDB(newScenesPrompt, newScenesParams);
+  }
+
+  return transactionWrapper("updatePlotPoint", (_) => {
+    // Update plot point
+    const plotPointQuery = `
+      UPDATE PlotPoint
+      SET title = ?, description = ?, edited_at = CURRENT_TIMESTAMP
+      WHERE id = ?;
+    `;
+    const plotPointParams = [title, description, plotPointId];
+    updateDB(plotPointQuery, plotPointParams);
+    processConnectedCharacters();
+    processConnectedScenes();
   });
 }
 
