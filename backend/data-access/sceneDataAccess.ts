@@ -1,24 +1,24 @@
 import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
-import type { scenePreview } from "@shared/templates/scene";
+import type { fullScene, scenePreview } from "@shared/templates/scene";
 
-export function getScene(sceneId: number): any {
+export function getScene(sceneId: number, sceneVersion: number): any {
   return transactionWrapper("getScene", (container) => {
     // Get scene
     const sceneQuery = `
-      SELECT * FROM Scene WHERE id = ?;
+      SELECT * FROM Scene WHERE id = ? AND version = ?;
     `;
-    const sceneParams = [sceneId];
-    const scene = queryDB(sceneQuery, sceneParams)[0];
+    const sceneParams = [sceneId, sceneVersion];
+    const scene: fullScene = queryDB(sceneQuery, sceneParams)[0];
     container["scene"] = scene;
     // Get connected characters
     const characterQuery = `
       SELECT c.id, c.name
       FROM SceneCharacter sc
       JOIN Character c ON sc.character_id = c.id
-      WHERE sc.scene_id = ?;
+      WHERE sc.scene_id = ? AND sc.scene_version = ?;
     `;
-    const characterParams = [sceneId];
+    const characterParams = [sceneId, sceneVersion];
     const connectedCharacters = queryDB(characterQuery, characterParams);
     container["connectedCharacters"] = connectedCharacters;
     // Get connected plot points
@@ -26,9 +26,9 @@ export function getScene(sceneId: number): any {
       SELECT pp.id, pp.title
       FROM ScenePlotPoint spp
       JOIN PlotPoint pp ON spp.plot_point_id = pp.id
-      WHERE spp.scene_id = ?;
+      WHERE spp.scene_id = ? AND spp.scene_version = ?;
     `;
-    const plotPointParams = [sceneId];
+    const plotPointParams = [sceneId, sceneVersion];
     const connectedPlotPoints = queryDB(plotPointQuery, plotPointParams);
     container["connectedPlotPoints"] = connectedPlotPoints;
   });
@@ -159,12 +159,12 @@ export function createNewScene(
   });
 }
 
-export function deleteScene(sceneId: number): void {
+export function deleteScene(sceneId: number, sceneVersion: number): void {
   return errorHandlerWrapper("deleteScene", () => {
     const deleteQuery = `
-      DELETE FROM Scene WHERE id = ?;
+      DELETE FROM Scene WHERE id = ? AND version = ?;
     `;
-    const params = [sceneId];
+    const params = [sceneId, sceneVersion];
     updateDB(deleteQuery, params);
   });
 }

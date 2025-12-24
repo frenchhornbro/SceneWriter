@@ -40,6 +40,11 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     res.status(400).json({error: "Missing or invalid sceneId parameter."});
     return;
   }
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
+  }
   const { title } = getStory(storyIdNum);
   const sceneData = getScene(sceneIdNum);
   const scene = sceneData["scene"];
