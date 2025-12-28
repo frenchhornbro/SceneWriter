@@ -55,7 +55,7 @@ export function getAllCharacters(storyId: number): any[] {
   });
 }
 
-export function createNewCharacter(storyId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedSceneIds: number[]): any {
+export function createNewCharacter(storyId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedScenes: scenePreview[]): any {
   return transactionWrapper("createNewCharacter", (container) => {
     // Create character
     const createQuery = `
@@ -66,33 +66,26 @@ export function createNewCharacter(storyId: number, name: string, role: string, 
     const result = updateDB(createQuery, createParams);
     const characterId = result.lastInsertRowid;
     // Create relationships
-    relationships.forEach((relationship) => {
-      const { id: relatedCharacterId, description } = relationship;
-      const relationshipQuery = `
-        INSERT INTO CharacterRelationship (character_id, related_character_id, description)
-        VALUES (?, ?, ?);
-      `;
-      const relationshipParams = [characterId, relatedCharacterId, description];
-      updateDB(relationshipQuery, relationshipParams);
-    });
+    const relationshipQuery = `
+      INSERT INTO CharacterRelationship (character_id, related_character_id, description)
+      VALUES ${relationships.map(() => "(?, ?, ?)").join(", ")};
+    `;
+    const relationshipParams = relationships.flatMap((relationship) => [characterId, relationship.id, relationship.description]);
+    updateDB(relationshipQuery, relationshipParams);
     // Connect plot points
-    connectedPlotPointIds.forEach((plotPointId) => {
-      const plotPointQuery = `
-        INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
-        VALUES (?, ?);
-      `;
-      const plotPointParams = [characterId, plotPointId];
-      updateDB(plotPointQuery, plotPointParams);
-    });
+    const plotPointQuery = `
+      INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
+      VALUES ${connectedPlotPointIds.map(() => "(?, ?)").join(", ")};
+    `;
+    const plotPointParams = connectedPlotPointIds.flatMap((plotPointId) => [characterId, plotPointId]);
+    updateDB(plotPointQuery, plotPointParams);
     // Connect scenes
-    connectedSceneIds.forEach((sceneId) => {
-      const sceneQuery = `
-        INSERT INTO SceneCharacter (character_id, scene_id)
-        VALUES (?, ?);
-      `;
-      const sceneParams = [characterId, sceneId];
-      updateDB(sceneQuery, sceneParams);
-    });
+    const sceneQuery = `
+      INSERT INTO SceneCharacter (character_id, scene_id, scene_version)
+      VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")};
+    `;
+    const sceneParams = connectedScenes.flatMap((scene: scenePreview) => [characterId, scene.id, scene.version]);
+    updateDB(sceneQuery, sceneParams);
     container["characterId"] = characterId;
   });
 }

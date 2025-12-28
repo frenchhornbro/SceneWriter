@@ -63,7 +63,7 @@ characterRouter.post("/", (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
     return;
   }
-  const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds } = req.body;
+  const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedScenes } = req.body;
   if (!name) {
     res.status(400).json({error: "Missing required fields: name."});
     return;
@@ -76,17 +76,24 @@ characterRouter.post("/", (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid required fields: connectedPlotPointIds."});
     return;
   }
-  if (!connectedSceneIds || !Array.isArray(connectedSceneIds)) {
-    res.status(400).json({error: "Missing or invalid required fields: connectedSceneIds."});
+  if (!connectedScenes || !Array.isArray(connectedScenes)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedScenes."});
     return;
   }
+  connectedScenes.forEach((scene: scenePreview) => {
+    const { id, version } = scene;
+    if (!validateId(id) || !validateId(version)) {
+      res.status(400).json({error: "Each connected scene must have a valid id and version field."});
+      return;
+    }
+  });
   const nameString = name.toString().trim();
   const roleString = `${role ?? ""}`.trim();
   const physicalDescriptionString = `${physicalDescription ?? ""}`.trim();
   const personalityString = `${personality ?? ""}`.trim();
   const backstoryString = `${backstory ?? ""}`.trim();
   const additionalNotesString = `${additionalNotes ?? ""}`.trim();
-  const { characterId } = createNewCharacter(storyIdNum, nameString, roleString, physicalDescriptionString, personalityString, backstoryString, additionalNotesString, relationships, connectedPlotPointIds, connectedSceneIds);
+  const { characterId } = createNewCharacter(storyIdNum, nameString, roleString, physicalDescriptionString, personalityString, backstoryString, additionalNotesString, relationships, connectedPlotPointIds, connectedScenes);
   res.status(201).json({ characterId });
 });
 

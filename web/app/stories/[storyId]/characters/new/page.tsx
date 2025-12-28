@@ -122,7 +122,7 @@ export default function NewCharacterPage() {
       additionalNotes: additionalNotes.trim(),
       relationships,
       connectedPlotPointIds,
-      connectedSceneIds: connectedScenes
+      connectedScenes
     }, "POST",
       async (response) => {
         const data = await response.json()
