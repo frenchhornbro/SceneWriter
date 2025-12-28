@@ -139,23 +139,19 @@ export function createNewScene(
     const sceneId = result.lastInsertRowid;
     container["sceneId"] = sceneId;
     // Connect characters
-    connectedCharacterIds.forEach((characterId) => {
-      const characterQuery = `
-        INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
-        VALUES (?, ?, ?);
-      `;
-      const characterParams = [sceneId, version, characterId];
-      updateDB(characterQuery, characterParams);
-    });
+    const characterQuery = `
+      INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
+      VALUES ${connectedCharacterIds.map(() => "(?, ?, ?)").join(", ")};
+    `;
+    const characterParams = connectedCharacterIds.flatMap((characterId) => [sceneId, version, characterId]);
+    updateDB(characterQuery, characterParams);
     // Connect plot points
-    connectedPlotPointIds.forEach((plotPointId) => {
-      const plotPointQuery = `
-        INSERT INTO ScenePlotPoint (scene_id, scene_version, plot_point_id)
-        VALUES (?, ?, ?);
-      `;
-      const plotPointParams = [sceneId, version, plotPointId];
-      updateDB(plotPointQuery, plotPointParams);
-    });
+    const plotPointQuery = `
+      INSERT INTO ScenePlotPoint (scene_id, scene_version, plot_point_id)
+      VALUES ${connectedPlotPointIds.map(() => "(?, ?, ?)").join(", ")};
+    `;
+    const plotPointParams = connectedPlotPointIds.flatMap((plotPointId) => [sceneId, version, plotPointId]);
+    updateDB(plotPointQuery, plotPointParams);
   });
 }
 
