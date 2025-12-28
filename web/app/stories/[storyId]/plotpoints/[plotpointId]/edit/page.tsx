@@ -59,7 +59,7 @@ export default function EditPlotPointPage() {
         setTitle(data.title || "")
         setDescription(data.description || "")
         setConnectedCharacterIds(data.connectedCharacterIds || [])
-        setConnectedScenes(data.connectedSceneIds || [])
+        setConnectedScenes(data.connectedScenes || [])
         removeLoadingEndpoint("plotPointData")
       },
       async (error) => {
@@ -118,7 +118,7 @@ export default function EditPlotPointPage() {
         title,
         description,
         connectedCharacterIds,
-        connectedSceneIds: connectedScenes,
+        connectedScenes,
       }, "PUT",
       async (response) => {
         if (doRedirect) {

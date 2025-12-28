@@ -48,7 +48,6 @@ characterRouter.get("/:characterId", async (req: Request, res: Response) => {
     additionalNotes: character.additional_notes,
     relationships: characterData["relationships"],
     connectedPlotPointIds: characterData["connectedPlotPoints"].map((pp: any) => pp.id),
-    connectedSceneIds: characterData["connectedScenes"].map((s: any) => s.id),
     connectedPlotPoints: characterData["connectedPlotPoints"],
     connectedScenes: characterData["connectedScenes"],
     createdAt: character.created_at,

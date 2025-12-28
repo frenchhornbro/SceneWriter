@@ -49,8 +49,6 @@ plotPointRouter.get("/:plotPointId", async (req: Request, res: Response) => {
     storyTitle: title,
     title: plotPoint.title,
     description: plotPoint.description,
-    // TODO: Change to connectedScenes (including version)
-    connectedSceneIds: plotPointData["connectedScenes"].map((scene: any) => scene.id),
     connectedCharacterIds: plotPointData["connectedCharacters"].map((character: any) => character.id),
     connectedScenes: plotPointData["connectedScenes"],
     connectedCharacters: plotPointData["connectedCharacters"],

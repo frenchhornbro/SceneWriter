@@ -100,7 +100,7 @@ export default function NewPlotPointPage() {
         title,
         description,
         connectedCharacterIds,
-        connectedSceneIds: connectedScenes,
+        connectedScenes,
       }, "POST",
       async (response) => {
         const data = await response.json()

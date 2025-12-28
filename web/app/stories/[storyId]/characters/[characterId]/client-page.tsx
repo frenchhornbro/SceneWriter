@@ -10,6 +10,7 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { scenePreview } from "@shared/templates/scene"
 
 export default function CharacterDetailClientPage({
   params,
@@ -179,7 +180,7 @@ export default function CharacterDetailClientPage({
             <h2 className="text-xl font-semibold mb-4">Connected Scenes</h2>
             {characterData.connectedScenes && characterData.connectedScenes.length > 0 ? (
               <div className="space-y-4">
-                {characterData.connectedScenes.map((scene: any) => (
+                {characterData.connectedScenes.map((scene: scenePreview) => (
                   <Link
                   key={scene.id}
                     href={`/stories/${params.storyId}/scenes/${scene.id}`}

@@ -10,6 +10,7 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { scenePreview } from "@shared/templates/scene"
 
 export default function PlotPointDetailClientPage({
   params,
@@ -132,7 +133,7 @@ export default function PlotPointDetailClientPage({
             <h2 className="text-lg font-semibold mb-3">Connected Scenes</h2>
             {plotPointData.connectedScenes && plotPointData.connectedScenes.length ? (
               <div className="flex flex-wrap gap-2">
-                {plotPointData.connectedScenes.map((scene: any) => (
+                {plotPointData.connectedScenes.map((scene: scenePreview) => (
                   <Link
                     key={scene.id}
                     href={`/stories/${params.storyId}/scenes/${scene.id}`}
