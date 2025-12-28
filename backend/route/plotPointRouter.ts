@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { validateId } from "./routerUtils";
 import { createNewPlotPoint, deletePlotPoint, getAllPlotPoints, getPlotPoint, updatePlotPoint } from "../data-access/plotPointDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
+import { scenePreview } from "@shared/templates/scene";
 
 const plotPointRouter = Router({ mergeParams: true });
 
@@ -74,7 +75,7 @@ plotPointRouter.post("/", async (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid required fields: connectedScenes."});
     return;
   }
-  connectedScenes.forEach((scene: any) => {
+  connectedScenes.forEach((scene: scenePreview) => {
     const { id, version } = scene;
     if (!validateId(id) || !validateId(version)) {
       res.status(400).json({error: "Each connected scene must have a valid id and version field."});
@@ -112,9 +113,9 @@ plotPointRouter.put("/:plotPointId", async (req: Request, res: Response) => {
     res.status(400).json({error: "connectedScenes must be an array of numbers."});
     return;
   }
-  connectedScenes.forEach((scene: any) => {
-    const { scene_id, version } = scene;
-    if (!validateId(scene_id) || !validateId(version)) {
+  connectedScenes.forEach((scene: scenePreview) => {
+    const { id, version } = scene;
+    if (!validateId(id) || !validateId(version)) {
       res.status(400).json({error: "Each connected scene must have a valid id and version field."});
       return;
     }

@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { createNewCharacter, deleteCharacter, getAllCharacters, getCharacter, updateCharacter } from "../data-access/characterDataAccess";
 import { validateId } from "./routerUtils";
 import { getStory } from "../data-access/storyDataAccess";
+import { scenePreview } from "@shared/templates/scene";
 
 const characterRouter = Router({ mergeParams: true });
 
@@ -101,7 +102,7 @@ characterRouter.put("/:characterId", async (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid characterId parameter."});
     return;
   }
-  const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedSceneIds } = req.body;
+  const { name, role, physicalDescription, personality, backstory, additionalNotes, relationships, connectedPlotPointIds, connectedScenes } = req.body;
   if (!name) {
     res.status(400).json({error: "Missing required fields: name."});
     return;
@@ -114,17 +115,24 @@ characterRouter.put("/:characterId", async (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid required fields: connectedPlotPointIds."});
     return;
   }
-  if (!connectedSceneIds || !Array.isArray(connectedSceneIds)) {
-    res.status(400).json({error: "Missing or invalid required fields: connectedSceneIds."});
+  if (!connectedScenes || !Array.isArray(connectedScenes)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedScenes."});
     return;
   }
+  connectedScenes.forEach((scene: scenePreview) => {
+    const { id, version } = scene;
+    if (!validateId(id) || !validateId(version)) {
+      res.status(400).json({error: "Each connected scene must have a valid id and version field."});
+      return;
+    }
+  });
   const nameString = name.toString().trim();
   const roleString = `${role ?? ""}`.trim();
   const physicalDescriptionString = `${physicalDescription ?? ""}`.trim();
   const personalityString = `${personality ?? ""}`.trim();
   const backstoryString = `${backstory ?? ""}`.trim();
   const additionalNotesString = `${additionalNotes ?? ""}`.trim();
-  updateCharacter(storyIdNum, characterIdNum, nameString, roleString, physicalDescriptionString, personalityString, backstoryString, additionalNotesString, relationships, connectedPlotPointIds, connectedSceneIds);
+  updateCharacter(characterIdNum, nameString, roleString, physicalDescriptionString, personalityString, backstoryString, additionalNotesString, relationships, connectedPlotPointIds, connectedScenes);
   res.status(200).json({});
 });
 

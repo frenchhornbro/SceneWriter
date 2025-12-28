@@ -97,7 +97,7 @@ export function createNewCharacter(storyId: number, name: string, role: string, 
   });
 }
 
-export function updateCharacter(storyId: number, characterId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedSceneIds: number[]): void {
+export function updateCharacter(characterId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedScenes: scenePreview[]): void {
   function processRelationships() {
     // Delete old relationships
     const deleteRelationshipsPrompt = `
@@ -108,16 +108,13 @@ export function updateCharacter(storyId: number, characterId: number, name: stri
     const deleteRelationshipsParams = [characterId, ...relationships.map((r) => r.id)];
     updateDB(deleteRelationshipsPrompt, deleteRelationshipsParams);
     // Add new relationships
-    relationships.forEach((relationship) => {
-      const { id: relatedCharacterId, description } = relationship;
-      const newRelationshipsPrompt = `
-        INSERT INTO CharacterRelationship (character_id, related_character_id, description)
-        VALUES (?, ?, ?)
-        ON CONFLICT(character_id, related_character_id) DO UPDATE SET description = excluded.description;
-      `;
-      const newRelationshipsParams = [characterId, relatedCharacterId, description];
-      updateDB(newRelationshipsPrompt, newRelationshipsParams);
-    });
+    const newRelationshipsPrompt = `
+      INSERT INTO CharacterRelationship (character_id, related_character_id, description)
+      VALUES ${relationships.map(() => "(?, ?, ?)").join(", ")}
+      ON CONFLICT(character_id, related_character_id) DO UPDATE SET description = excluded.description;
+    `;
+    const newRelationshipsParams = relationships.flatMap((relationship) => [characterId, relationship.id, relationship.description]);
+    updateDB(newRelationshipsPrompt, newRelationshipsParams);
   }
 
   function processConnectedPlotPoints() {
@@ -130,15 +127,13 @@ export function updateCharacter(storyId: number, characterId: number, name: stri
     const deletePlotPointsParams = [characterId, ...connectedPlotPointIds];
     updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
     // Add new plot points
-    connectedPlotPointIds.forEach((plotPointId) => {
-      const newPlotPointsPrompt = `
-        INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
-        VALUES (?, ?)
-        ON CONFLICT(character_id, plot_point_id) DO NOTHING;
-      `;
-      const newPlotPointsParams = [characterId, plotPointId];
-      updateDB(newPlotPointsPrompt, newPlotPointsParams);
-    });
+    const newPlotPointsPrompt = `
+      INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
+      VALUES ${connectedPlotPointIds.map(() => "(?, ?)").join(", ")}
+      ON CONFLICT(character_id, plot_point_id) DO NOTHING;
+    `;
+    const newPlotPointsParams = connectedPlotPointIds.flatMap((plotPointId) => [characterId, plotPointId]);
+    updateDB(newPlotPointsPrompt, newPlotPointsParams);
   }
 
   function processConnectedScenes() {
@@ -146,20 +141,18 @@ export function updateCharacter(storyId: number, characterId: number, name: stri
     const deleteScenesPrompt = `
       DELETE FROM SceneCharacter
       WHERE character_id = ?
-      AND scene_id NOT IN (${connectedSceneIds.map(() => "?").join(", ")});
+      AND (scene_id, scene_version) NOT IN (${connectedScenes.map(() => "(?, ?)").join(", ")});
     `;
-    const deleteScenesParams = [characterId, ...connectedSceneIds];
+    const deleteScenesParams = [characterId, ...connectedScenes.flatMap((scene: scenePreview) => [scene.id, scene.version])];
     updateDB(deleteScenesPrompt, deleteScenesParams);
     // Add new scenes
-    connectedSceneIds.forEach((sceneId) => {
-      const newScenesPrompt = `
-        INSERT INTO SceneCharacter (character_id, scene_id)
-        VALUES (?, ?)
-        ON CONFLICT(character_id, scene_id) DO NOTHING;
-      `;
-      const newScenesParams = [characterId, sceneId];
-      updateDB(newScenesPrompt, newScenesParams);
-    });
+    const newScenesPrompt = `
+      INSERT INTO SceneCharacter (character_id, scene_id, scene_version)
+      VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")}
+      ON CONFLICT(character_id, scene_id, scene_version) DO NOTHING;
+    `;
+    const newScenesParams = connectedScenes.flatMap((scene: scenePreview) => [characterId, scene.id, scene.version]);
+    updateDB(newScenesPrompt, newScenesParams);
   }
 
   return transactionWrapper("updateCharacter", (_) => {

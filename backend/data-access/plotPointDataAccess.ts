@@ -61,7 +61,7 @@ export function createNewPlotPoint(storyId: number, title: string, description: 
       INSERT INTO ScenePlotPoint (plot_point_id, scene_id, scene_version)
       VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")};
     `;
-    const sceneParams = connectedScenes.flatMap((scene) => [plotPointId, scene.id, scene.version]);
+    const sceneParams = connectedScenes.flatMap((scene: scenePreview) => [plotPointId, scene.id, scene.version]);
     updateDB(sceneQuery, sceneParams);
     // Connect characters
     const characterQuery = `
