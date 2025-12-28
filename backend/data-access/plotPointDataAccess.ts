@@ -45,7 +45,7 @@ export function getAllPlotPoints(storyId: number): any[] {
   });
 }
 
-export function createNewPlotPoint(storyId: number, title: string, description: string, connectedSceneIds: number[], connectedCharacterIds: number[]): any {
+export function createNewPlotPoint(storyId: number, title: string, description: string, connectedScenes: scenePreview[], connectedCharacterIds: number[]): any {
   return transactionWrapper("createNewPlotPoint", (container) => {
     // Create plot point
     const createQuery = `
@@ -57,23 +57,19 @@ export function createNewPlotPoint(storyId: number, title: string, description: 
     const plotPointId = result.lastInsertRowid;
     container["plotPointId"] = plotPointId;
     // Connect scenes
-    connectedSceneIds.forEach((sceneId) => {
-      const sceneQuery = `
-        INSERT INTO ScenePlotPoint (plot_point_id, scene_id)
-        VALUES (?, ?);
-      `;
-      const sceneParams = [plotPointId, sceneId];
-      updateDB(sceneQuery, sceneParams);
-    });
+    const sceneQuery = `
+      INSERT INTO ScenePlotPoint (plot_point_id, scene_id, scene_version)
+      VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")};
+    `;
+    const sceneParams = connectedScenes.flatMap((scene) => [plotPointId, scene.id, scene.version]);
+    updateDB(sceneQuery, sceneParams);
     // Connect characters
-    connectedCharacterIds.forEach((characterId) => {
-      const characterQuery = `
-        INSERT INTO CharacterPlotPoint (plot_point_id, character_id)
-        VALUES (?, ?);
-      `;
-      const characterParams = [plotPointId, characterId];
-      updateDB(characterQuery, characterParams);
-    });
+    const characterQuery = `
+      INSERT INTO CharacterPlotPoint (plot_point_id, character_id)
+      VALUES ${connectedCharacterIds.map(() => "(?, ?)").join(", ")};
+    `;
+    const characterParams = connectedCharacterIds.flatMap((characterId) => [plotPointId, characterId]);
+    updateDB(characterQuery, characterParams);
   });
 }
 

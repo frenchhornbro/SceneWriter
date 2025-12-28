@@ -65,22 +65,29 @@ plotPointRouter.post("/", async (req: Request, res: Response) => {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
     return;
   }
-  const { title, description, connectedSceneIds, connectedCharacterIds } = req.body;
+  const { title, description, connectedScenes, connectedCharacterIds } = req.body;
   if (!description) {
     res.status(400).json({error: "Missing required fields: description."});
     return;
   }
-  if (!connectedSceneIds || !Array.isArray(connectedSceneIds)) {
-    res.status(400).json({error: "connectedSceneIds must be an array of numbers."});
+  if (!connectedScenes || !Array.isArray(connectedScenes)) {
+    res.status(400).json({error: "Missing or invalid required fields: connectedScenes."});
     return;
   }
+  connectedScenes.forEach((scene: any) => {
+    const { id, version } = scene;
+    if (!validateId(id) || !validateId(version)) {
+      res.status(400).json({error: "Each connected scene must have a valid id and version field."});
+      return;
+    }
+  });
   if (!connectedCharacterIds || !Array.isArray(connectedCharacterIds)) {
     res.status(400).json({error: "connectedCharacterIds must be an array of numbers."});
     return;
   }
   const titleString = `${title ?? ""}`.trim();
   const descriptionString = description.toString().trim();
-  const { plotPointId } = createNewPlotPoint(storyIdNum, titleString, descriptionString, connectedSceneIds, connectedCharacterIds);
+  const { plotPointId } = createNewPlotPoint(storyIdNum, titleString, descriptionString, connectedScenes, connectedCharacterIds);
   res.status(201).json({ plotPointId });
 });
 
