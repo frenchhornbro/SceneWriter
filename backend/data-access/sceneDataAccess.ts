@@ -1,6 +1,6 @@
 import { errorHandlerWrapper, transactionWrapper } from "./dataAccessUtils";
 import { queryDB, updateDB } from "./dbOperations";
-import type { fullScene, scenePreview } from "@shared/templates/scene";
+import type { scenePreview } from "@shared/templates/scene";
 
 export function getScene(sceneId: number, sceneVersion: number): any {
   return transactionWrapper("getScene", (container) => {
@@ -9,7 +9,7 @@ export function getScene(sceneId: number, sceneVersion: number): any {
       SELECT * FROM Scene WHERE id = ? AND version = ?;
     `;
     const sceneParams = [sceneId, sceneVersion];
-    const scene: fullScene = queryDB(sceneQuery, sceneParams)[0];
+    const scene = queryDB(sceneQuery, sceneParams)[0];
     container["scene"] = scene;
     // Get connected characters
     const characterQuery = `

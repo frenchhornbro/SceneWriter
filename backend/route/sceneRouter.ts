@@ -46,7 +46,7 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     return;
   }
   const { title } = getStory(storyIdNum);
-  const sceneData = getScene(sceneIdNum);
+  const sceneData = getScene(sceneIdNum, sceneVersionNum);
   const scene = sceneData["scene"];
   if (!scene) {
     res.status(404).json({error: "Scene not found."});
@@ -125,7 +125,7 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   if (!req.body) {
     return res.status(400).json({error: "Missing request body."});
   }
-  const { storyId, sceneId } = req.params;
+  const { storyId, sceneId, sceneVersion } = req.params;
   const storyIdNum = validateId(storyId);
   if (!storyIdNum) {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
@@ -168,7 +168,12 @@ sceneRouter.delete("/:sceneId/version/:sceneVersion", async (req: Request, res: 
     res.status(400).json({error: "Missing or invalid sceneId parameter."});
     return;
   }
-  deleteScene(sceneIdNum);
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
+  }
+  deleteScene(sceneIdNum, sceneVersionNum);
   res.status(204).json({});
 });
 
