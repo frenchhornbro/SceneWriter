@@ -136,7 +136,7 @@ export default function PlotPointDetailClientPage({
                 {plotPointData.connectedScenes.map((scene: scenePreview) => (
                   <Link
                     key={scene.id}
-                    href={`/stories/${params.storyId}/scenes/${scene.id}`}
+                    href={`/stories/${params.storyId}/scenes/${scene.id}/version/${scene.version}`}
                     className="px-3 py-1.5 text-sm rounded-md bg-secondary-muted text-secondary border border-secondary/20 hover:border-secondary/50 transition-colors"
                   >
                     {scene.title}

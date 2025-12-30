@@ -50,6 +50,7 @@ export function getAllScenes(storyId: number): scenePreview[] {
 
 export function getNextSceneOrder(storyId: number): number {
   return errorHandlerWrapper("getNextSceneOrder", () => {
+    // TODO: Fix the logic in this query.
     const query = `
       SELECT COALESCE(MAX(scene_order), 0) + 1 AS sceneOrder FROM Scene WHERE story_id = ?;
     `;

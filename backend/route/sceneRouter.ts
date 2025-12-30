@@ -122,6 +122,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
 });
 
 sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Request, res: Response) => {
+  // TODO: If the scene does not already exist, either return 404 or create a new scene
   if (!req.body) {
     return res.status(400).json({error: "Missing request body."});
   }
@@ -129,26 +130,36 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const storyIdNum = validateId(storyId);
   if (!storyIdNum) {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
-    return;
+    return
   }
-  const sceneIdNum = validateId(sceneId);
-  if (!sceneIdNum) {
-    res.status(400).json({error: "Missing or invalid sceneId parameter."});
-    return;
-  }
-  const { overview, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, pointOfView, location } = req.body;
+  const {
+    overview,
+    title,
+    chapterNumber,
+    pov,
+    location,
+    tone,
+    additionalNotes,
+    connectedCharacterIds,
+    connectedPlotPointIds,
+    connectedWritingStyleSampleIds,
+  } = req.body;
   if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
-    res.status(400).json({error: "Scene overview or connected plot points are required."});
-    return;
+    return res.status(400).json({error: "Scene overview or connected plot points are required."});
   }
-  // const plotPoints = [];
-  // const characters = [];
-  // const writingStyleSamples = [];
-  // TODO: Pass in POV and location to influence generation
-  // const { text } = await generateScene(writingStyleSamples, overview, characters, plotPoints);
-  // console.log(text);
-  // TODO: Create a new scene and return the sceneID (so the user can be routed to the created scene page)
-  res.status(201).json({ sceneId });
+  const overviewString = `${overview ?? ""}`.toString();
+  const titleString = `${title ?? ""}`.toString();
+  const povString = `${pov ?? ""}`.toString();
+  const locationString = `${location ?? ""}`.toString();
+  const toneString = `${tone ?? ""}`.toString();
+  const additionalNotesString = `${additionalNotes ?? ""}`.toString();
+  const sceneOrder = getNextSceneOrder(storyIdNum);
+  const plotPoints = getPlotPointInfo(connectedPlotPointIds).map((pp) => Object.entries(pp).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
+  const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
+  const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
+  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString);
+  // const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  res.status(201).json({ sceneId, version: 1 }); //FIXME: This shouldn't be version number 1
 });
 
 sceneRouter.put("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {

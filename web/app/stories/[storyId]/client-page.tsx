@@ -290,12 +290,12 @@ export default function StoryDetailClientPage({
 
             <div className="space-y-3">
               {scenesData?.map((scene: scenePreview) => (
-                <Link key={scene.id} href={`/stories/${params.storyId}/scenes/${scene.id}`}>
+                <Link key={scene.id} href={`/stories/${params.storyId}/scenes/${scene.id}/version/${scene.version}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          {scene.chapter_number !== undefined ? (
+                          {scene.chapter_number ? (
                             <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
                               Ch. {scene.chapter_number}
                             </span>

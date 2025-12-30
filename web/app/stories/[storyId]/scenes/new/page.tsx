@@ -112,7 +112,8 @@ export default function NewScenePage() {
       async (response) => {
         const data = await response.json()
         const sceneId = data.sceneId;
-        router.push(`/stories/${storyId}/scenes/${sceneId}`)
+        const sceneVersion = data.version;
+        router.push(`/stories/${storyId}/scenes/${sceneId}/version/${sceneVersion}`)
       },
       async (error) => {
         console.error("Failed to generate scene: ", error)

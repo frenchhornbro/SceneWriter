@@ -21,7 +21,7 @@ export default function RegenerateScenePage() {
   const params = useParams()
   const storyId = params.storyId as string
   const sceneId = params.sceneId as string
-  const sceneVersion = params.version as string
+  const sceneVersion = params.sceneVersion as string
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
@@ -134,7 +134,9 @@ export default function RegenerateScenePage() {
     }, "POST",
       async (response) => {
         if (doRedirect) {
-          router.push(`/stories/${storyId}/scenes/${sceneId}`)
+          const data = await response.json()
+          const newSceneVersion = data.version;
+          router.push(`/stories/${storyId}/scenes/${sceneId}/version/${newSceneVersion}`)
         }
       },
       async (error) => {
@@ -192,7 +194,7 @@ export default function RegenerateScenePage() {
     <div className="min-h-screen">
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Link
-          href={`/stories/${storyId}/scenes/${sceneId}`}
+          href={`/stories/${storyId}/scenes/${sceneId}/version/${sceneVersion}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -426,7 +428,7 @@ export default function RegenerateScenePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push(`/stories/${storyId}/scenes/${sceneId}`)}
+                onClick={() => router.push(`/stories/${storyId}/scenes/${sceneId}/version/${sceneVersion}`)}
                 className="border-border hover:bg-surface-light bg-transparent"
               >
                 Cancel
