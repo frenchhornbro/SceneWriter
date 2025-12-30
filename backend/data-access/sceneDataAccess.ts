@@ -105,6 +105,17 @@ export function getWritingStyleSampleInfo(connectedWritingStyleSampleIds: number
   });
 }
 
+export function getLatestVersion(sceneId: number): number | null {
+  return errorHandlerWrapper("getLatestVersion", () => {
+    const query = `
+      SELECT MAX(version) AS latestVersion FROM Scene WHERE id = ?;
+    `;
+    const params = [sceneId];
+    const result = queryDB(query, params);
+    return result[0]?.latestVersion || null;
+  });
+}
+
 export function createNewScene(
   storyId: number,
   sceneIdParam: number | null,

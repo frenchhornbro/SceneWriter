@@ -54,9 +54,7 @@ export default function WritingSampleDetailClientPage({
   }
 
   if (isLoading) {
-    return (
-      <Loading itemDescription="writing style sample" />
-    )
+    return <Loading itemDescription="writing style sample" />
   }
 
   if (errorMessage) {
