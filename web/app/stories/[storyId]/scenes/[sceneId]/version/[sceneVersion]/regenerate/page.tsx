@@ -86,7 +86,7 @@ export default function RegenerateScenePage() {
     serverRequest(`api/writingstyle`, {}, "GET",
       async (response) => {
         const data = await response.json()
-        setAllWritingStyleSamplesData(data.writingStyles)
+        setAllWritingStyleSamplesData(data.writingStyleSamples)
       },
       async (error) => {
         setErrorMessage(`Failed to load writing style samples for connections: ${error}`)
