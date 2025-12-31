@@ -142,7 +142,6 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
 });
 
 sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Request, res: Response) => {
-  // TODO: If the scene does not already exist, either return 404 or create a new scene
   if (!req.body) {
     return res.status(400).json({error: "Missing request body."});
   }
@@ -151,6 +150,16 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   if (!storyIdNum) {
     res.status(400).json({error: "Missing or invalid storyId parameter."});
     return
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
   }
   const {
     overview,
@@ -164,7 +173,7 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
     connectedPlotPointIds,
     connectedWritingStyleSampleIds,
   } = req.body;
-  if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
+  if (!overview && (!connectedPlotPointIds?.length)) {
     return res.status(400).json({error: "Scene overview or connected plot points are required."});
   }
   const overviewString = `${overview ?? ""}`.toString();
@@ -173,13 +182,24 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const locationString = `${location ?? ""}`.toString();
   const toneString = `${tone ?? ""}`.toString();
   const additionalNotesString = `${additionalNotes ?? ""}`.toString();
-  const sceneOrder = getNextSceneOrder(storyIdNum);
+  const sceneData = getScene(sceneIdNum, sceneVersionNum)["scene"];
+  if (!sceneData) {
+    res.status(404).json({error: "Scene or version not found."});
+    return;
+  }
+  const sceneOrder = sceneData.scene_order;
   const plotPoints = getPlotPointInfo(connectedPlotPointIds).map((pp) => Object.entries(pp).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString);
-  // const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
-  res.status(201).json({ sceneId, version: 1 }); //FIXME: This shouldn't be version number 1
+  const latestVersion = getLatestVersion(sceneIdNum);
+  if (latestVersion === null) {
+    res.status(404).json({error: "Scene not found."});
+    return;
+  }
+  const newVersion = latestVersion + 1;
+  createNewScene(storyIdNum, sceneIdNum, newVersion, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  res.status(201).json({ sceneId, version: newVersion });
 });
 
 sceneRouter.put("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {

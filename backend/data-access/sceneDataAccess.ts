@@ -138,17 +138,17 @@ export function createNewScene(
       const idQuery = `
         SELECT COALESCE(MAX(id), 0) + 1 AS newId FROM Scene;
       `;
-      const result = queryDB(idQuery, []);
-      sceneIdParam = result[0]?.newId || 1;
+      const idResult = queryDB(idQuery, []);
+      sceneIdParam = idResult[0]?.newId || 1;
     }
+    const sceneId = sceneIdParam;
     // Create scene
     const createQuery = `
       INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, chapter_number, title, pov, location, tone, additional_notes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
-    const createParams = [storyId, sceneIdParam, version, overview, sceneText, sceneOrder, chapterNumber, title, pov, location, tone, additionalNotes];
-    const result = updateDB(createQuery, createParams);
-    const sceneId = result.lastInsertRowid;
+    const createParams = [storyId, sceneId, version, overview, sceneText, sceneOrder, chapterNumber, title, pov, location, tone, additionalNotes];
+    updateDB(createQuery, createParams);
     container["sceneId"] = sceneId;
     // Connect characters
     const characterQuery = `

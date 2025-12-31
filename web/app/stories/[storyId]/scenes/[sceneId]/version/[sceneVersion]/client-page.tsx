@@ -102,13 +102,13 @@ export default function SceneDetailClientPage({
             </div>
 
             <div className="flex gap-2">
-              <Link href={`/stories/${params.storyId}/scenes/${params.sceneId}/edit`}>
+              <Link href={`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/edit`}>
                 <Button variant="outline" className="border-border hover:bg-surface-light bg-transparent">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
               </Link>
-              <Link href={`/stories/${params.storyId}/scenes/${params.sceneId}/regenerate`}>
+              <Link href={`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/regenerate`}>
                 <Button
                   variant="outline"
                   className="border-border hover:bg-primary-muted hover:text-primary bg-transparent"

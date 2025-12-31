@@ -296,9 +296,9 @@ export default function RegenerateScenePage() {
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCharactersData.filter(
+                  {allCharactersData?.filter(
                     (char: any) => !connectedCharacterIds.includes(char.id),
-                  ).map((character: any) => (
+                  )?.map((character: any) => (
                     <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
@@ -308,7 +308,7 @@ export default function RegenerateScenePage() {
 
               {connectedCharacterIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedCharacterIds.map((charId) => {
+                  {connectedCharacterIds?.map((charId) => {
                     const character = allCharactersData.find((c: any) => c.id === charId)
                     return (
                       <div
@@ -339,9 +339,9 @@ export default function RegenerateScenePage() {
                   <SelectValue placeholder="Select plot points" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allPlotPointsData.filter(
+                  {allPlotPointsData?.filter(
                     (plotPoint: any) => !connectedPlotPointIds.includes(plotPoint.id),
-                  ).map((plotPoint: any) => (
+                  )?.map((plotPoint: any) => (
                     <SelectItem key={plotPoint.id} value={plotPoint.id}>
                       {plotPoint.title}
                     </SelectItem>
@@ -351,7 +351,7 @@ export default function RegenerateScenePage() {
 
               {connectedPlotPointIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedPlotPointIds.map((plotPointId) => {
+                  {connectedPlotPointIds?.map((plotPointId) => {
                     const plotPoint = allPlotPointsData.find((p: any) => p.id === plotPointId)
                     return (
                       <div
@@ -382,9 +382,9 @@ export default function RegenerateScenePage() {
                   <SelectValue placeholder="Select writing style samples" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allWritingStyleSamplesData.filter(
+                  {allWritingStyleSamplesData?.filter(
                     (writingStyleSample: any) => !connectedWritingStyleSampleIds.includes(writingStyleSample.id),
-                  ).map((writingStyleSample: any) => (
+                  )?.map((writingStyleSample: any) => (
                     <SelectItem key={writingStyleSample.id} value={writingStyleSample.id}>
                       {writingStyleSample.title}
                     </SelectItem>
@@ -394,7 +394,7 @@ export default function RegenerateScenePage() {
 
               {connectedWritingStyleSampleIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedWritingStyleSampleIds.map((writingStyleSampleId) => {
+                  {connectedWritingStyleSampleIds?.map((writingStyleSampleId) => {
                     const writingStyleSample = allWritingStyleSamplesData.find((w: any) => w.id === writingStyleSampleId)
                     return (
                       <div
