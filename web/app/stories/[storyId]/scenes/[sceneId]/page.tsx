@@ -37,7 +37,7 @@ export default function RedirectToSceneVersionPage() {
   }, [pathname, router])
 
   if (isLoading) {
-    return <Loading itemDescription="writing style sample" />
+    return <Loading />
   }
 
   return (
