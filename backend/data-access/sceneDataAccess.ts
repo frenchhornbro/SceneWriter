@@ -167,6 +167,58 @@ export function createNewScene(
   });
 }
 
+export function updateScene(sceneId: number, sceneVersion: number, overview: string, sceneText: string, title: string, pov: string, location: string, tone: string, additionalNotes: string, connectedCharacterIds: number[], connectedPlotPointIds: number[]): void {
+  function processConnectedCharacters() {
+    // Delete old characters
+    const deleteCharactersPrompt = `
+      DELETE FROM SceneCharacter
+      WHERE scene_id = ? AND scene_version = ?
+      AND character_id NOT IN (${connectedCharacterIds.map(() => "?").join(", ")});
+    `;
+    const deleteCharactersParams = [sceneId, sceneVersion, ...connectedCharacterIds];
+    updateDB(deleteCharactersPrompt, deleteCharactersParams);
+    // Add new characters
+    const newCharactersPrompt = `
+      INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
+      VALUES ${connectedCharacterIds.map(() => "(?, ?, ?)").join(", ")}
+      ON CONFLICT(scene_id, scene_version, character_id) DO NOTHING;
+    `;
+    const newCharactersParams = connectedCharacterIds.flatMap((characterId: any) => [sceneId, sceneVersion, characterId]);
+    updateDB(newCharactersPrompt, newCharactersParams);
+  }
+
+  function processConnectedPlotPoints() {
+    // Delete old scenes
+    const deletePlotPointsPrompt = `
+      DELETE FROM ScenePlotPoint
+      WHERE scene_id = ? AND scene_version = ?
+      AND plot_point_id NOT IN (${connectedPlotPointIds.map(() => "?").join(", ")});
+    `;
+    const deletePlotPointsParams = [sceneId, sceneVersion, ...connectedPlotPointIds];
+    updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
+    // Add new scenes
+    const newPlotPointsPrompt = `
+      INSERT INTO ScenePlotPoint (plot_point_id, scene_id, scene_version)
+      VALUES ${connectedPlotPointIds.map(() => "(?, ?, ?)").join(", ")}
+      ON CONFLICT(plot_point_id, scene_id, scene_version) DO NOTHING;
+    `;
+    const newPlotPointsParams = connectedPlotPointIds.flatMap((plotPointId: any) => [plotPointId, sceneId, sceneVersion]);
+    updateDB(newPlotPointsPrompt, newPlotPointsParams);
+  }
+
+  return transactionWrapper("updateScene", (container) => {
+    const sceneQuery = `
+      UPDATE Scene
+      SET overview = ?, scene_text = ?, title = ?, pov = ?, location = ?, tone = ?, additional_notes = ?, edited_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND version = ?;
+    `;
+    const sceneParams = [overview, sceneText, title, pov, location, tone, additionalNotes, sceneId, sceneVersion];
+    updateDB(sceneQuery, sceneParams);
+    processConnectedCharacters();
+    processConnectedPlotPoints();
+  });
+}
+
 export function deleteScene(sceneId: number, sceneVersion: number): void {
   return errorHandlerWrapper("deleteScene", () => {
     const deleteQuery = `

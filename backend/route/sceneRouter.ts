@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/prompts";
 import { validateId } from "./routerUtils";
-import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo, updateScene } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
 
@@ -204,7 +204,43 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
 
 sceneRouter.put("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {
   const { storyId, sceneId, sceneVersion } = req.params;
-  res.status(501).json({error: "Not implemented."});
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
+  }
+  const { generatedText, overview, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds} = req.body;
+  if (!generatedText) {
+    res.status(400).json({error: "Missing required fields: generatedText."});
+    return;
+  }
+  if (!connectedCharacterIds || !Array.isArray(connectedCharacterIds)) {
+    res.status(400).json({error: "connectedScenes must be an array of numbers."});
+    return;
+  }
+  if (!connectedPlotPointIds || !Array.isArray(connectedPlotPointIds)) {
+    res.status(400).json({error: "connectedScenes must be an array of numbers."});
+    return;
+  }
+  const sceneTextString = generatedText.toString().trim();
+  const overviewString = `${overview ?? ""}`.toString().trim();
+  const titleString = `${title ?? ""}`.toString().trim();
+  const povString = `${pov ?? ""}`.toString().trim();
+  const locationString = `${location ?? ""}`.toString().trim();
+  const toneString = `${tone ?? ""}`.toString().trim();
+  const additionalNotesString = `${additionalNotes ?? ""}`.toString().trim();
+  updateScene(sceneIdNum, sceneVersionNum, overviewString, sceneTextString, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  res.status(200).json({});
 });
 
 sceneRouter.delete("/:sceneId/version/:sceneVersion", async (req: Request, res: Response) => {

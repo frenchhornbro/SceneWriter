@@ -111,7 +111,6 @@ export default function EditSceneClientPage({
     await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {
       generatedText: sceneText,
       overview: overview,
-      chapter: chapterNumber,
       title: title.trim(),
       pov: pov,
       location: location,
