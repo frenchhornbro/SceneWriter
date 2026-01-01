@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Edit, Users, FileText, MapPin, Trash2, Download } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
@@ -100,6 +100,21 @@ export default function StoryDetailClientPage({
       setIsLoading(false)
     }
   }, [loadingEndpoints])
+
+  const latestScenesData = useMemo(() => {
+    const latestById = new Map<number, scenePreview>()
+
+    for (const scene of scenesData ?? []) {
+      const existing = latestById.get(scene.id)
+      if (!existing || scene.version > existing.version) {
+        latestById.set(scene.id, scene)
+      }
+    }
+
+    return Array.from(latestById.values()).sort(
+      (a, b) => new Date(b.edited_at).getTime() - new Date(a.edited_at).getTime(),
+    )
+  }, [scenesData])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -289,8 +304,8 @@ export default function StoryDetailClientPage({
             </div>
 
             <div className="space-y-3">
-              {scenesData?.map((scene: scenePreview) => (
-                <Link key={scene.id} href={`/stories/${params.storyId}/scenes/${scene.id}/version/${scene.version}`}>
+              {latestScenesData?.map((scene: scenePreview) => (
+                <Link key={JSON.stringify({id: scene.id, version: scene.version})} href={`/stories/${params.storyId}/scenes/${scene.id}/version/${scene.version}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div>
@@ -305,6 +320,9 @@ export default function StoryDetailClientPage({
                             </span>
                           )}
                           <h3 className="font-semibold">{scene.title}</h3>
+                          <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
+                            Version {scene.version}
+                          </span>
                         </div>
                         <p className="text-sm text-muted-foreground">{scene.scene_text}</p>
                       </div>
