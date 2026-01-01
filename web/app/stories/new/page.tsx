@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { serverRequest } from "@/lib/requests"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function NewStoryPage() {
   const router = useRouter()
@@ -15,6 +15,18 @@ export default function NewStoryPage() {
   const [subtitle, setSubtitle] = useState("")
   const [overview, setOverview] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [title, subtitle, overview, isSubmitting])
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()

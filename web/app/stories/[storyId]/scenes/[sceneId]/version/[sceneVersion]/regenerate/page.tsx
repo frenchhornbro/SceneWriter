@@ -103,41 +103,39 @@ export default function RegenerateScenePage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault()
-        handleSubmit(undefined, false)
+        handleSubmit(undefined)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isRegenerating])
+  }, [overview, chapterNumber, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isRegenerating])
 
-  async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
+  async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
     if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isRegenerating) {
-      // TODO: Show error message (but not full page)
+      alert(`Please fill in all required fields before saving.\n${title.trim() || chapterNumber ? "" : "Title or chapter number is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
       return
     }
     setIsRegenerating(true)
     await serverRequest(`api/story/${storyId}/scene/${sceneId}/version/${sceneVersion}/regenerate`, {
-      overview: overview,
+      overview: overview.trim(),
       chapter: chapterNumber,
       title: title.trim(),
-      pov: pov,
-      location: location,
-      tone: tone,
-      additionalNotes: additionalNotes,
-      connectedCharacterIds: connectedCharacterIds,
-      connectedPlotPointIds: connectedPlotPointIds,
-      connectedWritingStyleSampleIds: connectedWritingStyleSampleIds,
+      pov: pov.trim(),
+      location: location.trim(),
+      tone: tone.trim(),
+      additionalNotes: additionalNotes.trim(),
+      connectedCharacterIds,
+      connectedPlotPointIds,
+      connectedWritingStyleSampleIds,
     }, "POST",
       async (response) => {
-        if (doRedirect) {
-          const data = await response.json()
-          const newSceneVersion = data.version;
-          router.push(`/stories/${storyId}/scenes/${sceneId}/version/${newSceneVersion}`)
-        }
+        const data = await response.json()
+        const newSceneVersion = data.version;
+        router.push(`/stories/${storyId}/scenes/${sceneId}/version/${newSceneVersion}`)
       },
       async (error) => {
         console.error("Failed to regenerate scene: ", error)

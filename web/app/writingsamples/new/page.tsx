@@ -46,6 +46,18 @@ export default function NewWritingSamplePage() {
     )
   }, [])
 
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [title, prompt, response, isSubmitting])
+
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
     if (!response.trim()) {

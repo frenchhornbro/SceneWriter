@@ -80,7 +80,7 @@ export default function NewScenePage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault()
         handleSubmit(undefined)
       }
@@ -88,12 +88,12 @@ export default function NewScenePage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isGenerating])
+  }, [overview, chapterNumber, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isGenerating])
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
     if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isGenerating) {
-      // TODO: Show error message
+      alert(`Please fill in all required fields before saving.\n${title.trim() || chapterNumber ? "" : "Title or chapter number is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
       return
     }
     setIsGenerating(true)

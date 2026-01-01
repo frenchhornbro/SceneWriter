@@ -55,7 +55,7 @@ export default function EditStoryPage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [title, overview, isSubmitting])
+  }, [title, subtitle, overview, isSubmitting])
 
   async function handleSubmit(e?: React.FormEvent, doRedirect: boolean = true) {
     e?.preventDefault()

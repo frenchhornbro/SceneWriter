@@ -97,7 +97,7 @@ export default function NewCharacterPage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault()
         handleSubmit(undefined)
       }
