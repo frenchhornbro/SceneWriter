@@ -52,6 +52,10 @@ export default function EditWritingSampleClientPage({
         e.preventDefault()
         handleSubmit(undefined, false)
       }
+      else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
@@ -60,7 +64,7 @@ export default function EditWritingSampleClientPage({
 
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
-    if (!title.trim() || isSubmitting) {
+    if (isSubmitting) {
       return
     }
     setIsSubmitting(true)
@@ -150,7 +154,7 @@ export default function EditWritingSampleClientPage({
             </Link>
             <Button
               type="submit"
-              disabled={isSubmitting || !title.trim()}
+              disabled={isSubmitting}
               className="bg-primary hover:bg-primary-hover text-white"
             >
               {isSubmitting ? (

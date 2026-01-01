@@ -96,6 +96,10 @@ export default function EditSceneClientPage({
         handleSubmit(undefined, false)
         console.log("Scene saved"); // TODO: Have a "Saved!" toast
       }
+      else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

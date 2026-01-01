@@ -103,6 +103,10 @@ export default function EditPlotPointPage() {
         e.preventDefault()
         handleSubmit(undefined, false)
       }
+      else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault()
+        handleSubmit(undefined)
+      }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
