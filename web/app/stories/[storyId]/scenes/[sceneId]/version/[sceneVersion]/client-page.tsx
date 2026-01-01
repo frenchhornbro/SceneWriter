@@ -39,6 +39,18 @@ export default function SceneDetailClientPage({
     )
   }, [])
 
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.key === "e") {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/edit`)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
   const handleDelete = async () => {
     setIsDeleting(true)
     serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {}, "DELETE",

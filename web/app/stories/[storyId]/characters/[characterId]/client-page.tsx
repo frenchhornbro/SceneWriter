@@ -40,6 +40,18 @@ export default function CharacterDetailClientPage({
     )
   }, [])
 
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.key === "e") {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}/characters/${params.characterId}/edit`)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
   const handleDelete = async () => {
     setIsDeleting(true)
     serverRequest(`api/story/${params.storyId}/character/${params.characterId}`, {}, "DELETE",

@@ -25,6 +25,18 @@ export default function WritingSampleDetailClientPage({
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.key === "e") {
+        e.preventDefault()
+        router.push(`/writingsamples/${params.writingsampleId}/edit`)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
+  useEffect(() => {
     setIsLoading(true)
     serverRequest(`api/writingstyle/${writingStyleId}`, {}, "GET",
       async (response) => {

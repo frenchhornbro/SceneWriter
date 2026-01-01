@@ -135,6 +135,10 @@ export default function StoryDetailClientPage({
             break
         }
       }
+      else if (e.key === "e") {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}/edit`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
