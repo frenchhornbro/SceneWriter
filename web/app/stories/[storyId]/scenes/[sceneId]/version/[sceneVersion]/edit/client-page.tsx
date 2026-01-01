@@ -94,17 +94,21 @@ export default function EditSceneClientPage({
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         handleSubmit(undefined, false)
+        console.log("Scene saved"); // TODO: Have a "Saved!" toast
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isSaving])
+  }, [isSaving, sceneText, title, chapterNumber, overview, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds])
 
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
-    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isSaving) {
-      // TODO: Show error message
+    if (isSaving) {
+      return;
+    }
+    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length)) {
+      alert(`Please fill in all required fields before saving.\n${sceneText.trim() ? "" : "Scene text is required."} ${title.trim() || chapterNumber ? "" : "Title or chapter number is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
       return
     }
     setIsSaving(true)
@@ -121,7 +125,7 @@ export default function EditSceneClientPage({
     }, "PUT",
       async (response) => {
         if (doRedirect) {
-          router.push(`/stories/${params.storyId}/scenes/${params.sceneId}`)
+          router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}`)
         }
       },
       async (error) => {
