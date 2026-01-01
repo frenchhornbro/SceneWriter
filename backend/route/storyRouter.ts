@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewStory, deleteStory, getAllStories, getStory } from "../data-access/storyDataAccess";
+import { createNewStory, deleteStory, getAllStories, getStory, updateStory } from "../data-access/storyDataAccess";
 import { validateId } from "./routerUtils";
 
 const storyRouter = Router();
@@ -58,7 +58,22 @@ storyRouter.post("/", async (req: Request, res: Response) => {
 });
 
 storyRouter.put("/:storyId", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const { title, subtitle, overview } = req.body;
+  if (!title) {
+    res.status(400).json({ error: "Title is required." });
+    return;
+  }
+  const titleString = title.toString().trim();
+  const subtitleString = `${subtitle ?? ""}`.toString().trim();
+  const overviewString = `${overview ?? ""}`.toString().trim();
+  updateStory(storyIdNum, titleString, subtitleString, overviewString);
+  res.status(200).json({});
 });
 
 storyRouter.delete("/:storyId", async (req: Request, res: Response) => {

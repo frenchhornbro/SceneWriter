@@ -55,7 +55,11 @@ export default function EditStoryPage() {
 
   async function handleSubmit(e?: React.FormEvent, doRedirect: boolean = true) {
     e?.preventDefault()
-    if (!title.trim() || isSubmitting) {
+    if (isSubmitting) {
+      return
+    }
+    if (!title.trim()) {
+      alert("Title is required.")
       return
     }
     setIsSubmitting(true)

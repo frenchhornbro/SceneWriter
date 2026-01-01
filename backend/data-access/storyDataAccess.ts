@@ -36,6 +36,18 @@ export function createNewStory(title: string, subtitle: string, overview: string
   });
 }
 
+export function updateStory(storyId: number, title: string, subtitle: string, overview: string): void {
+  return errorHandlerWrapper("updateStory", () => {
+    const updateQuery = `
+      UPDATE Story
+      SET title = ?, subtitle = ?, overview = ?, edited_at = CURRENT_TIMESTAMP
+      WHERE id = ?;
+    `;
+    const updateParams = [title, subtitle, overview, storyId];
+    updateDB(updateQuery, updateParams);
+  });
+}
+
 export function deleteStory(storyId: number): void {
   return errorHandlerWrapper("deleteStory", () => {
     const deleteQuery = `
