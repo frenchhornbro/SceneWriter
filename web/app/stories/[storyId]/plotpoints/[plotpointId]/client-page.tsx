@@ -30,6 +30,10 @@ export default function PlotPointDetailClientPage({
         e.preventDefault()
         router.push(`/stories/${params.storyId}/plotpoints/${params.plotpointId}/edit`)
       }
+      else if (e.key === "Delete" || e.key === "d") {
+        e.preventDefault()
+        setShowDeleteDialog(true)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

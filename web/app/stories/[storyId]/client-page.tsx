@@ -139,6 +139,10 @@ export default function StoryDetailClientPage({
         e.preventDefault()
         router.push(`/stories/${params.storyId}/edit`)
       }
+      else if (e.key === "Delete" || e.key === "d") {
+        e.preventDefault()
+        setShowDeleteDialog(true)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

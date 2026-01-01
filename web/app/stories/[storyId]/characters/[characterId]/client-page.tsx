@@ -46,6 +46,10 @@ export default function CharacterDetailClientPage({
         e.preventDefault()
         router.push(`/stories/${params.storyId}/characters/${params.characterId}/edit`)
       }
+      else if (e.key === "Delete" || e.key === "d") {
+        e.preventDefault()
+        setShowDeleteDialog(true)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

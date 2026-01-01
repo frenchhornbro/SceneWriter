@@ -30,6 +30,10 @@ export default function WritingSampleDetailClientPage({
         e.preventDefault()
         router.push(`/writingsamples/${params.writingsampleId}/edit`)
       }
+      else if (e.key === "Delete" || e.key === "d") {
+        e.preventDefault()
+        setShowDeleteDialog(true)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

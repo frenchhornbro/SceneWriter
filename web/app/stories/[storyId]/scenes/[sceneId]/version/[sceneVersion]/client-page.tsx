@@ -45,6 +45,10 @@ export default function SceneDetailClientPage({
         e.preventDefault()
         router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/edit`)
       }
+      else if (e.key === "Delete" || e.key === "d") {
+        e.preventDefault()
+        setShowDeleteDialog(true)
+      }
       else if (e.key === "r") {
         e.preventDefault()
         router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/regenerate`)
