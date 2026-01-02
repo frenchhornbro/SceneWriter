@@ -11,6 +11,7 @@ import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import { scenePreview } from "@shared/templates/scene"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function StoryDetailClientPage({
   params,
@@ -118,7 +119,7 @@ export default function StoryDetailClientPage({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "n" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (keyIsPressed(e, ["n"])) {
         const target = e.target as HTMLElement
         if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
 
@@ -135,11 +136,11 @@ export default function StoryDetailClientPage({
             break
         }
       }
-      else if (e.key === "e") {
+      else if (keyIsPressed(e, ["e"])) {
         e.preventDefault()
         router.push(`/stories/${params.storyId}/edit`)
       }
-      else if (e.key === "Delete" || e.key === "d") {
+      else if (keyIsPressed(e, ["Delete", "d"])) {
         e.preventDefault()
         setShowDeleteDialog(true)
       }

@@ -10,6 +10,7 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function WritingSampleDetailClientPage({
   params,
@@ -26,11 +27,11 @@ export default function WritingSampleDetailClientPage({
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.key === "e") {
+      if (keyIsPressed(e, ["e"])) {
         e.preventDefault()
         router.push(`/writingsamples/${params.writingsampleId}/edit`)
       }
-      else if (e.key === "Delete" || e.key === "d") {
+      else if (keyIsPressed(e, ["Delete", "d"])) {
         e.preventDefault()
         setShowDeleteDialog(true)
       }

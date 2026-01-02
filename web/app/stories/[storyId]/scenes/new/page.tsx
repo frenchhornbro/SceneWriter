@@ -16,6 +16,7 @@ import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SceneGenerationOverlay from "@/components/scene-generation-overlay"
 import { ErrorPage } from "@/components/errorPage"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function NewScenePage() {
   const params = useParams()
@@ -80,11 +81,11 @@ export default function NewScenePage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      if (keyIsPressed(e, ["ctrl", "Enter"])) {
         e.preventDefault()
         handleSubmit(undefined)
       }
-      else if (e.key === "Escape") {
+      else if (keyIsPressed(e, ["Escape"])) {
         e.preventDefault()
         router.push(`/stories/${storyId}?tab=scenes`)
       }

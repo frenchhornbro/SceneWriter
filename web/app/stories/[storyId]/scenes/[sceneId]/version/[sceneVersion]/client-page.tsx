@@ -10,6 +10,7 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function SceneDetailClientPage({
   params,
@@ -41,19 +42,19 @@ export default function SceneDetailClientPage({
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.key === "e") {
+      if (keyIsPressed(e, ["e"])) {
         e.preventDefault()
         router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/edit`)
       }
-      else if (e.key === "Delete" || e.key === "d") {
+      else if (keyIsPressed(e, ["Delete", "d"])) {
         e.preventDefault()
         setShowDeleteDialog(true)
       }
-      else if (e.key === "r") {
+      else if (keyIsPressed(e, ["r"])) {
         e.preventDefault()
         router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/regenerate`)
       }
-      else if (!(e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) && e.key === "p") {
+      else if (keyIsPressed(e, ["p"])) {
         // Go to the previous version
         e.preventDefault()
         await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/previous`, {}, "GET",
@@ -66,7 +67,7 @@ export default function SceneDetailClientPage({
           }
         )
       }
-      else if (!(e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) && e.key === "n") {
+      else if (keyIsPressed(e, ["n"])) {
         // Go to the next version
         e.preventDefault()
         await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/next`, {}, "GET",

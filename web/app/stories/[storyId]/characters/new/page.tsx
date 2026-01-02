@@ -14,6 +14,7 @@ import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import { scenePreview } from "@shared/templates/scene"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function NewCharacterPage() {
   const params = useParams()
@@ -97,11 +98,11 @@ export default function NewCharacterPage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      if (keyIsPressed(e, ["ctrl", "Enter"])) {
         e.preventDefault()
         handleSubmit(undefined)
       }
-      else if (e.key === "Escape") {
+      else if (keyIsPressed(e, ["Escape"])) {
         e.preventDefault()
         router.push(`/stories/${storyId}?tab=characters`)
       }

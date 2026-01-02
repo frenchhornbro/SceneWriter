@@ -11,6 +11,7 @@ import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import { scenePreview } from "@shared/templates/scene"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function CharacterDetailClientPage({
   params,
@@ -42,11 +43,11 @@ export default function CharacterDetailClientPage({
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.key === "e") {
+      if (keyIsPressed(e, ["e"])) {
         e.preventDefault()
         router.push(`/stories/${params.storyId}/characters/${params.characterId}/edit`)
       }
-      else if (e.key === "Delete" || e.key === "d") {
+      else if (keyIsPressed(e, ["Delete", "d"])) {
         e.preventDefault()
         setShowDeleteDialog(true)
       }

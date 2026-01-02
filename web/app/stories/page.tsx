@@ -4,6 +4,7 @@ import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { serverRequest } from "@/lib/requests"
+import { keyIsPressed } from "@/lib/utils"
 import { Plus, BookOpen } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -33,7 +34,7 @@ export default function StoriesPage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "n" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (keyIsPressed(e, ["n"])) {
         const target = e.target as HTMLElement
         if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
         router.push("/stories/new")

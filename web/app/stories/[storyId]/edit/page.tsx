@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { serverRequest } from "@/lib/requests"
+import { keyIsPressed } from "@/lib/utils"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 
@@ -43,15 +44,15 @@ export default function EditStoryPage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if (keyIsPressed(e, ["ctrl", "s"])) {
         e.preventDefault()
         await handleSubmit(undefined, false)
       }
-      else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      else if (keyIsPressed(e, ["ctrl", "Enter"])) {
         e.preventDefault()
         handleSubmit(undefined)
       }
-      else if (e.key === "Escape") {
+      else if (keyIsPressed(e, ["Escape"])) {
         e.preventDefault()
         router.push(`/stories/${params.storyId}`)
       }

@@ -14,6 +14,7 @@ import { useState } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
+import { keyIsPressed } from "@/lib/utils"
 
 export default function EditWritingSampleClientPage({
   params,
@@ -48,15 +49,15 @@ export default function EditWritingSampleClientPage({
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if (keyIsPressed(e, ["ctrl", "s"])) {
         e.preventDefault()
         handleSubmit(undefined, false)
       }
-      else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      else if (keyIsPressed(e, ["ctrl", "Enter"])) {
         e.preventDefault()
         handleSubmit(undefined)
       }
-      else if (e.key === "Escape") {
+      else if (keyIsPressed(e, ["Escape"])) {
         e.preventDefault()
         router.push(`/writingsamples/${params.writingsampleId}`)
       }
