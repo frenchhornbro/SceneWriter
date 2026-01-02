@@ -19,7 +19,7 @@ export default function StoryDetailClientPage({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const activeTab = searchParams.get("tab") || "characters"
+  const activeTab = searchParams.get("tab") || "scenes"
   const [loadingEndpoints, setLoadingEndpoints] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
@@ -244,15 +244,6 @@ export default function StoryDetailClientPage({
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="bg-surface border border-border">
             <TabsTrigger
-              value="characters"
-              className={`data-[state=active]:bg-surface-light ${
-                activeTab === "characters" ? "text-white" : "text-muted-foreground"
-              }`}
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Characters
-            </TabsTrigger>
-            <TabsTrigger
               value="scenes"
               className={`data-[state=active]:bg-surface-light ${
                 activeTab === "scenes" ? "text-white" : "text-muted-foreground"
@@ -269,6 +260,15 @@ export default function StoryDetailClientPage({
             >
               <MapPin className="w-4 h-4 mr-2" />
               Plot Points
+            </TabsTrigger>
+            <TabsTrigger
+              value="characters"
+              className={`data-[state=active]:bg-surface-light ${
+                activeTab === "characters" ? "text-white" : "text-muted-foreground"
+              }`}
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Characters
             </TabsTrigger>
           </TabsList>
 
