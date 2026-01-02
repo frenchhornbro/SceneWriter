@@ -1,8 +1,25 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { BookOpen, Users, FileText, Sparkles } from "lucide-react"
+import { BookOpen, Earth, FileText, Sparkles } from "lucide-react"
+import { useEffect } from "react"
+import { keyIsPressed } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 export default function HomePage() {
+  const router = useRouter()
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (keyIsPressed(e, ["Enter"])) {
+        e.preventDefault()
+        router.push(`/stories`)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
   return (
     <div className="min-h-screen">
       <main className="container mx-auto px-4 py-16">
@@ -19,7 +36,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-xl text-muted-foreground mb-12 text-pretty max-w-2xl mx-auto leading-relaxed">
-            The comprehensive writing tool for managing characters, scenes, and narratives. Keep your creative universe
+            The AI-powered creative writing tool for managing characters, scenes, and narratives. Keep your creative universe
             organized and accessible.
           </p>
 
@@ -31,8 +48,19 @@ export default function HomePage() {
         </section>
 
         {/* Features Grid */}
-        <section className="max-w-6xl mx-auto py-20">
-          <h2 className="text-3xl font-bold text-center mb-12">Everything You Need to Write</h2>
+        <section className="max-w-6xl mx-auto py-20 flex flex-col items-center">
+          <h2 className="text-3xl font-bold text-center mb-12">Preserve Creativity in AI Writing</h2>
+          <div className="bg-surface rounded-lg border border-border shadow-sm p-6 md:p-8 mb-16 max-w-3xl text-center text-md text-muted-foreground">
+            <div>
+              AI should never remove the responsibility of creativity from the author.
+            </div>
+            <div>
+              SceneWriter can help you write faster, but the core creative vision must come from you.
+            </div>
+            <div>
+              This program is structured to keep you in control of your story, while leveraging AI to help you quickly visualize the creative universe you have built in-action.
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="p-6 rounded-lg bg-surface border border-border hover:border-primary/50 transition-colors">
@@ -41,37 +69,37 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Story Management</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Organize multiple stories with titles, descriptions, and genres in one place.
+                Organize details for multiple creative stories in one place.
               </p>
             </div>
 
             <div className="p-6 rounded-lg bg-surface border border-border hover:border-secondary/50 transition-colors">
               <div className="w-12 h-12 rounded-lg bg-secondary-muted flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-secondary" />
+                <Earth className="w-6 h-6 text-secondary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Character Profiles</h3>
+              <h3 className="text-lg font-semibold mb-2">World-Building</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Create detailed character profiles with descriptions and relationships.
+                Build your story's universe with interconnected characters, locations, and plot points.
               </p>
             </div>
 
             <div className="p-6 rounded-lg bg-surface border border-border hover:border-primary/50 transition-colors">
               <div className="w-12 h-12 rounded-lg bg-primary-muted flex items-center justify-center mb-4">
-                <FileText className="w-6 h-6 text-primary" />
+                <Sparkles className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Scene Outlines</h3>
+              <h3 className="text-lg font-semibold mb-2">Writing Style</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Plan scenes with POV, locations, and narrative summaries.
+                Allow AI to match your unique writing style for easier flow.
               </p>
             </div>
 
             <div className="p-6 rounded-lg bg-surface border border-border hover:border-secondary/50 transition-colors">
               <div className="w-12 h-12 rounded-lg bg-secondary-muted flex items-center justify-center mb-4">
-                <Sparkles className="w-6 h-6 text-secondary" />
+                <FileText className="w-6 h-6 text-secondary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Writing Samples</h3>
+              <h3 className="text-lg font-semibold mb-2">Scene Generation</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Draft and refine actual scene content with rich text editing.
+                Quickly visualize your own world through AI scene generation.
               </p>
             </div>
           </div>
@@ -80,7 +108,10 @@ export default function HomePage() {
 
       <footer className="border-t border-border py-8 mt-20">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          SceneWriter &copy; 2025. Built for storytellers.
+          <div>Created by Hyrum Durfee</div>
+          <div className="text-blue-600 hover:underline">
+            <a href="https://github.com/frenchhornbro/SceneWriter" target="_blank" rel="noopener noreferrer">SceneWriter GitHub</a>
+          </div>
         </div>
       </footer>
     </div>
