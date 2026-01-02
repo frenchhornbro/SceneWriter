@@ -107,6 +107,10 @@ export default function EditPlotPointPage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}/plotpoints/${params.plotpointId}`)
+      }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)

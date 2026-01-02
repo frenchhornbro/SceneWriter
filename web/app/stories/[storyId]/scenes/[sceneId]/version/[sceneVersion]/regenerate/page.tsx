@@ -107,6 +107,10 @@ export default function RegenerateScenePage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push(`/stories/${storyId}/scenes/${sceneId}/version/${sceneVersion}`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

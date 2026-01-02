@@ -52,6 +52,10 @@ export default function NewWritingSamplePage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push("/writingsamples")
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

@@ -22,6 +22,10 @@ export default function NewStoryPage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push("/stories")
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

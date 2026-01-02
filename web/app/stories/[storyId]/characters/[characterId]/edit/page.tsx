@@ -128,6 +128,10 @@ export default function EditCharacterPage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}/characters/${params.characterId}`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

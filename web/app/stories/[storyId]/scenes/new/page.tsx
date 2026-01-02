@@ -84,6 +84,10 @@ export default function NewScenePage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push(`/stories/${storyId}?tab=scenes`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

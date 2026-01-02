@@ -100,6 +100,10 @@ export default function EditSceneClientPage({
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

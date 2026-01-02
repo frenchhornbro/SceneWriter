@@ -101,6 +101,10 @@ export default function NewCharacterPage() {
         e.preventDefault()
         handleSubmit(undefined)
       }
+      else if (e.key === "Escape") {
+        e.preventDefault()
+        router.push(`/stories/${storyId}?tab=characters`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
