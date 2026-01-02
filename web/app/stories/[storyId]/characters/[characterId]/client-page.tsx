@@ -198,7 +198,7 @@ export default function CharacterDetailClientPage({
               <div className="space-y-4">
                 {characterData.connectedScenes.map((scene: scenePreview) => (
                   <Link
-                  key={scene.id}
+                  key={JSON.stringify({id: scene.id, version: scene.version})}
                     href={`/stories/${params.storyId}/scenes/${scene.id}/version/${scene.version}`}
                     className="block p-4 rounded-lg bg-background border border-border hover:border-primary/50 transition-colors"
                   >
