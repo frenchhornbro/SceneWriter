@@ -34,7 +34,7 @@ export function DeleteConfirmationDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-surface border-border">
+      <AlertDialogContent className="bg-surface border-border" onEscapeKeyDown={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
