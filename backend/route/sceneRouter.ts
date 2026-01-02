@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/prompts";
 import { validateId } from "./routerUtils";
-import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextSceneOrder, getPlotPointInfo, getScene, getWritingStyleSampleInfo, updateScene } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
 
@@ -74,6 +74,48 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     createdAt: scene.created_at,
     editedAt: scene.edited_at,
   });
+});
+
+sceneRouter.get("/:sceneId/version/:sceneVersion/previous", async (req: Request, res: Response) => {
+  const { storyId, sceneId, sceneVersion } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
+  }
+  const previousVersion = getPreviousVersion(sceneIdNum, sceneVersionNum) || sceneVersionNum;
+  res.status(200).json({ previousVersion });
+});
+
+sceneRouter.get("/:sceneId/version/:sceneVersion/next", async (req: Request, res: Response) => {
+  const { storyId, sceneId, sceneVersion } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
+  }
+  const nextVersion = getNextVersion(sceneIdNum, sceneVersionNum) || sceneVersionNum;
+  res.status(200).json({ nextVersion });
 });
 
 sceneRouter.get("/:sceneId/latestVersion", async (req: Request, res: Response) => {

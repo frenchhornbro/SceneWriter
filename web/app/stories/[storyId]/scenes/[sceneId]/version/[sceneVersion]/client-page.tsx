@@ -53,6 +53,32 @@ export default function SceneDetailClientPage({
         e.preventDefault()
         router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/regenerate`)
       }
+      else if (!(e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) && e.key === "p") {
+        // Go to the previous version
+        e.preventDefault()
+        await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/previous`, {}, "GET",
+          async (response) => {
+            const data = await response.json()
+            router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${data.previousVersion}`)
+          },
+          async (error) => {
+            console.error("Failed to get previous version:", error)
+          }
+        )
+      }
+      else if (!(e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) && e.key === "n") {
+        // Go to the next version
+        e.preventDefault()
+        await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/next`, {}, "GET",
+          async (response) => {
+            const data = await response.json()
+            router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${data.nextVersion}`)
+          },
+          async (error) => {
+            console.error("Failed to get previous version:", error)
+          }
+        )
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
@@ -97,6 +123,11 @@ export default function SceneDetailClientPage({
               <div className="flex items-center gap-3 mb-3">
                 {sceneData.title && (
                   <h1 className="text-3xl font-bold">{sceneData.title}</h1>
+                )}
+                {sceneData.version && (
+                  <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
+                    Version {sceneData.version}
+                  </span>
                 )}
                 {sceneData.chapterNumber && (
                   <span className="text-xs px-2 py-1 rounded bg-primary-muted text-primary font-medium">

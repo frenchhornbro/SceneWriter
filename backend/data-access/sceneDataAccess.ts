@@ -105,6 +105,30 @@ export function getWritingStyleSampleInfo(connectedWritingStyleSampleIds: number
   });
 }
 
+export function getPreviousVersion(sceneId: number, sceneVersion: number): number | null {
+  return errorHandlerWrapper("getPreviousVersion", () => {
+    const query = `
+      SELECT MAX(version) AS previousVersion FROM Scene
+      WHERE id = ? AND version < ?;
+    `;
+    const params = [sceneId, sceneVersion];
+    const result = queryDB(query, params);
+    return result[0]?.previousVersion || null;
+  });
+}
+
+export function getNextVersion(sceneId: number, sceneVersion: number): number | null {
+  return errorHandlerWrapper("getNextVersion", () => {
+    const query = `
+      SELECT MIN(version) AS nextVersion FROM Scene
+      WHERE id = ? AND version > ?;
+    `;
+    const params = [sceneId, sceneVersion];
+    const result = queryDB(query, params);
+    return result[0]?.nextVersion || null;
+  });
+}
+
 export function getLatestVersion(sceneId: number): number | null {
   return errorHandlerWrapper("getLatestVersion", () => {
     const query = `
