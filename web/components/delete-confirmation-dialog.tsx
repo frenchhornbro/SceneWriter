@@ -9,7 +9,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogOverlay,
 } from "@/components/ui/alert-dialog"
+import { useState } from "react"
 
 interface DeleteConfirmationDialogProps {
   open: boolean
@@ -17,6 +19,7 @@ interface DeleteConfirmationDialogProps {
   onConfirm: () => void
   itemType: string
   itemName?: string
+  requiredUserInput?: string
 }
 
 export function DeleteConfirmationDialog({
@@ -25,7 +28,10 @@ export function DeleteConfirmationDialog({
   onConfirm,
   itemType,
   itemName,
+  requiredUserInput,
 }: DeleteConfirmationDialogProps) {
+  const [userInput, setUserInput] = useState("")
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="bg-surface border-border">
@@ -35,14 +41,24 @@ export function DeleteConfirmationDialog({
             Are you sure you want to delete this {itemType}
             {itemName ? ` "${itemName}"` : ""}? This action cannot be undone.
           </AlertDialogDescription>
+          {requiredUserInput && (
+            <input
+              type="text"
+              className="mt-4 w-full border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
+              placeholder={`Type "${requiredUserInput}" to confirm`}
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+            />
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="border-border hover:bg-surface-light">Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
+          <AlertDialogAction disabled={!!requiredUserInput && userInput !== requiredUserInput} onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
+      <AlertDialogOverlay />
     </AlertDialog>
   )
 }

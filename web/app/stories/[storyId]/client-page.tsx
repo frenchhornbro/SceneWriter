@@ -379,6 +379,7 @@ export default function StoryDetailClientPage({
         onConfirm={handleDelete}
         itemType="story"
         itemName={storyData?.title}
+        requiredUserInput={storyData?.title}
       />
     </div>
   )
