@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { createNewWritingStyleSample, deleteWritingStyleSample, getAllWritingStyleSamples, getWritingStyleSample, updateWritingStyleSample } from "../data-access/writingStyleDataAccess";
 import { generatePrompt } from "../ai/prompts";
 import { validateId } from "./routerUtils";
+import { getEnvVar } from "../utils/envAccess";
 
 const writingStyleRouter = Router();
 
@@ -22,7 +23,10 @@ writingStyleRouter.get("/", (req: Request, res: Response) => {
 });
 
 writingStyleRouter.get("/prompt", async (req: Request, res: Response) => {
-  const { text } = await generatePrompt();
+  const { text, timeTakenMs } = await generatePrompt();
+  if (getEnvVar("VERBOSE") === "true") {
+    console.log(`Prompt generated in ${timeTakenMs} ms.`);
+  }
   res.status(200).json({ prompt: text });
 });
 

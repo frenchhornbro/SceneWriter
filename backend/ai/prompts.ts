@@ -43,7 +43,8 @@ export async function generatePrompt(): Promise<TextGenerationResult> {
     The prompt should be open-ended and simple.
     The responder should be able to use this prompt to write a single short scene, one or two paragraphs long, to demonstrate their writing style.
     Do NOT output anything other than the text of the prompt.`;
-    return await processPrompt(prompt, "gemma3:270m");
+    const modelOverride = (getEnvVar("USE_LOCAL_MODEL") === "true") ? "gemma3:270m" : "gpt-5-nano";
+    return await processPrompt(prompt, modelOverride);
   } catch (error) {
     console.error("Error generating prompt:", error);
     throw error;
