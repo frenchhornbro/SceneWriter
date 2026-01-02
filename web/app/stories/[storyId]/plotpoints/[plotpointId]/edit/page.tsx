@@ -270,7 +270,7 @@ export default function EditPlotPointPage() {
                 <SelectContent>
                   {allScenesData.filter((scene: scenePreview) => !connectedScenes.some((cs: scenePreview) => cs.id === scene.id && cs.version === scene.version))
                     .map((scene: scenePreview) => (
-                    <SelectItem key={scene.id} value={JSON.stringify(scene)}>
+                    <SelectItem key={JSON.stringify(scene)} value={JSON.stringify(scene)}>
                       {scene.title}
                     </SelectItem>
                   ))}
