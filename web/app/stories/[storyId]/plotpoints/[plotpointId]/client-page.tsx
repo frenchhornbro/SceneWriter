@@ -35,6 +35,10 @@ export default function PlotPointDetailClientPage({
         e.preventDefault()
         setShowDeleteDialog(true)
       }
+      else if (keyIsPressed(e, ["Escape"])) {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}?tab=plotpoints`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

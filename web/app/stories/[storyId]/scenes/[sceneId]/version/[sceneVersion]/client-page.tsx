@@ -50,6 +50,10 @@ export default function SceneDetailClientPage({
         e.preventDefault()
         setShowDeleteDialog(true)
       }
+      else if (keyIsPressed(e, ["Escape"])) {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}?tab=scenes`)
+      }
       else if (keyIsPressed(e, ["r"])) {
         e.preventDefault()
         router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/regenerate`)

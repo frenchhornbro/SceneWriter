@@ -35,6 +35,10 @@ export default function WritingSampleDetailClientPage({
         e.preventDefault()
         setShowDeleteDialog(true)
       }
+      else if (keyIsPressed(e, ["Escape"])) {
+        e.preventDefault()
+        router.push("/writingsamples")
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

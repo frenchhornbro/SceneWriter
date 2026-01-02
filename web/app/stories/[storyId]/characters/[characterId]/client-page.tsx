@@ -51,6 +51,10 @@ export default function CharacterDetailClientPage({
         e.preventDefault()
         setShowDeleteDialog(true)
       }
+      else if (keyIsPressed(e, ["Escape"])) {
+        e.preventDefault()
+        router.push(`/stories/${params.storyId}?tab=characters`)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

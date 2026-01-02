@@ -144,6 +144,10 @@ export default function StoryDetailClientPage({
         e.preventDefault()
         setShowDeleteDialog(true)
       }
+      else if (keyIsPressed(e, ["Escape"])) {
+        e.preventDefault()
+        router.push("/stories")
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
