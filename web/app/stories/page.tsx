@@ -35,8 +35,6 @@ export default function StoriesPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (keyIsPressed(e, ["n"])) {
-        const target = e.target as HTMLElement
-        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
         router.push("/stories/new")
       }
     }

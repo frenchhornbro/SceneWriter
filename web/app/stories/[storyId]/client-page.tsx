@@ -120,9 +120,6 @@ export default function StoryDetailClientPage({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (keyIsPressed(e, ["n"])) {
-        const target = e.target as HTMLElement
-        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
-
         // Navigate to appropriate "new" page based on active tab
         switch (activeTab) {
           case "characters":

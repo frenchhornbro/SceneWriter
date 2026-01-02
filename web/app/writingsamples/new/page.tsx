@@ -49,7 +49,7 @@ export default function NewWritingSamplePage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if (keyIsPressed(e, ["ctrl", "Enter"])) {
+      if (keyIsPressed(e, ["ctrl", "Enter"], true)) {
         e.preventDefault()
         handleSubmit(undefined)
       }

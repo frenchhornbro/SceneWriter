@@ -100,11 +100,11 @@ export default function EditPlotPointPage() {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if (keyIsPressed(e, ["ctrl", "s"])) {
+      if (keyIsPressed(e, ["ctrl", "s"], true)) {
         e.preventDefault()
         handleSubmit(undefined, false)
       }
-      else if (keyIsPressed(e, ["ctrl", "Enter"])) {
+      else if (keyIsPressed(e, ["ctrl", "Enter"], true)) {
         e.preventDefault()
         handleSubmit(undefined)
       }
