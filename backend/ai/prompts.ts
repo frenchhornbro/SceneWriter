@@ -18,17 +18,24 @@ export async function generateScene(
   pointOfView: string,
   location: string,
   tone: string,
+  previousSceneText?: string,
+  nextSceneText?: string,
 ): Promise<TextGenerationResult> {
   try {
-    const prompt = `Generate a scene in a story given the following information.
-      ${writingStyleExamples ? `Match the style found in these paragraphs, but not the content (these are NOT part of the story): "${writingStyleExamples}"` : ""}
-      ${plotPoints ? `This is the plot of the story: "${plotPoints}"` : ""}
-      ${characters ? `These are the characters in the story: "${characters}"` : ""}
-      ${sceneDescription ? `Here is the overview of the scene to create: "${sceneDescription}"` : ""}
-      ${pointOfView ? `The point of view is: "${pointOfView}"` : ""}
-      ${location ? `The location is: "${location}"` : ""}
-      ${tone ? `The tone is: "${tone}"` : ""}
-      Generate the text of this scene. Do NOT output anything other than the text of the scene.`;
+    const prompt = `\
+Generate a scene in a story given the following information.
+${writingStyleExamples ? `Match the style found in these paragraphs, but not the content (these are NOT part of the story): "${writingStyleExamples}"\n\n` : ""}\
+${plotPoints ? `These are the relevant plot points for this scene: "${plotPoints}"\n` : ""}\
+${characters ? `These are the relevant characters in this scene: "${characters}"\n` : ""}\
+${sceneDescription ? `Here is the overview of the scene to create: "${sceneDescription}"\n` : ""}\
+${pointOfView ? `The point of view for this scene is: "${pointOfView}"\n` : ""}\
+${location ? `The location of this scene is: "${location}"\n` : ""}\
+${tone ? `The tone of this scene is: "${tone}"\n` : ""}\
+${previousSceneText ? `Here is the previous scene in the story: "${previousSceneText}"\n` : ""}\
+${nextSceneText ? `Here is the next scene in the story: "${nextSceneText}"\n` : ""}\
+Generate the text of this scene. This is one of many scene generations, so include in your writing mentions of only some, not all, of the provided context.
+Do not overuse metaphors${writingStyleExamples ? ", unless doing so to match the writing style samples provided" : ""}.
+Do NOT output anything other than the text of the scene.`;
     console.log(prompt);
     return await processPrompt(prompt);
   } catch (error) {

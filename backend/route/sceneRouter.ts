@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/prompts";
 import { validateId } from "./routerUtils";
-import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextScene, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousScene, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
 
@@ -178,7 +178,9 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const plotPoints = getPlotPointInfo(connectedPlotPointIds).map((pp) => Object.entries(pp).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
-  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString);
+  const previousSceneText = getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "";
+  const nextSceneText = getNextScene(storyIdNum, sceneOrder)?.scene_text || "";
+  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
   const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: 1 });
 });
@@ -233,7 +235,9 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const plotPoints = getPlotPointInfo(connectedPlotPointIds).map((pp) => Object.entries(pp).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
-  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString);
+  const previousSceneText = getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "";
+  const nextSceneText = getNextScene(storyIdNum, sceneOrder)?.scene_text || "";
+  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
   const latestVersion = getLatestVersion(sceneIdNum);
   if (latestVersion === null) {
     res.status(404).json({error: "Scene not found."});

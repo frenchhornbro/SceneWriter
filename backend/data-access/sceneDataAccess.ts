@@ -129,6 +129,44 @@ export function getNextVersion(sceneId: number, sceneVersion: number): number | 
   });
 }
 
+export function getPreviousScene(storyId: number, sceneOrder: number): any | null {
+  return errorHandlerWrapper("getPreviousScene", () => {
+    const query = `
+      SELECT s.* FROM Scene s
+      INNER JOIN (
+        SELECT id, MAX(version) AS max_version
+        FROM Scene
+        WHERE story_id = ? AND scene_order < ?
+        GROUP BY id
+        ORDER BY scene_order DESC
+        LIMIT 1
+      ) latest ON s.id = latest.id AND s.version = latest.max_version;
+    `;
+    const params = [storyId, sceneOrder];
+    const result = queryDB(query, params);
+    return result[0] || null;
+  });
+}
+
+export function getNextScene(storyId: number, sceneOrder: number): any | null {
+  return errorHandlerWrapper("getNextScene", () => {
+    const query = `
+      SELECT s.* FROM Scene s
+      INNER JOIN (
+        SELECT id, MAX(version) AS max_version
+        FROM Scene
+        WHERE story_id = ? AND scene_order > ?
+        GROUP BY id
+        ORDER BY scene_order ASC
+        LIMIT 1
+      ) latest ON s.id = latest.id AND s.version = latest.max_version;
+    `;
+    const params = [storyId, sceneOrder];
+    const result = queryDB(query, params);
+    return result[0] || null;
+  });
+}
+
 export function getLatestVersion(sceneId: number): number | null {
   return errorHandlerWrapper("getLatestVersion", () => {
     const query = `
