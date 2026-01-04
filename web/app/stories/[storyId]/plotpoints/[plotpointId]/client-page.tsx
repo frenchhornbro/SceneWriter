@@ -161,7 +161,7 @@ export default function PlotPointDetailClientPage({
                     className="px-3 py-1.5 text-sm rounded-md bg-secondary-muted text-secondary border border-secondary/20 hover:border-secondary/50 transition-colors"
                   >
                     {scene.title}
-                    {/* TODO: List title, chapter, AND first few words, not just title */}
+                    {/* {scene.scene_text} */}
                     {/* TODO: Display connected scenes and plot points in character pages */}
                   </Link>
                 ))}

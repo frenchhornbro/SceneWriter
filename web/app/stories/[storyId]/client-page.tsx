@@ -12,6 +12,14 @@ import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import { scenePreview } from "@shared/templates/scene"
 import { keyIsPressed } from "@/lib/utils"
+import { OrderByButton } from "@/components/order-by-button"
+import {
+  SortField,
+  SortPreference,
+  getSortPreference,
+  setSortField,
+  toggleSortDirection,
+} from "@/lib/order"
 
 export default function StoryDetailClientPage({
   params,
@@ -31,6 +39,9 @@ export default function StoryDetailClientPage({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [scenesSortPref, setScenesSortPref] = useState<SortPreference>({ field: "scene_order", direction: "asc" })
+  const [plotPointsSortPref, setPlotPointsSortPref] = useState<SortPreference>({ field: "edited", direction: "desc" })
+  const [charactersSortPref, setCharactersSortPref] = useState<SortPreference>({ field: "edited", direction: "desc" })
 
   function addLoadingEndpoint(endpointName: string) {
     setLoadingEndpoints((prev) => new Set(prev).add(endpointName))
@@ -102,6 +113,44 @@ export default function StoryDetailClientPage({
     }
   }, [loadingEndpoints])
 
+  // Load sort preferences from localStorage on mount
+  useEffect(() => {
+    setScenesSortPref(getSortPreference(params.storyId, "scenes"))
+    setPlotPointsSortPref(getSortPreference(params.storyId, "plotpoints"))
+    setCharactersSortPref(getSortPreference(params.storyId, "characters"))
+  }, [params.storyId])
+
+  // Sort handler functions
+  const handleScenesSortFieldChange = (field: SortField) => {
+    setSortField(params.storyId, "scenes", field)
+    setScenesSortPref((prev) => ({ ...prev, field }))
+  }
+
+  const handleScenesSortDirectionToggle = () => {
+    const newDirection = toggleSortDirection(params.storyId, "scenes")
+    setScenesSortPref((prev) => ({ ...prev, direction: newDirection }))
+  }
+
+  const handlePlotPointsSortFieldChange = (field: SortField) => {
+    setSortField(params.storyId, "plotpoints", field)
+    setPlotPointsSortPref((prev) => ({ ...prev, field }))
+  }
+
+  const handlePlotPointsSortDirectionToggle = () => {
+    const newDirection = toggleSortDirection(params.storyId, "plotpoints")
+    setPlotPointsSortPref((prev) => ({ ...prev, direction: newDirection }))
+  }
+
+  const handleCharactersSortFieldChange = (field: SortField) => {
+    setSortField(params.storyId, "characters", field)
+    setCharactersSortPref((prev) => ({ ...prev, field }))
+  }
+
+  const handleCharactersSortDirectionToggle = () => {
+    const newDirection = toggleSortDirection(params.storyId, "characters")
+    setCharactersSortPref((prev) => ({ ...prev, direction: newDirection }))
+  }
+
   const latestScenesData = useMemo(() => {
     const latestById = new Map<number, scenePreview>()
 
@@ -112,10 +161,48 @@ export default function StoryDetailClientPage({
       }
     }
 
-    return Array.from(latestById.values()).sort(
-      (a, b) => new Date(b.edited_at).getTime() - new Date(a.edited_at).getTime(),
-    )
-  }, [scenesData])
+    const scenes = Array.from(latestById.values())
+    const { field, direction } = scenesSortPref
+    const multiplier = direction === "asc" ? 1 : -1
+
+    return scenes.sort((a, b) => {
+      if (field === "scene_order") {
+        return (a.scene_order - b.scene_order) * multiplier
+      } else if (field === "created") {
+        return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * multiplier
+      } else {
+        return (new Date(a.edited_at).getTime() - new Date(b.edited_at).getTime()) * multiplier
+      }
+    })
+  }, [scenesData, scenesSortPref])
+
+  const sortedPlotPointsData = useMemo(() => {
+    if (!plotPointsData) return []
+    const { field, direction } = plotPointsSortPref
+    const multiplier = direction === "asc" ? 1 : -1
+
+    return [...plotPointsData].sort((a: any, b: any) => {
+      if (field === "created") {
+        return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * multiplier
+      } else {
+        return (new Date(a.editedAt).getTime() - new Date(b.editedAt).getTime()) * multiplier
+      }
+    })
+  }, [plotPointsData, plotPointsSortPref])
+
+  const sortedCharactersData = useMemo(() => {
+    if (!charactersData) return []
+    const { field, direction } = charactersSortPref
+    const multiplier = direction === "asc" ? 1 : -1
+
+    return [...charactersData].sort((a: any, b: any) => {
+      if (field === "created") {
+        return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * multiplier
+      } else {
+        return (new Date(a.editedAt).getTime() - new Date(b.editedAt).getTime()) * multiplier
+      }
+    })
+  }, [charactersData, charactersSortPref])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -277,15 +364,24 @@ export default function StoryDetailClientPage({
           <TabsContent value="characters" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Characters</h2>
-              <Link href={`/stories/${params.storyId}/characters/new`}>
-                <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
-                  Add Character
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <OrderByButton
+                  viewType="characters"
+                  currentField={charactersSortPref.field}
+                  currentDirection={charactersSortPref.direction}
+                  onFieldChange={handleCharactersSortFieldChange}
+                  onDirectionToggle={handleCharactersSortDirectionToggle}
+                />
+                <Link href={`/stories/${params.storyId}/characters/new`}>
+                  <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
+                    Add Character
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {charactersData?.map((character: any) => (
+              {sortedCharactersData?.map((character: any) => (
                 <Link key={character.id} href={`/stories/${params.storyId}/characters/${character.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <div className="flex items-center gap-3 mb-1">
@@ -306,11 +402,20 @@ export default function StoryDetailClientPage({
           <TabsContent value="scenes" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Scenes</h2>
-              <Link href={`/stories/${params.storyId}/scenes/new`}>
-                <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
-                  Add Scene
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <OrderByButton
+                  viewType="scenes"
+                  currentField={scenesSortPref.field}
+                  currentDirection={scenesSortPref.direction}
+                  onFieldChange={handleScenesSortFieldChange}
+                  onDirectionToggle={handleScenesSortDirectionToggle}
+                />
+                <Link href={`/stories/${params.storyId}/scenes/new`}>
+                  <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
+                    Add Scene
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -349,15 +454,24 @@ export default function StoryDetailClientPage({
           <TabsContent value="plotpoints" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Plot Points</h2>
-              <Link href={`/stories/${params.storyId}/plotpoints/new`}>
-                <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
-                  Add Plot Point
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <OrderByButton
+                  viewType="plotpoints"
+                  currentField={plotPointsSortPref.field}
+                  currentDirection={plotPointsSortPref.direction}
+                  onFieldChange={handlePlotPointsSortFieldChange}
+                  onDirectionToggle={handlePlotPointsSortDirectionToggle}
+                />
+                <Link href={`/stories/${params.storyId}/plotpoints/new`}>
+                  <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
+                    Add Plot Point
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="space-y-3">
-              {plotPointsData?.map((plotpoint: any) => (
+              {sortedPlotPointsData?.map((plotpoint: any) => (
                 <Link key={plotpoint.id} href={`/stories/${params.storyId}/plotpoints/${plotpoint.id}`}>
                   <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
                     <h3 className="font-semibold">{plotpoint.title}</h3>
