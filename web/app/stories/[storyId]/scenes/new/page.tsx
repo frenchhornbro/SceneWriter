@@ -30,7 +30,6 @@ export default function NewScenePage() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const [overview, setOverview] = useState("")
-  const [chapterNumber, setChapterNumber] = useState(1)
   const [title, setTitle] = useState("")
   const [pov, setPov] = useState("")
   const [location, setLocation] = useState("")
@@ -93,19 +92,18 @@ export default function NewScenePage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [overview, chapterNumber, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isGenerating])
+  }, [overview, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isGenerating])
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
-    if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isGenerating) {
-      alert(`Please fill in all required fields before saving.\n${title.trim() || chapterNumber ? "" : "Title or chapter number is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
+    if ((!overview.trim() && !connectedPlotPointIds.length) || isGenerating) {
+      alert(`Please fill in all required fields before saving.\n${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
       return
     }
     setIsGenerating(true)
     await serverRequest(`api/story/${storyId}/scene`, {
       overview: overview.trim(),
-      chapter: chapterNumber,
-      title: title.trim(),
+      title: title.trim() || `Untitled Scene`,
       pov: pov.trim(),
       location: location.trim(),
       tone: tone.trim(),
@@ -200,7 +198,7 @@ export default function NewScenePage() {
                 />
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="chapter">Chapter</Label>
                 <Input
                   id="chapter"
@@ -210,7 +208,7 @@ export default function NewScenePage() {
                   onChange={(e) => setChapterNumber(Number(e.target.value))}
                   className="bg-surface-light border-border"
                 />
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-2">

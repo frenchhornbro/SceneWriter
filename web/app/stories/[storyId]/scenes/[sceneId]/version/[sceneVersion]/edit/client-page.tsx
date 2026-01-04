@@ -32,7 +32,6 @@ export default function EditSceneClientPage({
 
   const [sceneText, setSceneText] = useState("")
   const [overview, setOverview] = useState("")
-  const [chapterNumber, setChapterNumber] = useState(0)
   const [title, setTitle] = useState("")
   const [pov, setPov] = useState("")
   const [location, setLocation] = useState("")
@@ -48,7 +47,6 @@ export default function EditSceneClientPage({
         setSceneData(data)
         setSceneText(data.sceneText || "")
         setOverview(data.overview || "")
-        setChapterNumber(data.chapterNumber || 1)
         setTitle(data.title || "")
         setPov(data.pov || "")
         setLocation(data.location || "")
@@ -109,22 +107,22 @@ export default function EditSceneClientPage({
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isSaving, sceneText, title, chapterNumber, overview, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds])
+  }, [isSaving, sceneText, title, overview, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds])
 
   async function handleSubmit(e?: React.FormEvent, doRedirect = true) {
     e?.preventDefault()
     if (isSaving) {
       return;
     }
-    if (!sceneText.trim() || (!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length)) {
-      alert(`Please fill in all required fields before saving.\n${sceneText.trim() ? "" : "Scene text is required."} ${title.trim() || chapterNumber ? "" : "Title or chapter number is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
+    if (!sceneText.trim() || (!overview.trim() && !connectedPlotPointIds.length)) {
+      alert(`Please fill in all required fields before saving.\n${sceneText.trim() ? "" : "Scene text is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
       return
     }
     setIsSaving(true)
     await serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}`, {
       generatedText: sceneText,
       overview: overview,
-      title: title.trim(),
+      title: title.trim() || `Untitled Scene`,
       pov: pov,
       location: location,
       tone: tone,
@@ -206,7 +204,7 @@ export default function EditSceneClientPage({
                 />
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="chapter">Chapter</Label>
                 <Input
                   id="chapter"
@@ -216,7 +214,7 @@ export default function EditSceneClientPage({
                   onChange={(e) => setChapterNumber(Number(e.target.value))}
                   className="bg-surface-light border-border"
                 />
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-2">

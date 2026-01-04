@@ -13,7 +13,7 @@ export function getPlotPoint(plotPointId: number): any {
     container["plotPoint"] = plotPoint;
     // Get connected scenes
     const sceneQuery = `
-      SELECT s.id, s.version, s.title, s.scene_text, s.overview, s.chapter_number, s.created_at, s.edited_at
+      SELECT s.id, s.version, s.title, s.scene_text, s.scene_order, s.overview, s.created_at, s.edited_at
       FROM ScenePlotPoint spp
       JOIN Scene s ON spp.scene_id = s.id AND spp.scene_version = s.version
       WHERE spp.plot_point_id = ?;
@@ -100,7 +100,7 @@ export function updatePlotPoint(plotPointId: number, title: string, description:
       WHERE plot_point_id = ?
       AND (scene_id, scene_version) NOT IN (${connectedScenes.map(() => "(?, ?)").join(", ")});
     `;
-    const deleteScenesParams = [plotPointId, ...connectedScenes.flatMap((scene: any) => [scene.scene_id, scene.scene_version])];
+    const deleteScenesParams = [plotPointId, ...connectedScenes.flatMap((scene: scenePreview) => [scene.id, scene.version])];
     updateDB(deleteScenesPrompt, deleteScenesParams);
     // Add new scenes
     const newScenesPrompt = `
@@ -108,7 +108,7 @@ export function updatePlotPoint(plotPointId: number, title: string, description:
       VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")}
       ON CONFLICT(plot_point_id, scene_id, scene_version) DO NOTHING;
     `;
-    const newScenesParams = connectedScenes.flatMap((scene: any) => [plotPointId, scene.scene_id, scene.scene_version]);
+    const newScenesParams = connectedScenes.flatMap((scene: scenePreview) => [plotPointId, scene.id, scene.version]);
     updateDB(newScenesPrompt, newScenesParams);
   }
 

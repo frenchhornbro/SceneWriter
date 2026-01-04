@@ -134,9 +134,9 @@ export default function SceneDetailClientPage({
                     Version {sceneData.version}
                   </span>
                 )}
-                {sceneData.chapterNumber && (
+                {sceneData.order && (
                   <span className="text-xs px-2 py-1 rounded bg-primary-muted text-primary font-medium">
-                    Chapter {sceneData.chapterNumber}
+                    Scene {sceneData.order}
                   </span>
                 )}
               </div>

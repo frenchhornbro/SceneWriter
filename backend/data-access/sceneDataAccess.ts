@@ -37,7 +37,7 @@ export function getScene(sceneId: number, sceneVersion: number): any {
 export function getAllScenes(storyId: number): scenePreview[] {
   return errorHandlerWrapper("getAllScenes", () => {
     const query = `
-      SELECT id, version, title, scene_text, overview, chapter_number, created_at, edited_at
+      SELECT id, version, title, scene_text, scene_order, overview, created_at, edited_at
       FROM Scene
       WHERE story_id = ?
       ORDER BY edited_at DESC;
@@ -50,7 +50,7 @@ export function getAllScenes(storyId: number): scenePreview[] {
 
 export function getNextSceneOrder(storyId: number): number {
   return errorHandlerWrapper("getNextSceneOrder", () => {
-    // TODO: Fix the logic in this query.
+    // TODO: Make this part of a transaction
     const query = `
       SELECT COALESCE(MAX(scene_order), 0) + 1 AS sceneOrder FROM Scene WHERE story_id = ?;
     `;
@@ -185,7 +185,6 @@ export function createNewScene(
   overview: string,
   sceneText: string,
   sceneOrder: number,
-  chapterNumber: number,
   title: string,
   pov: string,
   location: string,
@@ -206,10 +205,10 @@ export function createNewScene(
     const sceneId = sceneIdParam;
     // Create scene
     const createQuery = `
-      INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, chapter_number, title, pov, location, tone, additional_notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, title, pov, location, tone, additional_notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
-    const createParams = [storyId, sceneId, version, overview, sceneText, sceneOrder, chapterNumber, title, pov, location, tone, additionalNotes];
+    const createParams = [storyId, sceneId, version, overview, sceneText, sceneOrder, title, pov, location, tone, additionalNotes];
     updateDB(createQuery, createParams);
     container["sceneId"] = sceneId;
     // Connect characters

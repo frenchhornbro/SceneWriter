@@ -320,9 +320,9 @@ export default function StoryDetailClientPage({
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          {scene.chapter_number ? (
+                          {scene.scene_order ? (
                             <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
-                              Ch. {scene.chapter_number}
+                              Scene {scene.scene_order}
                             </span>
                           ) : (
                             <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">

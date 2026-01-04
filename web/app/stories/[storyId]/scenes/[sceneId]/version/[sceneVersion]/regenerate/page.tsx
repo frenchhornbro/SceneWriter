@@ -33,7 +33,6 @@ export default function RegenerateScenePage() {
   const [isRegenerating, setIsRegenerating] = useState(false)
 
   const [overview, setOverview] = useState("")
-  const [chapterNumber, setChapterNumber] = useState(1)
   const [title, setTitle] = useState("")
   const [pov, setPov] = useState("")
   const [location, setLocation] = useState("")
@@ -49,7 +48,6 @@ export default function RegenerateScenePage() {
         const data = await response.json()
         setSceneData(data)
         setOverview(data.overview || "")
-        setChapterNumber(data.chapterNumber || 1)
         setTitle(data.title || "")
         setPov(data.pov || "")
         setLocation(data.location || "")
@@ -116,19 +114,18 @@ export default function RegenerateScenePage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [overview, chapterNumber, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isRegenerating])
+  }, [overview, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isRegenerating])
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
-    if ((!title.trim() && !chapterNumber) || (!overview.trim() && !connectedPlotPointIds.length) || isRegenerating) {
-      alert(`Please fill in all required fields before saving.\n${title.trim() || chapterNumber ? "" : "Title or chapter number is required."} ${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
+    if ((!overview.trim() && !connectedPlotPointIds.length) || isRegenerating) {
+      alert(`Please fill in all required fields before saving.\n${overview.trim() || connectedPlotPointIds.length ? "" : "Overview or connected plot points are required."}`)
       return
     }
     setIsRegenerating(true)
     await serverRequest(`api/story/${storyId}/scene/${sceneId}/version/${sceneVersion}/regenerate`, {
       overview: overview.trim(),
-      chapter: chapterNumber,
-      title: title.trim(),
+      title: title.trim() || `Untitled Scene`,
       pov: pov.trim(),
       location: location.trim(),
       tone: tone.trim(),
@@ -222,7 +219,7 @@ export default function RegenerateScenePage() {
                 />
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="chapter">Chapter</Label>
                 <Input
                   id="chapter"
@@ -232,7 +229,7 @@ export default function RegenerateScenePage() {
                   onChange={(e) => setChapterNumber(Number(e.target.value))}
                   className="bg-surface-light border-border"
                 />
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-2">

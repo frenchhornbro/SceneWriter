@@ -33,7 +33,7 @@ export function getCharacter(characterId: number): any {
     container["connectedPlotPoints"] = connectedPlotPoints;
     // Get connected scenes
     const sceneQuery = `
-      SELECT s.id, s.version, s.title, s.scene_text, s.overview, s.chapter_number, s.created_at, s.edited_at
+      SELECT s.id, s.version, s.title, s.scene_text, s.scene_order, s.overview, s.created_at, s.edited_at
       FROM SceneCharacter sc
       JOIN Scene s ON sc.scene_id = s.id AND sc.scene_version = s.version
       WHERE sc.character_id = ?;

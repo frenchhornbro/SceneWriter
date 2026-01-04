@@ -11,7 +11,7 @@ storyRouter.get("/", async (req: Request, res: Response) => {
     title: story.title,
     subtitle: story.subtitle,
     overview: story.overview,
-    storyPage: story.overview.length > 200 ? story.overview.substring(0, 200) + "..." : story.overview, //TODO: Compile this from scene text, according to order (or chapters)
+    storyPage: story.overview.length > 200 ? story.overview.substring(0, 200) + "..." : story.overview, //TODO: Compile this from scene text, according to order
     editedAt: story.editedAt,
     createdAt: story.createdAt,
   }));

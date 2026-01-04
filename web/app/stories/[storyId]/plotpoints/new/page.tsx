@@ -204,9 +204,9 @@ export default function NewPlotPointPage() {
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCharactersData.filter(
-                    (character: any) => !connectedCharacterIds.includes(character.id),
-                  ).map((character: any) => (
+                  {allCharactersData?.filter(
+                    (character: any) => !connectedCharacterIds?.includes(character.id),
+                  )?.map((character: any) => (
                     <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
@@ -214,10 +214,10 @@ export default function NewPlotPointPage() {
                 </SelectContent>
               </Select>
 
-              {connectedCharacterIds.length > 0 && (
+              {connectedCharacterIds?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedCharacterIds.map((characterId) => {
-                    const character = allCharactersData.find((c: any) => c.id === characterId)
+                  {connectedCharacterIds?.map((characterId) => {
+                    const character = allCharactersData?.find((c: any) => c.id === characterId)
                     return (
                       <div
                         key={characterId}
@@ -247,8 +247,8 @@ export default function NewPlotPointPage() {
                   <SelectValue placeholder="Select scenes" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allScenesData.filter((scene: scenePreview) => !connectedScenes.some((cs: scenePreview) => cs.id === scene.id && cs.version === scene.version))
-                    .map((scene: scenePreview) => (
+                  {allScenesData?.filter((scene: scenePreview) => !connectedScenes?.some((cs: scenePreview) => cs.id === scene.id && cs.version === scene.version))
+                    ?.map((scene: scenePreview) => (
                     <SelectItem key={JSON.stringify(scene)} value={JSON.stringify(scene)}>
                       {scene.title}
                     </SelectItem>
@@ -256,10 +256,10 @@ export default function NewPlotPointPage() {
                 </SelectContent>
               </Select>
 
-              {connectedScenes.length > 0 && (
+              {connectedScenes?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedScenes.map((cs: scenePreview) => {
-                    const sceneData = allScenesData.find((s: scenePreview) => s.id === cs.id && s.version === cs.version)
+                  {connectedScenes?.map((cs: scenePreview) => {
+                    const sceneData = allScenesData?.find((s: scenePreview) => s.id === cs.id && s.version === cs.version)
                     return (
                       <div
                         key={JSON.stringify(cs)}

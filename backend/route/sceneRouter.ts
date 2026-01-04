@@ -20,7 +20,7 @@ sceneRouter.get("/", async (req: Request, res: Response) => {
     version: scene.version,
     title: scene.title,
     scene_text: scene.scene_text.length > 200 ? scene.scene_text.substring(0, 200) + "..." : scene.scene_text,
-    chapter_number: scene.chapter_number,
+    scene_order: scene.scene_order,
     created_at: scene.created_at,
     edited_at: scene.edited_at,
   }));
@@ -61,7 +61,6 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     sceneText: scene.scene_text,
     overview: scene.overview,
     order: scene.scene_order,
-    chapterNumber: scene.chapter_number,
     title: scene.title,
     pov: scene.pov,
     tone: scene.tone,
@@ -156,7 +155,6 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const {
     overview,
     title,
-    chapterNumber,
     pov,
     location,
     tone,
@@ -165,8 +163,13 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
     connectedPlotPointIds,
     connectedWritingStyleSampleIds,
   } = req.body;
+  if (!title) {
+    res.status(400).json({error: "Scene title is required."});
+    return;
+  }
   if (!overview && (!connectedPlotPointIds || !connectedPlotPointIds.length)) {
-    return res.status(400).json({error: "Scene overview or connected plot points are required."});
+    res.status(400).json({error: "Scene overview or connected plot points are required."});
+    return;
   }
   const overviewString = `${overview ?? ""}`.toString();
   const titleString = `${title ?? ""}`.toString();
@@ -181,7 +184,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const previousSceneText = getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "";
   const nextSceneText = getNextScene(storyIdNum, sceneOrder)?.scene_text || "";
   const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
-  const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: 1 });
 });
 
@@ -208,7 +211,6 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const {
     overview,
     title,
-    chapterNumber,
     pov,
     location,
     tone,
@@ -217,8 +219,13 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
     connectedPlotPointIds,
     connectedWritingStyleSampleIds,
   } = req.body;
+  if (!title) {
+    res.status(400).json({error: "Scene title is required."});
+    return;
+  }
   if (!overview && (!connectedPlotPointIds?.length)) {
-    return res.status(400).json({error: "Scene overview or connected plot points are required."});
+    res.status(400).json({error: "Scene overview or connected plot points are required."});
+    return;
   }
   const overviewString = `${overview ?? ""}`.toString();
   const titleString = `${title ?? ""}`.toString();
@@ -244,7 +251,7 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
     return;
   }
   const newVersion = latestVersion + 1;
-  createNewScene(storyIdNum, sceneIdNum, newVersion, overviewString, text, sceneOrder, chapterNumber, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  createNewScene(storyIdNum, sceneIdNum, newVersion, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: newVersion });
 });
 

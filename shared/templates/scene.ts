@@ -1,10 +1,10 @@
 export type scenePreview = {
   id: number;
   version: number;
-  title?: string | null;
+  title: string;
   scene_text: string;
+  scene_order: number;
   overview?: string | null;
-  chapter_number?: number | null;
   created_at: string;
   edited_at: string;
 };
