@@ -8,3 +8,8 @@ export type scenePreview = {
   created_at: string;
   edited_at: string;
 };
+
+export type adjacentScenes = {
+  previousScene: { id: number; version: number; title: string; sceneText: string } | null;
+  nextScene: { id: number; version: number; title: string; sceneText: string } | null;
+};

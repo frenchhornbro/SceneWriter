@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import SceneGenerationOverlay from "@/components/scene-generation-overlay"
 import { ErrorPage } from "@/components/errorPage"
 import { keyIsPressed } from "@/lib/utils"
+import type { adjacentScenes } from "@shared/templates/scene"
+import { AdjacentScenesCheckboxes } from "@/components/adjacentScenes"
 
 export default function RegenerateScenePage() {
   const params = useParams()
@@ -41,6 +43,9 @@ export default function RegenerateScenePage() {
   const [connectedCharacterIds, setConnectedCharacterIds] = useState<number[]>([])
   const [connectedPlotPointIds, setConnectedPlotPointIds] = useState<number[]>([])
   const [connectedWritingStyleSampleIds, setConnectedWritingStyleSampleIds] = useState<number[]>([])
+  const [includePreviousScene, setIncludePreviousScene] = useState(false)
+  const [includeNextScene, setIncludeNextScene] = useState(false)
+  const [adjacentScenesData, setAdjacentScenesData] = useState<adjacentScenes>({ previousScene: null, nextScene: null })
 
   useEffect(() => {
     serverRequest(`api/story/${storyId}/scene/${sceneId}/version/${sceneVersion}`, {}, "GET",
@@ -92,6 +97,15 @@ export default function RegenerateScenePage() {
         setIsLoading(false)
       }
     )
+    serverRequest(`api/story/${storyId}/scene/${sceneId}/version/${sceneVersion}/adjacent`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAdjacentScenesData(data)
+      },
+      async (error) => {
+        console.error(`Failed to load adjacent scenes: ${error}`)
+      }
+    )
   }, [])
 
   useEffect(() => {
@@ -133,6 +147,8 @@ export default function RegenerateScenePage() {
       connectedCharacterIds,
       connectedPlotPointIds,
       connectedWritingStyleSampleIds,
+      includePreviousScene,
+      includeNextScene,
     }, "POST",
       async (response) => {
         const data = await response.json()
@@ -219,17 +235,13 @@ export default function RegenerateScenePage() {
                 />
               </div>
 
-              {/* <div className="space-y-2">
-                <Label htmlFor="chapter">Chapter</Label>
-                <Input
-                  id="chapter"
-                  type="number"
-                  min="1"
-                  value={chapterNumber}
-                  onChange={(e) => setChapterNumber(Number(e.target.value))}
-                  className="bg-surface-light border-border"
-                />
-              </div> */}
+              <AdjacentScenesCheckboxes
+                adjacentScenes={adjacentScenesData}
+                includePreviousScene={includePreviousScene}
+                setIncludePreviousScene={setIncludePreviousScene}
+                includeNextScene={includeNextScene}
+                setIncludeNextScene={setIncludeNextScene}
+              />
             </div>
 
             <div className="space-y-2">

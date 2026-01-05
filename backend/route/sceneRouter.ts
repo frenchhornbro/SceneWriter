@@ -75,6 +75,48 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
   });
 });
 
+sceneRouter.get("/:sceneId/version/:sceneVersion/adjacent", async (req: Request, res: Response) => {
+  const { storyId, sceneId, sceneVersion } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneIdNum = validateId(sceneId);
+  if (!sceneIdNum) {
+    res.status(400).json({error: "Missing or invalid sceneId parameter."});
+    return;
+  }
+  const sceneVersionNum = validateId(sceneVersion);
+  if (!sceneVersionNum) {
+    res.status(400).json({error: "Missing or invalid sceneVersion parameter."});
+    return;
+  }
+  const sceneData = getScene(sceneIdNum, sceneVersionNum);
+  const scene = sceneData["scene"];
+  if (!scene) {
+    res.status(404).json({error: "Scene not found."});
+    return;
+  }
+  const sceneOrder = scene.scene_order;
+  const previousScene = getPreviousScene(storyIdNum, sceneOrder);
+  const nextScene = getNextScene(storyIdNum, sceneOrder);
+  res.status(200).json({
+    previousScene: previousScene ? {
+      id: previousScene.id,
+      version: previousScene.version,
+      title: previousScene.title,
+      sceneText: previousScene.scene_text,
+    } : null,
+    nextScene: nextScene ? {
+      id: nextScene.id,
+      version: nextScene.version,
+      title: nextScene.title,
+      sceneText: nextScene.scene_text,
+    } : null,
+  });
+});
+
 sceneRouter.get("/:sceneId/version/:sceneVersion/previous", async (req: Request, res: Response) => {
   const { storyId, sceneId, sceneVersion } = req.params;
   const storyIdNum = validateId(storyId);
@@ -137,6 +179,32 @@ sceneRouter.get("/:sceneId/latestVersion", async (req: Request, res: Response) =
   res.status(200).json({ latestVersion });
 });
 
+sceneRouter.get("/adjacent", async (req: Request, res: Response) => {
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const sceneOrder = getNextSceneOrder(storyIdNum);
+  const previousScene = getPreviousScene(storyIdNum, sceneOrder);
+  const nextScene = getNextScene(storyIdNum, sceneOrder);
+  res.status(200).json({
+    previousScene: previousScene ? {
+      id: previousScene.id,
+      version: previousScene.version,
+      title: previousScene.title,
+      sceneText: previousScene.scene_text,
+    } : null,
+    nextScene: nextScene ? {
+      id: nextScene.id,
+      version: nextScene.version,
+      title: nextScene.title,
+      sceneText: nextScene.scene_text,
+    } : null,
+  });
+});
+
 /*
 curl -X POST http://localhost:3000/api/story/123/scene \
 -H "Content-Type: application/json" \
@@ -162,6 +230,8 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
     connectedCharacterIds,
     connectedPlotPointIds,
     connectedWritingStyleSampleIds,
+    includePreviousScene,
+    includeNextScene,
   } = req.body;
   if (!title) {
     res.status(400).json({error: "Scene title is required."});
@@ -181,8 +251,8 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const plotPoints = getPlotPointInfo(connectedPlotPointIds).map((pp) => Object.entries(pp).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
-  const previousSceneText = getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "";
-  const nextSceneText = getNextScene(storyIdNum, sceneOrder)?.scene_text || "";
+  const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
+  const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
   const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: 1 });
@@ -214,6 +284,8 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
     pov,
     location,
     tone,
+    includePreviousScene,
+    includeNextScene,
     additionalNotes,
     connectedCharacterIds,
     connectedPlotPointIds,
@@ -242,8 +314,8 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const plotPoints = getPlotPointInfo(connectedPlotPointIds).map((pp) => Object.entries(pp).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const characters = getCharacterInfo(connectedCharacterIds).map((char) => Object.entries(char).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
-  const previousSceneText = getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "";
-  const nextSceneText = getNextScene(storyIdNum, sceneOrder)?.scene_text || "";
+  const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
+  const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
   const latestVersion = getLatestVersion(sceneIdNum);
   if (latestVersion === null) {
