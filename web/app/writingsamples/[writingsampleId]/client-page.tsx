@@ -106,7 +106,7 @@ export default function WritingSampleDetailClientPage({
 
             <div className="flex gap-2">
               <Link href={`/writingsamples/${params.writingsampleId}/edit`}>
-                <Button variant="outline" className="border-border hover:bg-surface-light bg-transparent">
+                <Button variant="outline" className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary bg-transparent">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
