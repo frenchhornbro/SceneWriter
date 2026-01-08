@@ -1,11 +1,19 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/prompts";
+import { models as openAIModels } from "../ai/openAIRequester";
+import { models as localModels } from "../ai/localRequester";
 import { validateId } from "./routerUtils";
 import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextScene, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousScene, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene, updateSceneOrders } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
+import { getEnvVar } from "../utils/envAccess";
 
 const sceneRouter = Router({ mergeParams: true });
+
+sceneRouter.get("/models", async (req: Request, res: Response) => {
+  const models = getEnvVar("USE_LOCAL_MODEL") === "true" ? localModels : openAIModels;
+  res.status(200).json({ models });
+});
 
 sceneRouter.get("/", async (req: Request, res: Response) => {
   const { storyId } = req.params;
@@ -232,6 +240,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
     connectedWritingStyleSampleIds,
     includePreviousScene,
     includeNextScene,
+    model,
   } = req.body;
   if (!title) {
     res.status(400).json({error: "Scene title is required."});
@@ -253,7 +262,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
-  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
+  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
   const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
   res.status(201).json({ sceneId, version: 1 });
 });
@@ -290,6 +299,7 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
     connectedCharacterIds,
     connectedPlotPointIds,
     connectedWritingStyleSampleIds,
+    model,
   } = req.body;
   if (!title) {
     res.status(400).json({error: "Scene title is required."});
@@ -316,7 +326,7 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
-  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText);
+  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
   const latestVersion = getLatestVersion(sceneIdNum);
   if (latestVersion === null) {
     res.status(404).json({error: "Scene not found."});

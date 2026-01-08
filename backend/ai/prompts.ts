@@ -20,6 +20,7 @@ export async function generateScene(
   tone: string,
   previousSceneText?: string,
   nextSceneText?: string,
+  modelOverride?: string,
 ): Promise<TextGenerationResult> {
   try {
     const prompt = `\
@@ -39,7 +40,7 @@ Do NOT output anything other than the text of the scene.`;
     if (getEnvVar("VERBOSE") === "true") {
       console.log(prompt);
     }
-    return await processPrompt(prompt);
+    return await processPrompt(prompt, modelOverride);
   } catch (error) {
     console.error("Error generating scene:", error);
     throw error;

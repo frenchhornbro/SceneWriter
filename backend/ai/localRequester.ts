@@ -1,12 +1,14 @@
 import { getEnvVar } from "../utils/envAccess";
 import { TextGenerationResult } from "./types";
 
-const models = [
-  "llama3.2:latest",
-  "gemma3:270m",
-  "gemma3:1b",
-  "gemma3:4b",
-]
+export const models = {
+  "llama3.2:latest": "Llama 3.2 Latest",
+  "gemma3:270m": "Gemma 3 (270M)",
+  "gemma3:1b": "Gemma 3 (1B)",
+  "gemma3:4b": "Gemma 3 (4B)",
+}
+
+const DEFAULT_MODEL = getEnvVar("DEFAULT_LOCAL_MODEL") || "llama3.2:latest";
 
 async function sendRequestWithModel(prompt: string, url: string, model: string): Promise<Response> {
   const response = await fetch(url, {
@@ -62,20 +64,22 @@ export async function sendLocalRequest(prompt: string, url: string, modelOverrid
   const startTime = Date.now();
   let response: any;
   let model: string = "";
-  for (let i = 0; i < models.length; i++) {
-    model = models[i];
-    if (modelOverride && model !== modelOverride) {
+  const modelKeys = Object.keys(models) as Array<keyof typeof models>;
+  for (let i = 0; i < modelKeys.length; i++) {
+    const modelKey = modelKeys[i];
+    model = modelKey;
+    if (modelOverride && modelKey !== modelOverride) {
       continue;
     }
     if (getEnvVar("VERBOSE") === "true") {
-      console.log(`Generating with model ${model}...`);
+      console.log(`Generating with model ${modelKey} (${models[modelKey]})...`);
     }
-    response = await sendRequestWithModel(prompt, url, models[i]);
+    response = await sendRequestWithModel(prompt, url, modelKey);
     if (!response.ok) {
       const data = await response.json();
       if (data.error && data.error.includes("model requires more system memory than is currently available")) {
-        console.warn(`Model ${models[i]} failed due to insufficient memory, trying next model.`);
-        if (i === models.length - 1) {
+        console.warn(`Model ${modelKey} failed due to insufficient memory, trying next model.`);
+        if (i === modelKeys.length - 1) {
           throw new Error(`All models failed: ${data.error}`);
         }
         continue;

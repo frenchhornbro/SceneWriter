@@ -3,12 +3,15 @@ import { getEnvVar } from "../utils/envAccess";
 import { TextGenerationResult } from "./types";
 
 // Pricing: https://platform.openai.com/docs/pricing?latest-pricing=standard
-const models = [
-  "gpt-5-mini",   // ($0.25/M input, $0.025/M cached input, $2.00/M output) Very fast, higher context retention
-  "gpt-5-nano",   // ($0.05/M input, $0.005/M cached input, $0.40/M output) Extremely fast, medium context retention
-  "gpt-4o-mini",  // ($0.15/M input, $0.075/M cached input, $0.60/M output) Very fast, medium context retention
-  "gpt-5.2",      // ($1.75/M input, $0.175/M cached input, $14.00/M output) Fast, high context retention
-];
+export const models: Record<string, string> = {
+  "gpt-5-mini": "GPT-5 Mini",      // ($0.25/M input, $0.025/M cached input, $2.00/M output) Very fast, higher context retention
+  "gpt-5-nano": "GPT-5 Nano",      // ($0.05/M input, $0.005/M cached input, $0.40/M output) Extremely fast, medium context retention
+  "gpt-4o-mini": "GPT-4o Mini",    // ($0.15/M input, $0.075/M cached input, $0.60/M output) Very fast, medium context retention
+  "gpt-5.1": "GPT-5.1",            // ($1.25/M input, $0.125/M cached input, $10.00/M output) Balanced speed and context retention
+  "gpt-5.2": "GPT-5.2",            // ($1.75/M input, $0.175/M cached input, $14.00/M output) Fast, high context retention
+};
+
+const DEFAULT_MODEL = getEnvVar("DEFAULT_OPENAI_MODEL") || Object.keys(models)[0];
 
 const client = new OpenAI({
   apiKey: getEnvVar("OPENAI_API_KEY"),
@@ -16,10 +19,10 @@ const client = new OpenAI({
 
 export async function sendOpenAIRequest(prompt: string, modelOverride?: string): Promise<TextGenerationResult> {
   const startTime = Date.now();
-  if (modelOverride && !models.includes(modelOverride)) {
+  if (modelOverride && !(modelOverride in models)) {
     throw new Error(`Model override ${modelOverride} is not a valid model.`);
   }
-  const model: string = modelOverride ? modelOverride : models[0];
+  const model: string = modelOverride ? modelOverride : DEFAULT_MODEL;
   if (getEnvVar("VERBOSE") === "true") {
     console.log(`Generating with model ${model}...`);
   }

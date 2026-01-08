@@ -43,6 +43,8 @@ export default function NewScenePage() {
   const [includePreviousScene, setIncludePreviousScene] = useState(false)
   const [includeNextScene, setIncludeNextScene] = useState(false)
   const [adjacentScenesData, setAdjacentScenesData] = useState<adjacentScenes>({ previousScene: null, nextScene: null })
+  const [availableModels, setAvailableModels] = useState<Record<string, string>>({})
+  const [selectedModel, setSelectedModel] = useState<string>("")
 
   useEffect(() => {
     serverRequest(`api/story/${storyId}/character`, {}, "GET",
@@ -84,6 +86,19 @@ export default function NewScenePage() {
         console.error(`Failed to load adjacent scenes: ${error}`)
       }
     )
+    serverRequest(`api/story/${storyId}/scene/models`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setAvailableModels(data.models)
+        const firstModelKey = Object.keys(data.models)[0]
+        if (firstModelKey) {
+          setSelectedModel(firstModelKey)
+        }
+      },
+      async (error) => {
+        console.error(`Failed to load available models: ${error}`)
+      }
+    )
   }, [])
 
   useEffect(() => {
@@ -106,7 +121,7 @@ export default function NewScenePage() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [overview, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isGenerating])
+  }, [overview, title, pov, location, tone, additionalNotes, connectedCharacterIds, connectedPlotPointIds, connectedWritingStyleSampleIds, isGenerating, selectedModel])
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
@@ -127,6 +142,7 @@ export default function NewScenePage() {
       connectedWritingStyleSampleIds,
       includePreviousScene,
       includeNextScene,
+      model: selectedModel,
     }, "POST",
       async (response) => {
         const data = await response.json()
@@ -406,6 +422,24 @@ export default function NewScenePage() {
                   })}
                 </div>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="model" className="text-sm font-medium">
+                Model
+              </Label>
+              <Select value={selectedModel} onValueChange={setSelectedModel}>
+                <SelectTrigger className="bg-surface-light border-border">
+                  <SelectValue placeholder="Select a model" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(availableModels).map(([modelId, modelName]) => (
+                    <SelectItem key={modelId} value={modelId}>
+                      {modelName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-3 pt-4">
