@@ -192,6 +192,7 @@ export function createNewScene(
   additionalNotes: string,
   connectedCharacterIds: number[],
   connectedPlotPointIds: number[],
+  model: string,
 ): any {
   return transactionWrapper("createNewScene", (container) => {
     if (sceneIdParam === null) {
@@ -205,10 +206,10 @@ export function createNewScene(
     const sceneId = sceneIdParam;
     // Create scene
     const createQuery = `
-      INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, title, pov, location, tone, additional_notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO Scene (story_id, id, version, overview, scene_text, scene_order, title, pov, location, tone, additional_notes, model)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
-    const createParams = [storyId, sceneId, version, overview, sceneText, sceneOrder, title, pov, location, tone, additionalNotes];
+    const createParams = [storyId, sceneId, version, overview, sceneText, sceneOrder, title, pov, location, tone, additionalNotes, model];
     updateDB(createQuery, createParams);
     container["sceneId"] = sceneId;
     // Connect characters

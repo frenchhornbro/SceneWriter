@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Edit, Trash2, MapPin, User } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, MapPin, User, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -152,6 +152,12 @@ export default function SceneDetailClientPage({
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="w-4 h-4" />
                     <span>{sceneData.location}</span>
+                  </div>
+                )}
+                {sceneData.model && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Model: {sceneData.model}</span>
                   </div>
                 )}
               </div>

@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS Scene (
   location TEXT,
   tone TEXT,
   additional_notes TEXT,
+  model TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   edited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id, version),

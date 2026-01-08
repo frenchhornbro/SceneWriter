@@ -78,6 +78,7 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     connectedCharacters: sceneData["connectedCharacters"],
     connectedPlotPoints: sceneData["connectedPlotPoints"],
     additionalNotes: scene.additional_notes,
+    model: scene.model,
     createdAt: scene.created_at,
     editedAt: scene.edited_at,
   });
@@ -262,8 +263,8 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
-  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
-  const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  const { text, modelUsed } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
+  const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds, modelUsed);
   res.status(201).json({ sceneId, version: 1 });
 });
 
@@ -326,14 +327,14 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
-  const { text } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
+  const { text, modelUsed } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
   const latestVersion = getLatestVersion(sceneIdNum);
   if (latestVersion === null) {
     res.status(404).json({error: "Scene not found."});
     return;
   }
   const newVersion = latestVersion + 1;
-  createNewScene(storyIdNum, sceneIdNum, newVersion, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  createNewScene(storyIdNum, sceneIdNum, newVersion, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds, modelUsed);
   res.status(201).json({ sceneId, version: newVersion });
 });
 
