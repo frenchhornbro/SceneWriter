@@ -66,86 +66,119 @@ export function createNewCharacter(storyId: number, name: string, role: string, 
     const result = updateDB(createQuery, createParams);
     const characterId = result.lastInsertRowid;
     // Create relationships
-    const relationshipQuery = `
-      INSERT INTO CharacterRelationship (character_id, related_character_id, description)
-      VALUES ${relationships.map(() => "(?, ?, ?)").join(", ")};
-    `;
-    const relationshipParams = relationships.flatMap((relationship) => [characterId, relationship.id, relationship.description]);
-    updateDB(relationshipQuery, relationshipParams);
+    if (relationships.length > 0) {
+      const relationshipQuery = `
+        INSERT INTO CharacterRelationship (character_id, related_character_id, description)
+        VALUES ${relationships.map(() => "(?, ?, ?)").join(", ")};
+      `;
+      const relationshipParams = relationships.flatMap((relationship) => [characterId, relationship.id, relationship.description]);
+      updateDB(relationshipQuery, relationshipParams);
+    }
     // Connect plot points
-    const plotPointQuery = `
-      INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
-      VALUES ${connectedPlotPointIds.map(() => "(?, ?)").join(", ")};
-    `;
-    const plotPointParams = connectedPlotPointIds.flatMap((plotPointId) => [characterId, plotPointId]);
-    updateDB(plotPointQuery, plotPointParams);
+    if (connectedPlotPointIds.length > 0) {
+      const plotPointQuery = `
+        INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
+        VALUES ${connectedPlotPointIds.map(() => "(?, ?)").join(", ")};
+      `;
+      const plotPointParams = connectedPlotPointIds.flatMap((plotPointId) => [characterId, plotPointId]);
+      updateDB(plotPointQuery, plotPointParams);
+    }
     // Connect scenes
-    const sceneQuery = `
-      INSERT INTO SceneCharacter (character_id, scene_id, scene_version)
-      VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")};
-    `;
-    const sceneParams = connectedScenes.flatMap((scene: scenePreview) => [characterId, scene.id, scene.version]);
-    updateDB(sceneQuery, sceneParams);
+    if (connectedScenes.length > 0) {
+      const sceneQuery = `
+        INSERT INTO SceneCharacter (character_id, scene_id, scene_version)
+        VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")};
+      `;
+      const sceneParams = connectedScenes.flatMap((scene: scenePreview) => [characterId, scene.id, scene.version]);
+      updateDB(sceneQuery, sceneParams);
+    }
     container["characterId"] = characterId;
   });
 }
 
 export function updateCharacter(characterId: number, name: string, role: string, physicalDescription: string, personality: string, backstory: string, additionalNotes: string, relationships: any[], connectedPlotPointIds: number[], connectedScenes: scenePreview[]): void {
   function processRelationships() {
-    // Delete old relationships
-    const deleteRelationshipsPrompt = `
-      DELETE FROM CharacterRelationship
-      WHERE character_id = ?
-      AND related_character_id NOT IN (${relationships.map(() => "?").join(", ")});
-    `;
-    const deleteRelationshipsParams = [characterId, ...relationships.map((r) => r.id)];
-    updateDB(deleteRelationshipsPrompt, deleteRelationshipsParams);
-    // Add new relationships
-    const newRelationshipsPrompt = `
-      INSERT INTO CharacterRelationship (character_id, related_character_id, description)
-      VALUES ${relationships.map(() => "(?, ?, ?)").join(", ")}
-      ON CONFLICT(character_id, related_character_id) DO UPDATE SET description = excluded.description;
-    `;
-    const newRelationshipsParams = relationships.flatMap((relationship) => [characterId, relationship.id, relationship.description]);
-    updateDB(newRelationshipsPrompt, newRelationshipsParams);
+    if (relationships.length > 0) {
+      // Delete old relationships
+      const deleteRelationshipsPrompt = `
+        DELETE FROM CharacterRelationship
+        WHERE character_id = ?
+        AND related_character_id NOT IN (${relationships.map(() => "?").join(", ")});
+      `;
+      const deleteRelationshipsParams = [characterId, ...relationships.map((r) => r.id)];
+      updateDB(deleteRelationshipsPrompt, deleteRelationshipsParams);
+      // Add new relationships
+      const newRelationshipsPrompt = `
+        INSERT INTO CharacterRelationship (character_id, related_character_id, description)
+        VALUES ${relationships.map(() => "(?, ?, ?)").join(", ")}
+        ON CONFLICT(character_id, related_character_id) DO UPDATE SET description = excluded.description;
+      `;
+      const newRelationshipsParams = relationships.flatMap((relationship) => [characterId, relationship.id, relationship.description]);
+      updateDB(newRelationshipsPrompt, newRelationshipsParams);
+    } else {
+      // Delete all relationships when array is empty
+      const deleteAllRelationshipsPrompt = `
+        DELETE FROM CharacterRelationship
+        WHERE character_id = ?;
+      `;
+      updateDB(deleteAllRelationshipsPrompt, [characterId]);
+    }
   }
 
   function processConnectedPlotPoints() {
-    // Delete old plot points
-    const deletePlotPointsPrompt = `
-      DELETE FROM CharacterPlotPoint
-      WHERE character_id = ?
-      AND plot_point_id NOT IN (${connectedPlotPointIds.map(() => "?").join(", ")});
-    `;
-    const deletePlotPointsParams = [characterId, ...connectedPlotPointIds];
-    updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
-    // Add new plot points
-    const newPlotPointsPrompt = `
-      INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
-      VALUES ${connectedPlotPointIds.map(() => "(?, ?)").join(", ")}
-      ON CONFLICT(character_id, plot_point_id) DO NOTHING;
-    `;
-    const newPlotPointsParams = connectedPlotPointIds.flatMap((plotPointId) => [characterId, plotPointId]);
-    updateDB(newPlotPointsPrompt, newPlotPointsParams);
+    if (connectedPlotPointIds.length > 0) {
+      // Delete old plot points
+      const deletePlotPointsPrompt = `
+        DELETE FROM CharacterPlotPoint
+        WHERE character_id = ?
+        AND plot_point_id NOT IN (${connectedPlotPointIds.map(() => "?").join(", ")});
+      `;
+      const deletePlotPointsParams = [characterId, ...connectedPlotPointIds];
+      updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
+      // Add new plot points
+      const newPlotPointsPrompt = `
+        INSERT INTO CharacterPlotPoint (character_id, plot_point_id)
+        VALUES ${connectedPlotPointIds.map(() => "(?, ?)").join(", ")}
+        ON CONFLICT(character_id, plot_point_id) DO NOTHING;
+      `;
+      const newPlotPointsParams = connectedPlotPointIds.flatMap((plotPointId) => [characterId, plotPointId]);
+      updateDB(newPlotPointsPrompt, newPlotPointsParams);
+    } else {
+      // Delete all plot points when array is empty
+      const deleteAllPlotPointsPrompt = `
+        DELETE FROM CharacterPlotPoint
+        WHERE character_id = ?;
+      `;
+      updateDB(deleteAllPlotPointsPrompt, [characterId]);
+    }
   }
 
   function processConnectedScenes() {
-    // Delete old scenes
-    const deleteScenesPrompt = `
-      DELETE FROM SceneCharacter
-      WHERE character_id = ?
-      AND (scene_id, scene_version) NOT IN (${connectedScenes.map(() => "(?, ?)").join(", ")});
-    `;
-    const deleteScenesParams = [characterId, ...connectedScenes.flatMap((scene: scenePreview) => [scene.id, scene.version])];
-    updateDB(deleteScenesPrompt, deleteScenesParams);
-    // Add new scenes
-    const newScenesPrompt = `
-      INSERT INTO SceneCharacter (character_id, scene_id, scene_version)
-      VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")}
-      ON CONFLICT(character_id, scene_id, scene_version) DO NOTHING;
-    `;
-    const newScenesParams = connectedScenes.flatMap((scene: scenePreview) => [characterId, scene.id, scene.version]);
-    updateDB(newScenesPrompt, newScenesParams);
+    if (connectedScenes.length > 0) {
+      // Delete old scenes
+      const deleteScenesPrompt = `
+        DELETE FROM SceneCharacter
+        WHERE character_id = ?
+        AND (scene_id, scene_version) NOT IN (${connectedScenes.map(() => "(?, ?)").join(", ")});
+      `;
+      const deleteScenesParams = [characterId, ...connectedScenes.flatMap((scene: scenePreview) => [scene.id, scene.version])];
+      updateDB(deleteScenesPrompt, deleteScenesParams);
+      // Add new scenes
+      const newScenesPrompt = `
+        INSERT INTO SceneCharacter (character_id, scene_id, scene_version)
+        VALUES ${connectedScenes.map(() => "(?, ?, ?)").join(", ")}
+        ON CONFLICT(character_id, scene_id, scene_version) DO NOTHING;
+      `;
+      const newScenesParams = connectedScenes.flatMap((scene: scenePreview) => [characterId, scene.id, scene.version]);
+      updateDB(newScenesPrompt, newScenesParams);
+    } else {
+      // Delete all scenes when array is empty
+      const deleteAllScenesPrompt = `
+        DELETE FROM SceneCharacter
+        WHERE character_id = ?;
+      `;
+      updateDB(deleteAllScenesPrompt, [characterId]);
+    }
   }
 
   return transactionWrapper("updateCharacter", (_) => {

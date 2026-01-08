@@ -213,59 +213,81 @@ export function createNewScene(
     updateDB(createQuery, createParams);
     container["sceneId"] = sceneId;
     // Connect characters
-    const characterQuery = `
-      INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
-      VALUES ${connectedCharacterIds.map(() => "(?, ?, ?)").join(", ")};
-    `;
-    const characterParams = connectedCharacterIds.flatMap((characterId) => [sceneId, version, characterId]);
-    updateDB(characterQuery, characterParams);
+    if (connectedCharacterIds.length > 0) {
+      const characterQuery = `
+        INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
+        VALUES ${connectedCharacterIds.map(() => "(?, ?, ?)").join(", ")};
+      `;
+      const characterParams = connectedCharacterIds.flatMap((characterId) => [sceneId, version, characterId]);
+      updateDB(characterQuery, characterParams);
+    }
     // Connect plot points
-    const plotPointQuery = `
-      INSERT INTO ScenePlotPoint (scene_id, scene_version, plot_point_id)
-      VALUES ${connectedPlotPointIds.map(() => "(?, ?, ?)").join(", ")};
-    `;
-    const plotPointParams = connectedPlotPointIds.flatMap((plotPointId) => [sceneId, version, plotPointId]);
-    updateDB(plotPointQuery, plotPointParams);
+    if (connectedPlotPointIds.length > 0) {
+      const plotPointQuery = `
+        INSERT INTO ScenePlotPoint (scene_id, scene_version, plot_point_id)
+        VALUES ${connectedPlotPointIds.map(() => "(?, ?, ?)").join(", ")};
+      `;
+      const plotPointParams = connectedPlotPointIds.flatMap((plotPointId) => [sceneId, version, plotPointId]);
+      updateDB(plotPointQuery, plotPointParams);
+    }
   });
 }
 
 export function updateScene(sceneId: number, sceneVersion: number, overview: string, sceneText: string, title: string, pov: string, location: string, tone: string, additionalNotes: string, connectedCharacterIds: number[], connectedPlotPointIds: number[]): void {
   function processConnectedCharacters() {
-    // Delete old characters
-    const deleteCharactersPrompt = `
-      DELETE FROM SceneCharacter
-      WHERE scene_id = ? AND scene_version = ?
-      AND character_id NOT IN (${connectedCharacterIds.map(() => "?").join(", ")});
-    `;
-    const deleteCharactersParams = [sceneId, sceneVersion, ...connectedCharacterIds];
-    updateDB(deleteCharactersPrompt, deleteCharactersParams);
-    // Add new characters
-    const newCharactersPrompt = `
-      INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
-      VALUES ${connectedCharacterIds.map(() => "(?, ?, ?)").join(", ")}
-      ON CONFLICT(scene_id, scene_version, character_id) DO NOTHING;
-    `;
-    const newCharactersParams = connectedCharacterIds.flatMap((characterId: any) => [sceneId, sceneVersion, characterId]);
-    updateDB(newCharactersPrompt, newCharactersParams);
+    if (connectedCharacterIds.length > 0) {
+      // Delete old characters
+      const deleteCharactersPrompt = `
+        DELETE FROM SceneCharacter
+        WHERE scene_id = ? AND scene_version = ?
+        AND character_id NOT IN (${connectedCharacterIds.map(() => "?").join(", ")});
+      `;
+      const deleteCharactersParams = [sceneId, sceneVersion, ...connectedCharacterIds];
+      updateDB(deleteCharactersPrompt, deleteCharactersParams);
+      // Add new characters
+      const newCharactersPrompt = `
+        INSERT INTO SceneCharacter (scene_id, scene_version, character_id)
+        VALUES ${connectedCharacterIds.map(() => "(?, ?, ?)").join(", ")}
+        ON CONFLICT(scene_id, scene_version, character_id) DO NOTHING;
+      `;
+      const newCharactersParams = connectedCharacterIds.flatMap((characterId: any) => [sceneId, sceneVersion, characterId]);
+      updateDB(newCharactersPrompt, newCharactersParams);
+    } else {
+      // Delete all characters when array is empty
+      const deleteAllCharactersPrompt = `
+        DELETE FROM SceneCharacter
+        WHERE scene_id = ? AND scene_version = ?;
+      `;
+      updateDB(deleteAllCharactersPrompt, [sceneId, sceneVersion]);
+    }
   }
 
   function processConnectedPlotPoints() {
-    // Delete old scenes
-    const deletePlotPointsPrompt = `
-      DELETE FROM ScenePlotPoint
-      WHERE scene_id = ? AND scene_version = ?
-      AND plot_point_id NOT IN (${connectedPlotPointIds.map(() => "?").join(", ")});
-    `;
-    const deletePlotPointsParams = [sceneId, sceneVersion, ...connectedPlotPointIds];
-    updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
-    // Add new scenes
-    const newPlotPointsPrompt = `
-      INSERT INTO ScenePlotPoint (plot_point_id, scene_id, scene_version)
-      VALUES ${connectedPlotPointIds.map(() => "(?, ?, ?)").join(", ")}
-      ON CONFLICT(plot_point_id, scene_id, scene_version) DO NOTHING;
-    `;
-    const newPlotPointsParams = connectedPlotPointIds.flatMap((plotPointId: any) => [plotPointId, sceneId, sceneVersion]);
-    updateDB(newPlotPointsPrompt, newPlotPointsParams);
+    if (connectedPlotPointIds.length > 0) {
+      // Delete old scenes
+      const deletePlotPointsPrompt = `
+        DELETE FROM ScenePlotPoint
+        WHERE scene_id = ? AND scene_version = ?
+        AND plot_point_id NOT IN (${connectedPlotPointIds.map(() => "?").join(", ")});
+      `;
+      const deletePlotPointsParams = [sceneId, sceneVersion, ...connectedPlotPointIds];
+      updateDB(deletePlotPointsPrompt, deletePlotPointsParams);
+      // Add new scenes
+      const newPlotPointsPrompt = `
+        INSERT INTO ScenePlotPoint (plot_point_id, scene_id, scene_version)
+        VALUES ${connectedPlotPointIds.map(() => "(?, ?, ?)").join(", ")}
+        ON CONFLICT(plot_point_id, scene_id, scene_version) DO NOTHING;
+      `;
+      const newPlotPointsParams = connectedPlotPointIds.flatMap((plotPointId: any) => [plotPointId, sceneId, sceneVersion]);
+      updateDB(newPlotPointsPrompt, newPlotPointsParams);
+    } else {
+      // Delete all plot points when array is empty
+      const deleteAllPlotPointsPrompt = `
+        DELETE FROM ScenePlotPoint
+        WHERE scene_id = ? AND scene_version = ?;
+      `;
+      updateDB(deleteAllPlotPointsPrompt, [sceneId, sceneVersion]);
+    }
   }
 
   return transactionWrapper("updateScene", (container) => {
