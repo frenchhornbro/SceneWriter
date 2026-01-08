@@ -153,9 +153,16 @@ export default function NewCharacterPage() {
     if (characterIdNum && !relationships.some((character: any) => character.id === characterIdNum)) {
       setRelationships([...relationships, {
         id: characterIdNum,
-        description: "" //TODO: Allow user to set role
+        name: allCharactersData.find((c: any) => c.id === characterIdNum)?.name || "",
+        description: ""
       }])
     }
+  }
+
+  const updateRelationshipDescription = (characterId: number, description: string) => {
+    setRelationships(relationships.map((rel: any) =>
+      rel.id === characterId ? { ...rel, description } : rel
+    ))
   }
 
   const removeRelationship = (characterId: number) => {
@@ -305,22 +312,30 @@ export default function NewCharacterPage() {
               </Select>
 
               {relationships.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-col gap-2 mt-2">
                   {relationships.map((characterData: any) => {
                     const character = allCharactersData.find((c: any) => c.id === characterData.id)
                     return (
                       <div
                         key={characterData.id}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                        className="flex items-center gap-2"
                       >
-                        <span>{character?.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeRelationship(characterData.id)}
-                          className="hover:text-foreground"
-                        >
-                          ×
-                        </button>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm shrink-0">
+                          <span>{character?.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeRelationship(characterData.id)}
+                            className="hover:text-foreground"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <Input
+                          value={characterData.description || ""}
+                          onChange={(e) => updateRelationshipDescription(characterData.id, e.target.value)}
+                          placeholder="Describe relationship (e.g., sister, rival, mentor)"
+                          className="bg-surface-light border-border text-sm flex-1"
+                        />
                       </div>
                     )
                   })}

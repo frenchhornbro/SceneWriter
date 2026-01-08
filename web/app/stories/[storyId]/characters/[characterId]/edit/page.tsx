@@ -181,9 +181,15 @@ export default function EditCharacterPage() {
       setRelationships([...relationships, {
         id: characterIdNum,
         name: allCharactersData.find((c: any) => c.id === characterIdNum)?.name || "",
-        role: allCharactersData.find((c: any) => c.id === characterIdNum)?.role || "" //TODO: Allow user to set role
+        description: ""
       }])
     }
+  }
+
+  const updateRelationshipDescription = (characterId: number, description: string) => {
+    setRelationships(relationships.map((rel: any) =>
+      rel.id === characterId ? { ...rel, description } : rel
+    ))
   }
 
   const removeRelationship = (characterId: number) => {
@@ -322,9 +328,9 @@ export default function EditCharacterPage() {
                   <SelectValue placeholder="Select characters" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCharactersData.filter(
-                    (char: any) => char.id !== characterId && !relationships.some((character: any) => character.id === char.id),
-                  ).map((character: any) => (
+                  {allCharactersData?.filter(
+                    (char: any) => char.id !== Number(characterId) && !relationships.some((character: any) => character.id === char.id),
+                  )?.map((character: any) => (
                     <SelectItem key={character.id} value={character.id}>
                       {character.name}
                     </SelectItem>
@@ -333,22 +339,30 @@ export default function EditCharacterPage() {
               </Select>
 
               {relationships.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {relationships.map((characterData: any) => {
-                    const character = allCharactersData.find((c: any) => c.id === characterData.id)
+                <div className="flex flex-col gap-2 mt-2">
+                  {relationships?.map((characterData: any) => {
+                    const character = allCharactersData?.find((c: any) => c.id === characterData.id)
                     return (
                       <div
                         key={characterData.id}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
+                        className="flex items-center gap-2"
                       >
-                        <span>{character?.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeRelationship(characterData.id)}
-                          className="hover:text-foreground"
-                        >
-                          ×
-                        </button>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm shrink-0">
+                          <span>{character?.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeRelationship(characterData.id)}
+                            className="hover:text-foreground"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <Input
+                          value={characterData.description || ""}
+                          onChange={(e) => updateRelationshipDescription(characterData.id, e.target.value)}
+                          placeholder="Describe relationship (e.g., sister, rival, mentor)"
+                          className="bg-surface-light border-border text-sm flex-1"
+                        />
                       </div>
                     )
                   })}
@@ -365,9 +379,9 @@ export default function EditCharacterPage() {
                   <SelectValue placeholder="Select plot points" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allPlotPointsData.filter(
-                    (plotPoint: any) => !connectedPlotPointIds.includes(plotPoint.id),
-                  ).map((plotPoint: any) => (
+                  {allPlotPointsData?.filter(
+                    (plotPoint: any) => !connectedPlotPointIds?.includes(plotPoint.id),
+                  )?.map((plotPoint: any) => (
                     <SelectItem key={plotPoint.id} value={plotPoint.id}>
                       {plotPoint.title}
                     </SelectItem>
@@ -377,8 +391,8 @@ export default function EditCharacterPage() {
 
               {connectedPlotPointIds.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedPlotPointIds.map((plotPointId) => {
-                    const plotPoint = allPlotPointsData.find((p: any) => p.id === plotPointId)
+                  {connectedPlotPointIds?.map((plotPointId) => {
+                    const plotPoint = allPlotPointsData?.find((p: any) => p.id === plotPointId)
                     return (
                       <div
                         key={plotPointId}
@@ -408,8 +422,8 @@ export default function EditCharacterPage() {
                   <SelectValue placeholder="Select scenes" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allScenesData.filter((scene: scenePreview) => !connectedScenes.some((cs: scenePreview) => cs.id === scene.id && cs.version === scene.version))
-                    .map((scene: scenePreview) => (
+                  {allScenesData?.filter((scene: scenePreview) => !connectedScenes?.some((cs: scenePreview) => cs.id === scene.id && cs.version === scene.version))
+                    ?.map((scene: scenePreview) => (
                     <SelectItem key={JSON.stringify(scene)} value={JSON.stringify(scene)}>
                       {scene.title}
                     </SelectItem>
@@ -419,8 +433,8 @@ export default function EditCharacterPage() {
 
               {connectedScenes.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {connectedScenes.map((cs: scenePreview) => {
-                    const sceneData = allScenesData.find((s: scenePreview) => s.id === cs.id && s.version === cs.version)
+                  {connectedScenes?.map((cs: scenePreview) => {
+                    const sceneData = allScenesData?.find((s: scenePreview) => s.id === cs.id && s.version === cs.version)
                     return (
                       <div
                         key={JSON.stringify(cs)}
