@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Edit, Users, FileText, MapPin, Trash2, Download } from "lucide-react"
+import { ArrowLeft, Edit, Users, FileText, MapPin, Trash2, Download, GripVertical } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState, useEffect, useMemo } from "react"
@@ -13,6 +13,7 @@ import { ErrorPage } from "@/components/errorPage"
 import { scenePreview } from "@shared/templates/scene"
 import { keyIsPressed } from "@/lib/utils"
 import { OrderByButton } from "@/components/order-by-button"
+import { SceneList } from "@/components/scene-list"
 import {
   SortField,
   SortPreference,
@@ -42,6 +43,9 @@ export default function StoryDetailClientPage({
   const [scenesSortPref, setScenesSortPref] = useState<SortPreference>({ field: "scene_order", direction: "asc" })
   const [plotPointsSortPref, setPlotPointsSortPref] = useState<SortPreference>({ field: "edited", direction: "desc" })
   const [charactersSortPref, setCharactersSortPref] = useState<SortPreference>({ field: "edited", direction: "desc" })
+  const [isReorderMode, setIsReorderMode] = useState(false)
+  const [pendingSceneOrder, setPendingSceneOrder] = useState<scenePreview[]>([])
+  const [isSavingOrder, setIsSavingOrder] = useState(false)
 
   function addLoadingEndpoint(endpointName: string) {
     setLoadingEndpoints((prev) => new Set(prev).add(endpointName))
@@ -149,6 +153,61 @@ export default function StoryDetailClientPage({
   const handleCharactersSortDirectionToggle = () => {
     const newDirection = toggleSortDirection(params.storyId, "characters")
     setCharactersSortPref((prev) => ({ ...prev, direction: newDirection }))
+  }
+
+  const handleEnterReorderMode = () => {
+    const sortedByOrder = [...latestScenesData].sort((a, b) => a.scene_order - b.scene_order)
+    setPendingSceneOrder(sortedByOrder)
+    setIsReorderMode(true)
+  }
+
+  const handleCancelReorder = () => {
+    setPendingSceneOrder([])
+    setIsReorderMode(false)
+  }
+
+  const handleSaveReorder = async () => {
+    setIsSavingOrder(true)
+    const orderPayload = pendingSceneOrder.map((scene, index) => ({
+      sceneId: scene.id,
+      newOrder: index + 1,
+    }))
+
+    serverRequest(
+      `api/story/${params.storyId}/scene/reorder`,
+      { scenes: orderPayload },
+      "PATCH",
+      async () => {
+        setScenesData((prev) =>
+          prev.map((scene) => {
+            const newOrderItem = orderPayload.find((o) => o.sceneId === scene.id)
+            return newOrderItem
+              ? { ...scene, scene_order: newOrderItem.newOrder }
+              : scene
+          })
+        )
+        setIsReorderMode(false)
+        setPendingSceneOrder([])
+      },
+      async (error) => {
+        console.error("Failed to save scene order:", error)
+      },
+      async () => {
+        setIsSavingOrder(false)
+      }
+    )
+  }
+
+  const handleReorder = (activeId: number, overId: number) => {
+    setPendingSceneOrder((prev) => {
+      const oldIndex = prev.findIndex((s) => s.id === activeId)
+      const newIndex = prev.findIndex((s) => s.id === overId)
+
+      const newOrder = [...prev]
+      const [removed] = newOrder.splice(oldIndex, 1)
+      newOrder.splice(newIndex, 0, removed)
+      return newOrder
+    })
   }
 
   const latestScenesData = useMemo(() => {
@@ -403,52 +462,60 @@ export default function StoryDetailClientPage({
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Scenes</h2>
               <div className="flex items-center gap-2">
-                <OrderByButton
-                  viewType="scenes"
-                  currentField={scenesSortPref.field}
-                  currentDirection={scenesSortPref.direction}
-                  onFieldChange={handleScenesSortFieldChange}
-                  onDirectionToggle={handleScenesSortDirectionToggle}
-                />
-                <Link href={`/stories/${params.storyId}/scenes/new`}>
-                  <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
-                    Add Scene
-                  </Button>
-                </Link>
+                {isReorderMode ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelReorder}
+                      disabled={isSavingOrder}
+                      className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveReorder}
+                      disabled={isSavingOrder}
+                      className="bg-primary hover:bg-primary-hover text-white"
+                    >
+                      {isSavingOrder ? "Saving..." : "Done"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleEnterReorderMode}
+                      className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary"
+                    >
+                      <GripVertical className="w-4 h-4 mr-2" />
+                      Reorder
+                    </Button>
+                    <OrderByButton
+                      viewType="scenes"
+                      currentField={scenesSortPref.field}
+                      currentDirection={scenesSortPref.direction}
+                      onFieldChange={handleScenesSortFieldChange}
+                      onDirectionToggle={handleScenesSortDirectionToggle}
+                    />
+                    <Link href={`/stories/${params.storyId}/scenes/new`}>
+                      <Button size="sm" className="bg-primary hover:bg-primary-hover text-white">
+                        Add Scene
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
-            <div className="space-y-3">
-              {latestScenesData?.map((scene: scenePreview) => (
-                <Link key={JSON.stringify({id: scene.id, version: scene.version})} href={`/stories/${params.storyId}/scenes/${scene.id}/version/${scene.version}`}>
-                  <Card className="p-4 bg-surface border-border hover:border-primary/50 transition-colors cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          {scene.scene_order ? (
-                            <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
-                              Scene {scene.scene_order}
-                            </span>
-                          ) : (
-                            <span className="text-xs px-2 py-0.5 rounded bg-primary-muted text-primary font-medium">
-                              •
-                            </span>
-                          )}
-                          <h3 className="font-semibold">{scene.title}</h3>
-                          <span className="text-xs px-2 py-1 rounded bg-secondary-muted text-secondary font-medium">
-                            Version {scene.version}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{scene.scene_text}</p>
-                      </div>
-                      <div className="flex gap-4 text-xs text-muted-foreground">
-                        {new Date(scene.edited_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+            <SceneList
+              scenes={isReorderMode ? pendingSceneOrder : latestScenesData}
+              storyId={params.storyId}
+              isReorderMode={isReorderMode}
+              onReorder={handleReorder}
+            />
           </TabsContent>
 
           <TabsContent value="plotpoints" className="space-y-4">

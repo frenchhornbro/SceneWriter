@@ -36,8 +36,9 @@ ${nextSceneText ? `Here is the next scene in the story: "${nextSceneText}"\n` : 
 Generate the text of this scene. This is one of many scene generations, so include in your writing mentions of only some, not all, of the provided context.
 Do not overuse metaphors${writingStyleExamples ? ", unless doing so to match the writing style samples provided" : ""}.
 Do NOT output anything other than the text of the scene.`;
-    console.log(prompt);
-    throw Error("Debug Error");
+    if (getEnvVar("VERBOSE") === "true") {
+      console.log(prompt);
+    }
     return await processPrompt(prompt);
   } catch (error) {
     console.error("Error generating scene:", error);

@@ -289,3 +289,16 @@ export function deleteScene(sceneId: number, sceneVersion: number): void {
     updateDB(deleteQuery, params);
   });
 }
+
+export function updateSceneOrders(storyId: number, sceneOrders: { sceneId: number; newOrder: number }[]): void {
+  return transactionWrapper("updateSceneOrders", () => {
+    for (const { sceneId, newOrder } of sceneOrders) {
+      const updateQuery = `
+        UPDATE Scene
+        SET scene_order = ?, edited_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND story_id = ?;
+      `;
+      updateDB(updateQuery, [newOrder, sceneId, storyId]);
+    }
+  });
+}

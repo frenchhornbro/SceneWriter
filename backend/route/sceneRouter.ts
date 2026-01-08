@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { generateScene } from "../ai/prompts";
 import { validateId } from "./routerUtils";
-import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextScene, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousScene, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextScene, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousScene, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene, updateSceneOrders } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
 
@@ -387,6 +387,34 @@ sceneRouter.delete("/:sceneId/version/:sceneVersion", async (req: Request, res: 
   }
   deleteScene(sceneIdNum, sceneVersionNum);
   res.status(204).json({});
+});
+
+sceneRouter.patch("/reorder", async (req: Request, res: Response) => {
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({ error: "Missing or invalid storyId parameter." });
+    return;
+  }
+  const { scenes } = req.body;
+  if (!scenes || !Array.isArray(scenes)) {
+    res.status(400).json({ error: "scenes must be an array." });
+    return;
+  }
+  for (const scene of scenes) {
+    if (typeof scene.sceneId !== "number" || typeof scene.newOrder !== "number") {
+      res.status(400).json({
+        error: "Each scene must have sceneId (number) and newOrder (number).",
+      });
+      return;
+    }
+    if (scene.newOrder < 1) {
+      res.status(400).json({ error: "newOrder must be at least 1." });
+      return;
+    }
+  }
+  updateSceneOrders(storyIdNum, scenes);
+  res.status(200).json({});
 });
 
 export default sceneRouter;

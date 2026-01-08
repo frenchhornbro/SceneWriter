@@ -1,6 +1,6 @@
 import { serverPort, serverURL } from "./envAccess"
 
-type Method = "GET" | "POST" | "PUT" | "DELETE"
+type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
 
 export async function serverRequest(
   path: string,
