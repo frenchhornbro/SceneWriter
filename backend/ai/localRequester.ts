@@ -62,36 +62,51 @@ async function decodeResponse(response: Response): Promise<string> {
 
 export async function sendLocalRequest(prompt: string, url: string, modelOverride?: string): Promise<TextGenerationResult> {
   const startTime = Date.now();
-  let response: any;
+  let response: Response | undefined;
   let model: string = "";
   const modelKeys = Object.keys(models) as Array<keyof typeof models>;
-  for (let i = 0; i < modelKeys.length; i++) {
-    const modelKey = modelKeys[i];
-    model = modelKey;
-    if (modelOverride && modelKey !== modelOverride) {
+  const triedModels = new Set<string>();
+  // Determine the initial model to try
+  let initialModel: string;
+  if (modelOverride && modelOverride in models) {
+    initialModel = modelOverride;
+  } else {
+    initialModel = DEFAULT_MODEL;
+  }
+  // Build ordered list: initial model first, then remaining models in order
+  const modelsToTry: string[] = [initialModel];
+  for (const modelKey of modelKeys) {
+    if (modelKey !== initialModel) {
+      modelsToTry.push(modelKey);
+    }
+  }
+  for (const modelKey of modelsToTry) {
+    if (triedModels.has(modelKey)) {
       continue;
     }
+    triedModels.add(modelKey);
+    model = modelKey;
     if (getEnvVar("VERBOSE") === "true") {
-      console.log(`Generating with model ${modelKey} (${models[modelKey]})...`);
+      console.log(`Generating with model ${modelKey} (${models[modelKey as keyof typeof models]})...`);
     }
     response = await sendRequestWithModel(prompt, url, modelKey);
     if (!response.ok) {
       const data = await response.json();
       if (data.error && data.error.includes("model requires more system memory than is currently available")) {
         console.warn(`Model ${modelKey} failed due to insufficient memory, trying next model.`);
-        if (i === modelKeys.length - 1) {
-          throw new Error(`All models failed: ${data.error}`);
-        }
         continue;
       }
       throw new Error(`Model API request failed with status ${response.status}`);
     }
     break;
   }
+  if (!response || !response.ok) {
+    throw new Error("All models failed due to insufficient system memory");
+  }
   const text = await decodeResponse(response);
-  console.log("Generated text:", text);
   const endTime = Date.now();
   if (getEnvVar("VERBOSE") === "true") {
+    console.log("Generated text:", text);
     console.log(`Scene generated in ${endTime - startTime} ms using model ${model}.`);
   }
   return {text, timeTakenMs: endTime - startTime, modelUsed: model};
