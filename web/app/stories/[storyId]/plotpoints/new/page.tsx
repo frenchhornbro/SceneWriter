@@ -102,7 +102,7 @@ export default function NewPlotPointPage() {
     }
     setIsSubmitting(true)
     serverRequest(`api/story/${storyId}/plotpoint/`, {
-        title,
+        title: title || "Untitled",
         description,
         connectedCharacterIds,
         connectedScenes,

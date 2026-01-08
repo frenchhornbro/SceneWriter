@@ -124,7 +124,7 @@ export default function EditPlotPointPage() {
     }
     setIsSubmitting(true)
     serverRequest(`api/story/${storyId}/plotpoint/${plotpointId}`, {
-        title,
+        title: title || "Untitled",
         description,
         connectedCharacterIds,
         connectedScenes,

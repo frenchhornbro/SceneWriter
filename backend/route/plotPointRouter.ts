@@ -65,8 +65,8 @@ plotPointRouter.post("/", async (req: Request, res: Response) => {
     return;
   }
   const { title, description, connectedScenes, connectedCharacterIds } = req.body;
-  if (!description) {
-    res.status(400).json({error: "Missing required fields: description."});
+  if (!title || !description) {
+    res.status(400).json({error: "Missing required fields: title or description."});
     return;
   }
   if (!connectedScenes || !Array.isArray(connectedScenes)) {
@@ -103,8 +103,8 @@ plotPointRouter.put("/:plotPointId", async (req: Request, res: Response) => {
     return;
   }
   const { title, description, connectedScenes, connectedCharacterIds } = req.body;
-  if (!description) {
-    res.status(400).json({error: "Missing required fields: description."});
+  if (!title || !description) {
+    res.status(400).json({error: "Missing required fields: title or description."});
     return;
   }
   if (!connectedScenes || !Array.isArray(connectedScenes)) {
