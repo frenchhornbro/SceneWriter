@@ -263,7 +263,8 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
-  const { text, modelUsed } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
+  const { text, modelUsed: modelUsedKey } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
+  const modelUsed = getEnvVar("USE_LOCAL_MODEL") ? localModels[modelUsedKey] : openAIModels[modelUsedKey];
   const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds, modelUsed);
   res.status(201).json({ sceneId, version: 1 });
 });
@@ -327,7 +328,8 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const writingStyleSamples = getWritingStyleSampleInfo(connectedWritingStyleSampleIds).map((sample) => Object.entries(sample).map(([key, value]) => `${key}: ${value}`).join(", ")).join("; ");
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
-  const { text, modelUsed } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
+  const { text, modelUsed: modelUsedKey } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
+  const modelUsed = getEnvVar("USE_LOCAL_MODEL") ? localModels[modelUsedKey] : openAIModels[modelUsedKey];
   const latestVersion = getLatestVersion(sceneIdNum);
   if (latestVersion === null) {
     res.status(404).json({error: "Scene not found."});

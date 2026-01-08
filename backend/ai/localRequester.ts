@@ -1,7 +1,7 @@
 import { getEnvVar } from "../utils/envAccess";
 import { TextGenerationResult } from "./types";
 
-export const models = {
+export const models: Record<string, string> = {
   "llama3.2:latest": "Llama 3.2 Latest",
   "gemma3:270m": "Gemma 3 (270M)",
   "gemma3:1b": "Gemma 3 (1B)",
