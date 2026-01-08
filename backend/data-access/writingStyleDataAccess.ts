@@ -22,27 +22,27 @@ export function getAllWritingStyleSamples(): any[] {
   });
 }
 
-export function createNewWritingStyleSample(title: string, prompt: string, content: string, wordCount: number): void {
+export function createNewWritingStyleSample(title: string, prompt: string, content: string): void {
   return errorHandlerWrapper("createNewWritingStyleSample", () => {
     const query = `
-      INSERT INTO WritingStyleSample (title, prompt, content, word_count)
+      INSERT INTO WritingStyleSample (title, prompt, content)
       VALUES (?, ?, ?, ?);
     `;
-    const params = [title, prompt, content, wordCount];
+    const params = [title, prompt, content];
     const result = updateDB(query, params);
     const writingStyleId = result.lastInsertRowid;
     return writingStyleId;
   });
 }
 
-export function updateWritingStyleSample(writingStyleId: number, title: string, content: string, wordCount: number): void {
+export function updateWritingStyleSample(writingStyleId: number, title: string, content: string): void {
   return errorHandlerWrapper("updateWritingStyleSample", () => {
     const query = `
       UPDATE WritingStyleSample
-      SET title = ?, content = ?, word_count = ?, edited_at = CURRENT_TIMESTAMP
+      SET title = ?, content = ?, edited_at = CURRENT_TIMESTAMP
       WHERE id = ?;
     `;
-    const params = [title, content, wordCount, writingStyleId];
+    const params = [title, content, writingStyleId];
     updateDB(query, params);
   });
 }

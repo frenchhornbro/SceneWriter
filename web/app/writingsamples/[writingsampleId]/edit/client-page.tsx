@@ -74,7 +74,7 @@ export default function EditWritingSampleClientPage({
     }
     setIsSubmitting(true)
     await serverRequest(`api/writingstyle/${params.writingsampleId}`, {
-      title: title.trim(),
+      title: title.trim() || "Untitled",
       content: content,
     }, "PUT",
       async (response) => {

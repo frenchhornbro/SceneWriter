@@ -6,7 +6,7 @@ SOURCE_FILE="$SCRIPT_DIR/scenewriter.sqlite"
 
 # Generate the base backup name with current date
 DATE_SUFFIX=$(date +"%b-%-d-%Y" | tr '[:upper:]' '[:lower:]')
-BASE_NAME="scenewriter-backup-${DATE_SUFFIX}"
+BASE_NAME="backup-scenewriter-${DATE_SUFFIX}"
 BACKUP_FILE="$SCRIPT_DIR/${BASE_NAME}.sqlite"
 
 # Check if source file exists

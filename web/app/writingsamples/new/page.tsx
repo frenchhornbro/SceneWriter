@@ -70,7 +70,7 @@ export default function NewWritingSamplePage() {
     }
     setIsSubmitting(true)
     serverRequest("api/writingstyle", {
-      title: title.trim(),
+      title: title.trim() || "Untitled",
       prompt: prompt.trim(),
       content: response.trim()
     }, "POST",

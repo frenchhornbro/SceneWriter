@@ -9,12 +9,13 @@ const writingStyleRouter = Router();
 writingStyleRouter.get("/", (req: Request, res: Response) => {
   const writingStyleSamples = getAllWritingStyleSamples();
   const writingStyleSamplesWithContentPage = writingStyleSamples.map(sample => {
+    const wordCount = sample.content.split(/\s+/).length;
     return {
       id: sample.id,
       title: sample.title,
       prompt: sample.prompt,
       contentPage: sample.content.length > 50 ? sample.content.split(/\s+/).slice(0, 50).join(" ") + (sample.content.split(/\s+/).length > 50 ? "..." : "") : sample.content,
-      wordCount: sample.word_count,
+      wordCount,
       createdAt: sample.created_at,
       editedAt: sample.edited_at,
     };
@@ -42,12 +43,13 @@ writingStyleRouter.get("/:writingStyleId", (req: Request, res: Response) => {
     res.status(404).json({error: "Writing style sample not found."});
     return;
   }
+  const wordCount = writingStyleSample.content.split(/\s+/).length;
   res.status(200).json({
     id: writingStyleSample.id,
     title: writingStyleSample.title,
     prompt: writingStyleSample.prompt,
     content: writingStyleSample.content,
-    wordCount: writingStyleSample.word_count,
+    wordCount,
     createdAt: writingStyleSample.created_at,
     editedAt: writingStyleSample.edited_at,
   });
@@ -62,8 +64,7 @@ writingStyleRouter.post("/", (req: Request, res: Response) => {
   const titleString = `${title ?? ""}`.trim();
   const promptString = prompt.toString().trim();
   const contentString = content.toString().trim();
-  const wordCount = contentString.split(/\s+/).length;
-  const writingStyleId = createNewWritingStyleSample(titleString, promptString, contentString, wordCount);
+  const writingStyleId = createNewWritingStyleSample(titleString, promptString, contentString);
   res.status(201).json({ writingStyleId });
 });
 
@@ -81,8 +82,7 @@ writingStyleRouter.put("/:writingStyleId", (req: Request, res: Response) => {
   }
   const titleString = `${title ?? ""}`.trim();
   const contentString = content.toString().trim();
-  const wordCount = contentString.split(/\s+/).length;
-  updateWritingStyleSample(id, titleString, contentString, wordCount);
+  updateWritingStyleSample(id, titleString, contentString);
   res.status(200).json({});
 });
 
