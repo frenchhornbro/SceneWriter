@@ -17,7 +17,7 @@ plotPointRouter.get("/", async (req: Request, res: Response) => {
   const plotPointsWithDescriptionPage = plotPoints.map((pp: any) => ({
     id: pp.id,
     title: pp.title,
-    descriptionPage: pp.description.length > 200 ? pp.description.substring(0, 200) + "..." : pp.description,
+    descriptionPage: pp.description.length > 50 ? pp.description.split(/\s+/).slice(0, 50).join(" ") + (pp.description.split(/\s+/).length > 50 ? "..." : "") : pp.description,
     editedAt: pp.editedAt,
     createdAt: pp.createdAt,
   }));

@@ -14,6 +14,7 @@ import { useState } from "react"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import SceneGenerationOverlay from "@/components/scene-generation-overlay"
 import { ErrorPage } from "@/components/errorPage"
 import { keyIsPressed } from "@/lib/utils"
@@ -349,9 +350,18 @@ export default function NewScenePage() {
                   {allPlotPointsData.filter(
                     (plotPoint: any) => !connectedPlotPointIds.includes(plotPoint.id),
                   ).map((plotPoint: any) => (
-                    <SelectItem key={plotPoint.id} value={plotPoint.id}>
-                      {plotPoint.title}
-                    </SelectItem>
+                    <Tooltip key={plotPoint.id}>
+                      <TooltipTrigger asChild>
+                        <SelectItem value={plotPoint.id}>
+                          {plotPoint.title}
+                        </SelectItem>
+                      </TooltipTrigger>
+                      {plotPoint.descriptionPage && (
+                        <TooltipContent side="right" className="max-w-md whitespace-pre-wrap text-left">
+                          {plotPoint.descriptionPage}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   ))}
                 </SelectContent>
               </Select>
@@ -360,20 +370,29 @@ export default function NewScenePage() {
                 <div className="flex flex-wrap gap-2 mt-2">
                   {connectedPlotPointIds.map((plotPointId) => {
                     const plotPoint = allPlotPointsData.find((p: any) => p.id === plotPointId)
+                    const plotPointPreview = plotPoint?.descriptionPage || ""
                     return (
-                      <div
-                        key={plotPointId}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
-                      >
-                        <span>{plotPoint?.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeConnectedPlotPoint(plotPointId)}
-                          className="hover:text-foreground"
-                        >
-                          ×
-                        </button>
-                      </div>
+                      <Tooltip key={plotPointId}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm cursor-default"
+                          >
+                            <span>{plotPoint?.title}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeConnectedPlotPoint(plotPointId)}
+                              className="hover:text-foreground"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </TooltipTrigger>
+                        {plotPointPreview && (
+                          <TooltipContent className="max-w-md whitespace-pre-wrap text-left">
+                            {plotPointPreview}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                     )
                   })}
                 </div>
@@ -392,9 +411,18 @@ export default function NewScenePage() {
                   {allWritingStyleSamplesData.filter(
                     (writingStyleSample: any) => !connectedWritingStyleSampleIds.includes(writingStyleSample.id),
                   ).map((writingStyleSample: any) => (
-                    <SelectItem key={writingStyleSample.id} value={writingStyleSample.id}>
-                      {writingStyleSample.title}
-                    </SelectItem>
+                    <Tooltip key={writingStyleSample.id}>
+                      <TooltipTrigger asChild>
+                        <SelectItem value={writingStyleSample.id}>
+                          {writingStyleSample.title}
+                        </SelectItem>
+                      </TooltipTrigger>
+                      {writingStyleSample.contentPage && (
+                        <TooltipContent side="right" className="max-w-md whitespace-pre-wrap text-left">
+                          {writingStyleSample.contentPage}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   ))}
                 </SelectContent>
               </Select>
@@ -403,21 +431,29 @@ export default function NewScenePage() {
                 <div className="flex flex-wrap gap-2 mt-2">
                   {connectedWritingStyleSampleIds.map((writingStyleSampleId) => {
                     const writingStyleSample = allWritingStyleSamplesData.find((w: any) => w.id === writingStyleSampleId)
+                    const samplePreview = writingStyleSample?.contentPage || "";
                     return (
-                      <div
-                        key={writingStyleSampleId}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm"
-                      >
-                        {/* TODO: Figure out what to show instead of title (maybe prompt page) */}
-                        <span>{writingStyleSample?.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeConnectedWritingStyleSample(writingStyleSampleId)}
-                          className="hover:text-foreground"
-                        >
-                          ×
-                        </button>
-                      </div>
+                      <Tooltip key={writingStyleSampleId}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm cursor-default"
+                          >
+                            <span>{writingStyleSample?.title}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeConnectedWritingStyleSample(writingStyleSampleId)}
+                              className="hover:text-foreground"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </TooltipTrigger>
+                        {samplePreview && (
+                          <TooltipContent className="max-w-md whitespace-pre-wrap text-left">
+                            {samplePreview}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                     )
                   })}
                 </div>

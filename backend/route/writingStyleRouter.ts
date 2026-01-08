@@ -13,7 +13,7 @@ writingStyleRouter.get("/", (req: Request, res: Response) => {
       id: sample.id,
       title: sample.title,
       prompt: sample.prompt,
-      contentPage: sample.content.length > 200 ? sample.content.substring(0, 200) + "..." : sample.content,
+      contentPage: sample.content.length > 50 ? sample.content.split(/\s+/).slice(0, 50).join(" ") + (sample.content.split(/\s+/).length > 50 ? "..." : "") : sample.content,
       wordCount: sample.word_count,
       createdAt: sample.created_at,
       editedAt: sample.edited_at,
