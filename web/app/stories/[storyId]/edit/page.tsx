@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { serverRequest } from "@/lib/requests"
 import { keyIsPressed } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 
@@ -81,6 +82,8 @@ export default function EditStoryPage() {
       async (response) => {
         if (doRedirect) {
           router.push(`/stories/${storyId}`)
+        } else {
+          toast({ description: "Successfully saved!" })
         }
       },
       async (error) => {

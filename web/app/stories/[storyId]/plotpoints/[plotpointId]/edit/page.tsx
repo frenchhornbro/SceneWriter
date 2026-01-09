@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ErrorPage } from "@/components/errorPage"
 import { scenePreview } from "@shared/templates/scene"
 import { keyIsPressed } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 
 export default function EditPlotPointPage() {
   const params = useParams()
@@ -132,6 +133,8 @@ export default function EditPlotPointPage() {
       async (response) => {
         if (doRedirect) {
           router.push(`/stories/${storyId}/plotpoints/${plotpointId}`)
+        } else {
+          toast({ description: "Successfully saved!" })
         }
       },
       async (error) => {

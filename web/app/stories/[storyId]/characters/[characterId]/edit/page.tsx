@@ -15,6 +15,7 @@ import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import type { scenePreview } from "@shared/templates/scene"
 import { keyIsPressed } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 
 export default function EditCharacterPage() {
   const params = useParams()
@@ -159,6 +160,8 @@ export default function EditCharacterPage() {
       async (response) => {
         if (doRedirect) {
           router.push(`/stories/${storyId}/characters/${characterId}`)
+        } else {
+          toast({ description: "Successfully saved!" })
         }
       },
       async (error) => {

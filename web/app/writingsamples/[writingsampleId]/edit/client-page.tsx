@@ -15,6 +15,7 @@ import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import { keyIsPressed } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 
 export default function EditWritingSampleClientPage({
   params,
@@ -80,6 +81,8 @@ export default function EditWritingSampleClientPage({
       async (response) => {
         if (doRedirect) {
           router.push(`/writingsamples/${params.writingsampleId}`)
+        } else {
+          toast({ description: "Successfully saved!" })
         }
       },
       async (error) => {

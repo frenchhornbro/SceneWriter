@@ -16,6 +16,7 @@ import { Loading } from "@/components/loading"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ErrorPage } from "@/components/errorPage"
 import { keyIsPressed } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 
 export default function EditSceneClientPage({
   params,
@@ -93,7 +94,6 @@ export default function EditSceneClientPage({
       if (keyIsPressed(e, ["ctrl", "s"], true)) {
         e.preventDefault()
         handleSubmit(undefined, false)
-        console.log("Scene saved"); // TODO: Have a "Saved!" toast
       }
       else if (keyIsPressed(e, ["ctrl", "Enter"], true)) {
         e.preventDefault()
@@ -133,6 +133,8 @@ export default function EditSceneClientPage({
       async (response) => {
         if (doRedirect) {
           router.push(`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}`)
+        } else {
+          toast({ description: "Successfully saved!" })
         }
       },
       async (error) => {
