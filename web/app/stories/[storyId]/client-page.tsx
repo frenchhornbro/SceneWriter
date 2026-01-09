@@ -2,7 +2,8 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Edit, Users, FileText, MapPin, Trash2, Download, GripVertical } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ArrowLeft, Edit, Users, FileText, MapPin, Trash2, Download, GripVertical, FileDown, Code } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState, useEffect, useMemo } from "react"
@@ -310,12 +311,46 @@ export default function StoryDetailClientPage({
     );
   }
 
-  const handleExport = async () => {
+  const handleExportText = async () => {
     setIsExporting(true)
-    serverRequest(`api/story/${params.storyId}/export`, {}, "GET",
+    serverRequest(`api/story/${params.storyId}/export/text`, {}, "GET",
       async (response) => {
-        // TODO: Download a file from the compiled data
-        console.log("Story exported successfully")
+        const data = await response.json()
+        // Create and download text file
+        const blob = new Blob([data.content], { type: "text/plain" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${data.title}.txt`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      },
+      async (error) => {
+        console.error("Failed to export story: ", error)
+      },
+      async () => {
+        setIsExporting(false)
+      }
+    )
+  }
+
+  const handleExportJson = async () => {
+    setIsExporting(true)
+    serverRequest(`api/story/${params.storyId}/export/json`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        // Create and download JSON file
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${data.story.title}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
       },
       async (error) => {
         console.error("Failed to export story: ", error)
@@ -368,15 +403,28 @@ export default function StoryDetailClientPage({
                   Edit
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                disabled={isExporting}
-                className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary bg-transparent"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={isExporting}
+                    className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary bg-transparent"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-surface border-border">
+                  <DropdownMenuItem onClick={handleExportText} className="cursor-pointer">
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export Story
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportJson} className="cursor-pointer">
+                    <Code className="w-4 h-4 mr-2" />
+                    Export JSON
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteDialog(true)}

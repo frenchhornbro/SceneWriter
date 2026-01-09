@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { createNewStory, deleteStory, getAllStories, getStory, updateStory } from "../data-access/storyDataAccess";
+import { createNewStory, deleteStory, getAllStories, getStory, getStoryForExport, getScenesForTextExport, importStory, updateStory } from "../data-access/storyDataAccess";
 import { validateId } from "./routerUtils";
 
 const storyRouter = Router();
@@ -40,8 +40,59 @@ storyRouter.get("/:storyId", async (req: Request, res: Response) => {
   })
 });
 
-storyRouter.get("/:storyId/export", async (req: Request, res: Response) => {
-  res.status(501).json({error: "Not implemented."});
+storyRouter.get("/:storyId/export/text", async (req: Request, res: Response) => {
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const storyData = getStory(storyIdNum);
+  if (!storyData) {
+    res.status(404).json({error: "Story not found."});
+    return;
+  }
+  const scenes = getScenesForTextExport(storyIdNum);
+
+  // Build the text content
+  let textContent = `${storyData.title}\n`;
+  if (storyData.subtitle) {
+    textContent += `${storyData.subtitle}\n`;
+  }
+  textContent += "\n";
+
+  for (const scene of scenes) {
+    textContent += `--- ${scene.title} ---\n\n`;
+    textContent += `${scene.scene_text}\n\n`;
+  }
+
+  res.status(200).json({
+    title: storyData.title,
+    content: textContent,
+  });
+});
+
+storyRouter.get("/:storyId/export/json", async (req: Request, res: Response) => {
+  const { storyId } = req.params;
+  const storyIdNum = validateId(storyId);
+  if (!storyIdNum) {
+    res.status(400).json({error: "Missing or invalid storyId parameter."});
+    return;
+  }
+  const { story, characters, relationships, plotPoints, characterPlotPoints, scenes, sceneConnections } = getStoryForExport(storyIdNum);
+  if (!story) {
+    res.status(404).json({error: "Story not found."});
+    return;
+  }
+  res.status(200).json({
+    story,
+    characters,
+    relationships,
+    plotPoints,
+    characterPlotPoints,
+    scenes,
+    sceneConnections
+  });
 });
 
 storyRouter.post("/", async (req: Request, res: Response) => {
@@ -55,6 +106,25 @@ storyRouter.post("/", async (req: Request, res: Response) => {
   const overviewString = `${overview ?? ""}`.toString();
   const storyId = createNewStory(titleString, subtitleString, overviewString);
   res.status(201).json({ storyId });
+});
+
+storyRouter.post("/import", async (req: Request, res: Response) => {
+  const { data } = req.body;
+  if (!data || !data.story || !data.story.title) {
+    res.status(400).json({ error: "Invalid import data. Must include story with title." });
+    return;
+  }
+  const { story, characters, relationships, plotPoints, characterPlotPoints, scenes, sceneConnections } = data;
+  const result = importStory(
+    story,
+    characters,
+    relationships,
+    plotPoints,
+    characterPlotPoints,
+    scenes,
+    sceneConnections
+  );
+  res.status(201).json({ storyId: result.storyId });
 });
 
 storyRouter.put("/:storyId", async (req: Request, res: Response) => {

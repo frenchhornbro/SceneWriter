@@ -5,16 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { serverRequest } from "@/lib/requests"
 import { keyIsPressed } from "@/lib/utils"
-import { Plus, BookOpen } from "lucide-react"
+import { Plus, BookOpen, Upload } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 export default function StoriesPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [storiesData, setStoriesData] = useState<any>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setIsLoading(true)
@@ -37,11 +39,54 @@ export default function StoriesPage() {
       if (keyIsPressed(e, ["n"])) {
         router.push("/stories/new")
       }
+      if (keyIsPressed(e, ["i"])) {
+        fileInputRef.current?.click()
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [router])
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsImporting(true)
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+
+      serverRequest("api/story/import", { data }, "POST",
+        async (response) => {
+          const result = await response.json()
+          router.push(`/stories/${result.storyId}`)
+        },
+        async (error) => {
+          console.error("Failed to import story:", error)
+          alert("Failed to import story. Please check the file format.")
+        },
+        async () => {
+          setIsImporting(false)
+          // Reset file input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ""
+          }
+        }
+      )
+    } catch (error) {
+      console.error("Failed to parse JSON:", error)
+      alert("Invalid JSON file. Please check the file format.")
+      setIsImporting(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
+  }
 
   if (isLoading) {
     return <Loading itemDescription="stories" />
@@ -60,12 +105,30 @@ export default function StoriesPage() {
             <p className="text-muted-foreground">Manage and organize your creative projects</p>
           </div>
 
-          <Link href="/stories/new">
-            <Button className="bg-primary hover:bg-primary-hover text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              New Story
+          <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".json"
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary bg-transparent"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {isImporting ? "Importing..." : "Import"}
             </Button>
-          </Link>
+            <Link href="/stories/new">
+              <Button className="bg-primary hover:bg-primary-hover text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                New Story
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {!storiesData || storiesData.length === 0 ? (
