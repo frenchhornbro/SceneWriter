@@ -237,6 +237,19 @@ export default function NewCharacterPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-medium">
+                Role
+              </Label>
+              <Input
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                placeholder="e.g., Protagonist, Antagonist, Supporting Character"
+                className="bg-surface-light border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="physicalDescription" className="text-sm font-medium">
                 Physical Description
               </Label>
