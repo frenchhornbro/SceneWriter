@@ -24,6 +24,7 @@ export async function generateScene(
 ): Promise<TextGenerationResult> {
   try {
     const prompt = `\
+YOu are a skilled creative writer putting together a scene / chapter in a book. It is crucial you follow these instructions:
 Generate a scene in a story given the following information.
 ${writingStyleExamples ? `Match the style found in these paragraphs, but not the content (these are NOT part of the story): "${writingStyleExamples}"\n\n` : ""}\
 ${plotPoints ? `These are the relevant plot points for this scene: "${plotPoints}"\n` : ""}\
@@ -34,8 +35,11 @@ ${location ? `The location of this scene is: "${location}"\n` : ""}\
 ${tone ? `The tone of this scene is: "${tone}"\n` : ""}\
 ${previousSceneText ? `Here is the previous scene in the story: "${previousSceneText}"\n` : ""}\
 ${nextSceneText ? `Here is the next scene in the story: "${nextSceneText}"\n` : ""}\
-Generate the text of this scene. This is one of many scene generations, so include in your writing mentions of only some, not all, of the provided context.
+Generate the text of this scene. This is one of many scene generations, so to avoid becoming repetetive, only include mentions of provided context when it is necessary, as it may have been referenced earlier.
 Do not overuse metaphors${writingStyleExamples ? ", unless doing so to match the writing style samples provided" : ""}.
+If the provided context would better fit in multiple scenes, use ***** to indicate scene breaks.
+Please take creative liberties with the scene, but do not contradict the provided context.
+${previousSceneText || nextSceneText ? `Make sure the scene does not transition poorly between the previous scene and the next scene.` : ""}
 Do NOT output anything other than the text of the scene.`;
     if (getEnvVar("VERBOSE") === "true") {
       console.log(prompt);
