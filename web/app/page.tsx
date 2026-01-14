@@ -59,6 +59,7 @@ export default function HomePage() {
             </div>
             <div>
               This program is structured to keep you in control of your story, while leveraging AI to help you quickly visualize the creative universe you have built in-action.
+              Build your world, outline your story, and let AI give you the inspiration you need to sew it all together.
             </div>
           </div>
 
