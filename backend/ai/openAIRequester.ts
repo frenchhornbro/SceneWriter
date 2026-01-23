@@ -1,17 +1,18 @@
 import OpenAI from "openai";
 import { getEnvVar } from "../utils/envAccess";
-import { TextGenerationResult } from "./types";
+import { TextGenerationResult, ModelInfo } from "./types";
 
 // Pricing: https://platform.openai.com/docs/pricing?latest-pricing=standard
-export const models: Record<string, string> = {
-  "gpt-5-mini": "GPT-5 Mini",      // ($0.25/M input, $0.025/M cached input, $2.00/M output) Very fast, higher context retention
-  "gpt-5-nano": "GPT-5 Nano",      // ($0.05/M input, $0.005/M cached input, $0.40/M output) Extremely fast, medium context retention
-  "gpt-4o-mini": "GPT-4o Mini",    // ($0.15/M input, $0.075/M cached input, $0.60/M output) Very fast, medium context retention
-  "gpt-5.1": "GPT-5.1",            // ($1.25/M input, $0.125/M cached input, $10.00/M output) Balanced speed and context retention
-  "gpt-5.2": "GPT-5.2",            // ($1.75/M input, $0.175/M cached input, $14.00/M output) Fast, high context retention
-};
+export const models: ModelInfo[] = [
+  { name: "gpt-5-mini", displayName: "GPT-5 Mini", description: "Very fast, higher context retention", contextWindowSize: 400_000, maxOutputTokens: 128_000, pricing: { inputPerMillion: "$0.25", cachedInputPerMillion: "$0.025", outputPerMillion: "$2.00" } },
+  { name: "gpt-5-nano", displayName: "GPT-5 Nano", description: "Extremely fast, medium context retention", contextWindowSize: 400_000, maxOutputTokens: 128_000, pricing: { inputPerMillion: "$0.05", cachedInputPerMillion: "$0.005", outputPerMillion: "$0.40" } },
+  { name: "gpt-4o-mini", displayName: "GPT-4o Mini", description: "Very fast, medium context retention", contextWindowSize: 128_000, maxOutputTokens: 16_384, pricing: { inputPerMillion: "$0.15", cachedInputPerMillion: "$0.075", outputPerMillion: "$0.60" } },
+  { name: "gpt-5.1", displayName:"GPT-5.1", description:"Balanced speed and context retention", contextWindowSize: 400_000, maxOutputTokens: 128_000, pricing:{ inputPerMillion:"$1.25", cachedInputPerMillion:"$0.125", outputPerMillion:"$10.0" } },
+  { name:"gpt-5.2", displayName:"GPT-5.2", description:"Fast, high context retention", contextWindowSize: 400_000, maxOutputTokens: 128_000, pricing:{ inputPerMillion:"$1.75", cachedInputPerMillion:"$0.175", outputPerMillion:"$14.0" } },
+];
+const modelNames = models.map(m => m.name);
 
-const DEFAULT_MODEL = getEnvVar("DEFAULT_OPENAI_MODEL") || Object.keys(models)[0];
+const DEFAULT_MODEL = getEnvVar("DEFAULT_OPENAI_MODEL") || models[0].name;
 
 const client = new OpenAI({
   apiKey: getEnvVar("OPENAI_API_KEY"),
@@ -19,7 +20,7 @@ const client = new OpenAI({
 
 export async function sendOpenAIRequest(prompt: string, modelOverride?: string): Promise<TextGenerationResult> {
   const startTime = Date.now();
-  if (modelOverride && !(modelOverride in models)) {
+  if (modelOverride && !modelNames.includes(modelOverride)) {
     throw new Error(`Model override ${modelOverride} is not a valid model.`);
   }
   const model: string = modelOverride ? modelOverride : DEFAULT_MODEL;

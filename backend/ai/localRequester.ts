@@ -1,14 +1,14 @@
 import { getEnvVar } from "../utils/envAccess";
-import { TextGenerationResult } from "./types";
+import { TextGenerationResult, ModelInfo } from "./types";
 
-export const models: Record<string, string> = {
-  "llama3.2:latest": "Llama 3.2 Latest",
-  "gemma3:270m": "Gemma 3 (270M)",
-  "gemma3:1b": "Gemma 3 (1B)",
-  "gemma3:4b": "Gemma 3 (4B)",
-}
+export const models: ModelInfo[] = [
+  { name: "llama3.2:latest", displayName: "Llama 3.2 Latest", contextWindowSize: 128_000, maxOutputTokens: 128_000, pricing: { inputPerMillion: "$0.00", cachedInputPerMillion: "$0.00", outputPerMillion: "$0.00" } },
+  { name: "gemma3:270m", displayName: "Gemma 3 (270M)", contextWindowSize: 32_000, maxOutputTokens: 4_096, pricing: { inputPerMillion: "$0.00", cachedInputPerMillion: "$0.00", outputPerMillion: "$0.00" } },
+  { name: "gemma3:1b", displayName: "Gemma 3 (1B)", contextWindowSize: 32_000, maxOutputTokens: 4_096, pricing: { inputPerMillion: "$0.00", cachedInputPerMillion: "$0.00", outputPerMillion: "$0.00" } },
+  { name: "gemma3:4b", displayName: "Gemma 3 (4B)", contextWindowSize: 128_000, maxOutputTokens: 4_096, pricing: { inputPerMillion: "$0.00", cachedInputPerMillion: "$0.00", outputPerMillion:"$0.00" } },
+];
 
-const DEFAULT_MODEL = getEnvVar("DEFAULT_LOCAL_MODEL") || "llama3.2:latest";
+const DEFAULT_MODEL = getEnvVar("DEFAULT_LOCAL_MODEL") || models[0].name;
 
 async function sendRequestWithModel(prompt: string, url: string, model: string): Promise<Response> {
   const response = await fetch(url, {
@@ -64,36 +64,36 @@ export async function sendLocalRequest(prompt: string, url: string, modelOverrid
   const startTime = Date.now();
   let response: Response | undefined;
   let model: string = "";
-  const modelKeys = Object.keys(models) as Array<keyof typeof models>;
+  const modelNames = models.map(m => m.name);
   const triedModels = new Set<string>();
   // Determine the initial model to try
   let initialModel: string;
-  if (modelOverride && modelOverride in models) {
+  if (modelOverride && modelNames.includes(modelOverride)) {
     initialModel = modelOverride;
   } else {
     initialModel = DEFAULT_MODEL;
   }
   // Build ordered list: initial model first, then remaining models in order
   const modelsToTry: string[] = [initialModel];
-  for (const modelKey of modelKeys) {
-    if (modelKey !== initialModel) {
-      modelsToTry.push(modelKey);
+  for (const modelName of modelNames) {
+    if (modelName !== initialModel) {
+      modelsToTry.push(modelName);
     }
   }
-  for (const modelKey of modelsToTry) {
-    if (triedModels.has(modelKey)) {
+  for (const modelName of modelsToTry) {
+    if (triedModels.has(modelName)) {
       continue;
     }
-    triedModels.add(modelKey);
-    model = modelKey;
+    triedModels.add(modelName);
+    model = modelName;
     if (getEnvVar("VERBOSE") === "true") {
-      console.log(`Generating with model ${modelKey} (${models[modelKey as keyof typeof models]})...`);
+      console.log(`Generating with model ${modelName} (${models.find(m => m.name === modelName)?.displayName})...`);
     }
-    response = await sendRequestWithModel(prompt, url, modelKey);
+    response = await sendRequestWithModel(prompt, url, modelName);
     if (!response.ok) {
       const data = await response.json();
       if (data.error && data.error.includes("model requires more system memory than is currently available")) {
-        console.warn(`Model ${modelKey} failed due to insufficient memory, trying next model.`);
+        console.warn(`Model ${modelName} failed due to insufficient memory, trying next model.`);
         continue;
       }
       throw new Error(`Model API request failed with status ${response.status}`);

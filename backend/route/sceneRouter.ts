@@ -7,11 +7,13 @@ import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestV
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
 import { getEnvVar } from "../utils/envAccess";
+import type { modelInfo } from "@shared/model";
 
 const sceneRouter = Router({ mergeParams: true });
 
 sceneRouter.get("/models", async (req: Request, res: Response) => {
-  const models = getEnvVar("USE_LOCAL_MODEL") === "true" ? localModels : openAIModels;
+  const modelInfo = getEnvVar("USE_LOCAL_MODEL") === "true" ? localModels : openAIModels;
+  const models: modelInfo[] = modelInfo.map(m => ({ name: m.name, displayName: m.displayName }));
   res.status(200).json({ models });
 });
 
@@ -60,6 +62,9 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     res.status(404).json({error: "Scene not found."});
     return;
   }
+  const openAIDisplayName = openAIModels.find(model => model.name === scene.model)?.displayName;
+  const localDisplayName = localModels.find(model => model.name === scene.model)?.displayName;
+  const modelDisplayName = (getEnvVar("USE_LOCAL_MODEL") === "true" ? localDisplayName || openAIDisplayName : openAIDisplayName || localDisplayName) || scene.model;
   res.status(200).json({
     id: sceneId,
     storyId: storyId,
@@ -78,7 +83,7 @@ sceneRouter.get("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
     connectedCharacters: sceneData["connectedCharacters"],
     connectedPlotPoints: sceneData["connectedPlotPoints"],
     additionalNotes: scene.additional_notes,
-    model: scene.model,
+    model: modelDisplayName,
     createdAt: scene.created_at,
     editedAt: scene.edited_at,
   });
@@ -264,7 +269,7 @@ sceneRouter.post("/", async (req: Request, res: Response) => {
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const { text, modelUsed: modelUsedKey } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
-  const modelUsed = getEnvVar("USE_LOCAL_MODEL") ? localModels[modelUsedKey] : openAIModels[modelUsedKey];
+  const modelUsed = (getEnvVar("USE_LOCAL_MODEL") === "true" ? localModels.find(model => model.name === modelUsedKey)?.name : openAIModels.find(model => model.name === modelUsedKey)?.name) || "Unknown model";
   const { sceneId } = createNewScene(storyIdNum, null, 1, overviewString, text, sceneOrder, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds, modelUsed);
   res.status(201).json({ sceneId, version: 1 });
 });
@@ -329,7 +334,7 @@ sceneRouter.post("/:sceneId/version/:sceneVersion/regenerate", async (req: Reque
   const previousSceneText = !!includePreviousScene ? getPreviousScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const nextSceneText = !!includeNextScene ? getNextScene(storyIdNum, sceneOrder)?.scene_text || "" : "";
   const { text, modelUsed: modelUsedKey } = await generateScene(writingStyleSamples, overviewString, characters, plotPoints, povString, locationString, toneString, previousSceneText, nextSceneText, model);
-  const modelUsed = getEnvVar("USE_LOCAL_MODEL") ? localModels[modelUsedKey] : openAIModels[modelUsedKey];
+  const modelUsed = (getEnvVar("USE_LOCAL_MODEL") === "true" ? localModels.find(model => model.name === modelUsedKey)?.name : openAIModels.find(model => model.name === modelUsedKey)?.name) || "Unknown model";
   const latestVersion = getLatestVersion(sceneIdNum);
   if (latestVersion === null) {
     res.status(404).json({error: "Scene not found."});

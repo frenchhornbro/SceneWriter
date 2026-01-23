@@ -20,6 +20,7 @@ import { ErrorPage } from "@/components/errorPage"
 import { keyIsPressed } from "@/lib/utils"
 import type { adjacentScenes } from "@shared/templates/scene"
 import { AdjacentScenesCheckboxes } from "@/components/adjacentScenes"
+import { modelInfo } from "@shared/model"
 
 export default function RegenerateScenePage() {
   const params = useParams()
@@ -47,8 +48,8 @@ export default function RegenerateScenePage() {
   const [includePreviousScene, setIncludePreviousScene] = useState(false)
   const [includeNextScene, setIncludeNextScene] = useState(false)
   const [adjacentScenesData, setAdjacentScenesData] = useState<adjacentScenes>({ previousScene: null, nextScene: null })
-  const [availableModels, setAvailableModels] = useState<Record<string, string>>({})
-  const [selectedModel, setSelectedModel] = useState<string>("")
+  const [availableModels, setAvailableModels] = useState<modelInfo[]>([])
+  const [selectedModel, setSelectedModel] = useState<modelInfo>({name: "", displayName: ""})
 
   useEffect(() => {
     serverRequest(`api/story/${storyId}/scene/${sceneId}/version/${sceneVersion}`, {}, "GET",
@@ -112,10 +113,10 @@ export default function RegenerateScenePage() {
     serverRequest(`api/story/${storyId}/scene/models`, {}, "GET",
       async (response) => {
         const data = await response.json()
-        setAvailableModels(data.models)
-        const firstModelKey = Object.keys(data.models)[0]
-        if (firstModelKey) {
-          setSelectedModel(firstModelKey)
+        const models: modelInfo[] = data?.models
+        setAvailableModels(models)
+        if (models.length) {
+          setSelectedModel(models[0])
         }
       },
       async (error) => {
@@ -165,7 +166,7 @@ export default function RegenerateScenePage() {
       connectedWritingStyleSampleIds,
       includePreviousScene,
       includeNextScene,
-      model: selectedModel,
+      model: selectedModel.name,
     }, "POST",
       async (response) => {
         const data = await response.json()
@@ -485,14 +486,14 @@ export default function RegenerateScenePage() {
               <Label htmlFor="model" className="text-sm font-medium">
                 Model
               </Label>
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <Select value={selectedModel?.name} onValueChange={(value) => availableModels.length && setSelectedModel(availableModels.find(m => m.name === value) || availableModels[0])}>
                 <SelectTrigger className="bg-surface-light border-border">
                   <SelectValue placeholder="Select a model" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(availableModels).map(([modelId, modelName]) => (
-                    <SelectItem key={modelId} value={modelId}>
-                      {modelName}
+                  {availableModels?.map((model, index) => (
+                    <SelectItem key={index} value={model.name}>
+                      {model.displayName}
                     </SelectItem>
                   ))}
                 </SelectContent>
