@@ -233,7 +233,7 @@ export function createNewScene(
   });
 }
 
-export function updateScene(sceneId: number, sceneVersion: number, overview: string, sceneText: string, title: string, pov: string, location: string, tone: string, additionalNotes: string, connectedCharacterIds: number[], connectedPlotPointIds: number[]): void {
+export function updateScene(sceneId: number, sceneVersion: number, overview: string, sceneText: string, title: string, pov: string, location: string, tone: string, additionalNotes: string, connectedCharacterIds: number[], connectedPlotPointIds: number[], oldSceneText?: string): void {
   function processConnectedCharacters() {
     if (connectedCharacterIds.length > 0) {
       // Delete old characters
@@ -300,6 +300,17 @@ export function updateScene(sceneId: number, sceneVersion: number, overview: str
     updateDB(sceneQuery, sceneParams);
     processConnectedCharacters();
     processConnectedPlotPoints();
+  });
+}
+
+export function getSceneText(sceneId: number, sceneVersion: number): string | null {
+  return errorHandlerWrapper("getSceneText", () => {
+    const query = `
+      SELECT scene_text FROM Scene WHERE id = ? AND version = ?;
+    `;
+    const params = [sceneId, sceneVersion];
+    const result = queryDB(query, params);
+    return result.length > 0 ? result[0].scene_text : null;
   });
 }
 

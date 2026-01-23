@@ -2,15 +2,20 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Edit, Trash2, MapPin, User, Sparkles } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, MapPin, User, Sparkles, Highlighter } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { serverRequest } from "@/lib/requests"
 import { Loading } from "@/components/loading"
 import { ErrorPage } from "@/components/errorPage"
 import { keyIsPressed } from "@/lib/utils"
+import { HighlightedText } from "@/components/highlighted-text"
+import { HighlightDialog } from "@/components/highlight-dialog"
+import { captureTextSelection, clearSelection } from "@/lib/highlightUtils"
+import type { SceneHighlight, CreateHighlightRequest } from "@shared/highlight"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SceneDetailClientPage({
   params,
@@ -18,11 +23,22 @@ export default function SceneDetailClientPage({
   params: { storyId: string; sceneId: string; sceneVersion: string }
 }) {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [sceneData, setSceneData] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Highlight-related state
+  const [highlights, setHighlights] = useState<SceneHighlight[]>([])
+  const [highlightMode, setHighlightMode] = useState(false)
+  const [showHighlightDialog, setShowHighlightDialog] = useState(false)
+  const [highlightDialogMode, setHighlightDialogMode] = useState<"create" | "edit">("create")
+  const [selectedText, setSelectedText] = useState("")
+  const [pendingHighlight, setPendingHighlight] = useState<CreateHighlightRequest | null>(null)
+  const [editingHighlight, setEditingHighlight] = useState<SceneHighlight | null>(null)
+  const sceneTextRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsLoading(true)
@@ -39,6 +55,20 @@ export default function SceneDetailClientPage({
       }
     )
   }, [])
+
+  // Load highlights
+  useEffect(() => {
+    if (!sceneData) return
+    serverRequest(`api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/highlights`, {}, "GET",
+      async (response) => {
+        const data = await response.json()
+        setHighlights(data.highlights || [])
+      },
+      async (error) => {
+        console.error("Failed to load highlights:", error)
+      }
+    )
+  }, [sceneData, params.storyId, params.sceneId, params.sceneVersion])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -103,6 +133,133 @@ export default function SceneDetailClientPage({
     )
   }
 
+  // Highlight handlers
+  const handleTextSelection = () => {
+    if (!highlightMode || !sceneTextRef.current || !sceneData) return
+
+    const highlightData = captureTextSelection(
+      sceneTextRef.current,
+      sceneData.sceneText,
+      parseInt(params.sceneId),
+      parseInt(params.sceneVersion),
+      "#fef08a" // Default color, will be changed in dialog
+    )
+
+    if (highlightData) {
+      setPendingHighlight(highlightData)
+      setSelectedText(highlightData.exactText)
+      setHighlightDialogMode("create")
+      setShowHighlightDialog(true)
+    }
+  }
+
+  const handleCreateHighlight = async (color: string, note: string) => {
+    if (!pendingHighlight) return
+
+    const highlightData = {
+      ...pendingHighlight,
+      color,
+      note,
+    }
+
+    // Close dialog and clear state immediately
+    setShowHighlightDialog(false)
+    setPendingHighlight(null)
+    clearSelection()
+
+    serverRequest(
+      `api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/highlights`,
+      highlightData,
+      "POST",
+      async (response) => {
+        const data = await response.json()
+        setHighlights([...highlights, data.highlight])
+        toast({
+          title: "Highlight created",
+          description: "Your highlight has been saved.",
+        })
+      },
+      async (error) => {
+        toast({
+          title: "Error",
+          description: `Failed to create highlight: ${error}`,
+          variant: "destructive",
+        })
+      }
+    )
+  }
+
+  const handleEditHighlight = (highlight: SceneHighlight) => {
+    setEditingHighlight(highlight)
+    setHighlightDialogMode("edit")
+    setShowHighlightDialog(true)
+  }
+
+  const handleUpdateHighlight = async (color: string, note: string) => {
+    if (!editingHighlight) return
+
+    const highlightId = editingHighlight.id
+
+    // Close dialog and clear state immediately
+    setShowHighlightDialog(false)
+    setEditingHighlight(null)
+
+    serverRequest(
+      `api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/highlights/${highlightId}`,
+      { color, note },
+      "PATCH",
+      async (response) => {
+        const data = await response.json()
+        setHighlights(highlights.map(h => h.id === data.highlight.id ? data.highlight : h))
+        toast({
+          title: "Highlight updated",
+          description: "Your changes have been saved.",
+        })
+      },
+      async (error) => {
+        toast({
+          title: "Error",
+          description: `Failed to update highlight: ${error}`,
+          variant: "destructive",
+        })
+      }
+    )
+  }
+
+  const handleDeleteHighlight = async (highlightId: number) => {
+    serverRequest(
+      `api/story/${params.storyId}/scene/${params.sceneId}/version/${params.sceneVersion}/highlights/${highlightId}`,
+      {},
+      "DELETE",
+      async (response) => {
+        setHighlights(highlights.filter(h => h.id !== highlightId))
+        toast({
+          title: "Highlight deleted",
+          description: "The highlight has been removed.",
+        })
+      },
+      async (error) => {
+        toast({
+          title: "Error",
+          description: `Failed to delete highlight: ${error}`,
+          variant: "destructive",
+        })
+      }
+    )
+  }
+
+  // Handle text selection when in highlight mode
+  useEffect(() => {
+    if (!highlightMode) return
+
+    const handleMouseUp = () => {
+      setTimeout(handleTextSelection, 10)
+    }
+
+    document.addEventListener("mouseup", handleMouseUp)
+    return () => document.removeEventListener("mouseup", handleMouseUp)
+  }, [highlightMode, sceneData])
+
   if (isLoading) {
     return <Loading itemDescription="scene" />
   }
@@ -164,6 +321,18 @@ export default function SceneDetailClientPage({
             </div>
 
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setHighlightMode(!highlightMode)}
+                className={`border-border ${
+                  highlightMode
+                    ? "bg-primary/20 text-primary border-primary"
+                    : "hover:bg-secondary-muted hover:text-secondary hover:border-secondary"
+                } bg-transparent`}
+              >
+                <Highlighter className="w-4 h-4 mr-2" />
+                {highlightMode ? "Exit Highlight" : "Highlight"}
+              </Button>
               <Link href={`/stories/${params.storyId}/scenes/${params.sceneId}/version/${params.sceneVersion}/edit`}>
                 <Button variant="outline" className="border-border hover:bg-secondary-muted hover:text-secondary hover:border-secondary bg-transparent">
                   <Edit className="w-4 h-4 mr-2" />
@@ -192,9 +361,21 @@ export default function SceneDetailClientPage({
 
         <div className="space-y-6">
           <Card className="p-6 bg-surface border-border">
-            <h2 className="text-xl font-semibold mb-3">Scene Text</h2>
-            <div className="prose prose-invert max-w-none">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{sceneData.sceneText}</p>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-semibold">Scene Text</h2>
+              {highlightMode && (
+                <span className="text-sm text-primary">
+                  Select text to highlight
+                </span>
+              )}
+            </div>
+            <div className="prose prose-invert max-w-none" ref={sceneTextRef}>
+              <HighlightedText
+                sceneText={sceneData.sceneText}
+                highlights={highlights}
+                onHighlightEdit={handleEditHighlight}
+                onHighlightDelete={handleDeleteHighlight}
+              />
             </div>
           </Card>
 
@@ -273,6 +454,20 @@ export default function SceneDetailClientPage({
         onConfirm={handleDelete}
         itemType="scene"
         itemName={sceneData.title}
+      />
+
+      <HighlightDialog
+        open={showHighlightDialog}
+        onOpenChange={setShowHighlightDialog}
+        onSave={highlightDialogMode === "create" ? handleCreateHighlight : handleUpdateHighlight}
+        onCancel={() => {
+          clearSelection();
+          setPendingHighlight(null);
+          setEditingHighlight(null);
+        }}
+        selectedText={selectedText}
+        existingHighlight={editingHighlight}
+        mode={highlightDialogMode}
       />
     </div>
   )

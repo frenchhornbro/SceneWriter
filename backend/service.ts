@@ -6,6 +6,7 @@ import storyRouter from "./route/storyRouter";
 import characterRouter from "./route/characterRouter";
 import writingStyleRouter from "./route/writingStyleRouter";
 import plotPointRouter from "./route/plotPointRouter";
+import highlightRouter from "./route/highlightRouter";
 
 const app = express();
 
@@ -27,6 +28,7 @@ apiRouter.use("/writingstyle", writingStyleRouter);
 storyRouter.use("/:storyId/scene", sceneRouter);
 storyRouter.use("/:storyId/character", characterRouter);
 storyRouter.use("/:storyId/plotpoint", plotPointRouter);
+sceneRouter.use("/:sceneId/version/:sceneVersion/highlights", highlightRouter);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({error: "Route not found."});

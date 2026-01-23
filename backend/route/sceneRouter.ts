@@ -3,10 +3,12 @@ import { generateScene } from "../ai/prompts";
 import { models as openAIModels } from "../ai/openAIRequester";
 import { models as localModels } from "../ai/localRequester";
 import { validateId } from "./routerUtils";
-import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextScene, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousScene, getPreviousVersion, getScene, getWritingStyleSampleInfo, updateScene, updateSceneOrders } from "../data-access/sceneDataAccess";
+import { createNewScene, deleteScene, getAllScenes, getCharacterInfo, getLatestVersion, getNextScene, getNextSceneOrder, getNextVersion, getPlotPointInfo, getPreviousScene, getPreviousVersion, getScene, getSceneText, getWritingStyleSampleInfo, updateScene, updateSceneOrders } from "../data-access/sceneDataAccess";
 import { getStory } from "../data-access/storyDataAccess";
 import type { scenePreview } from "@shared/templates/scene";
 import { getEnvVar } from "../utils/envAccess";
+import { getHighlightsForScene, recordTextEdit, bulkUpdateHighlights, markHighlightInvalid } from "../data-access/highlightDataAccess";
+import { calculateTextEdits, adjustAllHighlights } from "../utils/highlightAdjustment";
 
 const sceneRouter = Router({ mergeParams: true });
 
@@ -377,7 +379,45 @@ sceneRouter.put("/:sceneId/version/:sceneVersion", async (req: Request, res: Res
   const locationString = `${location ?? ""}`.toString().trim();
   const toneString = `${tone ?? ""}`.toString().trim();
   const additionalNotesString = `${additionalNotes ?? ""}`.toString().trim();
+  const oldSceneText = getSceneText(sceneIdNum, sceneVersionNum);
   updateScene(sceneIdNum, sceneVersionNum, overviewString, sceneTextString, titleString, povString, locationString, toneString, additionalNotesString, connectedCharacterIds, connectedPlotPointIds);
+  // If scene text changed, adjust highlights
+  if (oldSceneText && oldSceneText !== sceneTextString) {
+    const highlights = getHighlightsForScene(sceneIdNum, sceneVersionNum);
+    if (highlights.length > 0) {
+      // Calculate what changed
+      const edits = calculateTextEdits(oldSceneText, sceneTextString);
+
+      // Record the text edits
+      edits.forEach(edit => {
+        recordTextEdit(sceneIdNum, sceneVersionNum, edit.position, edit.charsInserted, edit.charsDeleted);
+      });
+
+      // Adjust all highlights based on the edits
+      const adjustedHighlights = adjustAllHighlights(highlights, edits, sceneTextString);
+
+      // Update highlights in database
+      const highlightUpdates = adjustedHighlights.map(adjusted => ({
+        id: adjusted.id,
+        data: {
+          startOffset: adjusted.startOffset,
+          endOffset: adjusted.endOffset,
+          exactText: adjusted.exactText,
+          prefixContext: adjusted.prefixContext,
+          suffixContext: adjusted.suffixContext,
+        }
+      }));
+
+      bulkUpdateHighlights(highlightUpdates);
+
+      // Mark invalid highlights
+      adjustedHighlights.forEach(adjusted => {
+        if (!adjusted.isValid) {
+          markHighlightInvalid(adjusted.id);
+        }
+      });
+    }
+  }
   res.status(200).json({});
 });
 

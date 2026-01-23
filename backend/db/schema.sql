@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS Story (
   edited_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS Temp (
+CREATE TABLE IF NOT EXISTS PlotPoint (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   story_id INTEGER NOT NULL,
   title TEXT NOT NULL,
@@ -94,4 +94,32 @@ CREATE TABLE IF NOT EXISTS CharacterPlotPoint (
   PRIMARY KEY (character_id, plot_point_id),
   FOREIGN KEY (character_id) REFERENCES Character(id) ON DELETE CASCADE,
   FOREIGN KEY (plot_point_id) REFERENCES PlotPoint(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS SceneHighlight (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  scene_id INTEGER NOT NULL,
+  scene_version INTEGER NOT NULL,
+  start_offset INTEGER NOT NULL,
+  end_offset INTEGER NOT NULL,
+  exact_text TEXT NOT NULL,
+  prefix_context TEXT NOT NULL,
+  suffix_context TEXT NOT NULL,
+  color TEXT NOT NULL,
+  note TEXT,
+  is_valid INTEGER DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  edited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (scene_id, scene_version) REFERENCES Scene(id, version) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS TextEdit (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  scene_id INTEGER NOT NULL,
+  scene_version INTEGER NOT NULL,
+  edit_position INTEGER NOT NULL,
+  chars_inserted INTEGER NOT NULL,
+  chars_deleted INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (scene_id, scene_version) REFERENCES Scene(id, version) ON DELETE CASCADE
 );
