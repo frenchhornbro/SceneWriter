@@ -11,9 +11,8 @@ export const models: ModelInfo[] = [
   { name:"gpt-5.2", displayName:"GPT-5.2", description:"Fast, high context retention", contextWindowSize: 400_000, maxOutputTokens: 128_000, pricing:{ inputPerMillion:"$1.75", cachedInputPerMillion:"$0.175", outputPerMillion:"$14.0" } },
 ];
 const modelNames = models.map(m => m.name);
-
-const DEFAULT_MODEL = getEnvVar("DEFAULT_OPENAI_MODEL") || models[0].name;
-
+const DEFAULT_MODEL = models.find(m => m.name === getEnvVar("DEFAULT_OPENAI_MODEL")) || models[0];
+const MAX_OUTPUT_TOKENS = 30_000;
 const client = new OpenAI({
   apiKey: getEnvVar("OPENAI_API_KEY"),
 });
@@ -23,13 +22,14 @@ export async function sendOpenAIRequest(prompt: string, modelOverride?: string):
   if (modelOverride && !modelNames.includes(modelOverride)) {
     throw new Error(`Model override ${modelOverride} is not a valid model.`);
   }
-  const model: string = modelOverride ? modelOverride : DEFAULT_MODEL;
+  const model: ModelInfo = models.find(m => m.name === (modelOverride)) || DEFAULT_MODEL;
   if (getEnvVar("VERBOSE") === "true") {
-    console.log(`Generating with model ${model}...`);
+    console.log(`Generating with model ${model.displayName}...`);
   }
   const response = await client.responses.create({
-    model: model,
+    model: model.name,
     input: prompt,
+    max_output_tokens: Math.min(MAX_OUTPUT_TOKENS, model.maxOutputTokens),
   });
   const responseText = response.output_text;
   const usage = response.usage;
@@ -39,7 +39,7 @@ export async function sendOpenAIRequest(prompt: string, modelOverride?: string):
   console.log("Generated text:", responseText);
   const endTime = Date.now();
   if (getEnvVar("VERBOSE") === "true") {
-    console.log(`Scene generated in ${endTime - startTime} ms using model ${model} with usage: ${JSON.stringify(usage)}.`);
+    console.log(`Scene generated in ${endTime - startTime} ms using model ${model.displayName} with usage: ${JSON.stringify(usage)}.`);
   }
-  return {text: responseText, timeTakenMs: endTime - startTime, modelUsed: model};
+  return {text: responseText, timeTakenMs: endTime - startTime, modelUsed: model.name};
 }
